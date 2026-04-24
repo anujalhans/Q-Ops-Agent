@@ -1,0 +1,87 @@
+/* Light theme — from enterprise_ai_design_system/DESIGN.md */
+:root,
+[data-theme='light'] {
+  --surface: #fcf8ff;
+  --surface-dim: #dcd8e5;
+  --surface-bright: #fcf8ff;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f5f2ff;
+  --surface-container: #f0ecf9;
+  --surface-container-high: #eae6f4;
+  --surface-container-highest: #e4e1ee;
+  --on-surface: #1b1b24;
+  --on-surface-variant: #464555;
+  --inverse-surface: #302f39;
+  --inverse-on-surface: #f3effc;
+  --outline: #777587;
+  --outline-variant: #c7c4d8;
+  --surface-tint: #4d44e3;
+  --primary: #3525cd;
+  --on-primary: #ffffff;
+  --primary-container: #4f46e5;
+  --on-primary-container: #dad7ff;
+  --inverse-primary: #c3c0ff;
+  --secondary: #515f74;
+  --on-secondary: #ffffff;
+  --secondary-container: #d5e3fc;
+  --on-secondary-container: #57657a;
+  --tertiary: #7e3000;
+  --on-tertiary: #ffffff;
+  --tertiary-container: #a44100;
+  --on-tertiary-container: #ffd2be;
+  --error: #ba1a1a;
+  --on-error: #ffffff;
+  --error-container: #ffdad6;
+  --on-error-container: #93000a;
+  --background: #fcf8ff;
+  --on-background: #1b1b24;
+  --surface-variant: #e4e1ee;
+
+  /* Status accents (per DESIGN.md "Active/Success" guidance) */
+  --success: #10b981;
+  --on-success: #ffffff;
+  --warning: #f59e0b;
+}
+
+/* Dark theme — from dark_enterprise_ai/DESIGN.md */
+[data-theme='dark'] {
+  --surface: #0b1326;
+  --surface-dim: #0b1326;
+  --surface-bright: #31394d;
+  --surface-container-lowest: #060e20;
+  --surface-container-low: #131b2e;
+  --surface-container: #171f33;
+  --surface-container-high: #222a3d;
+  --surface-container-highest: #2d3449;
+  --on-surface: #dae2fd;
+  --on-surface-variant: #c2c6d6;
+  --inverse-surface: #dae2fd;
+  --inverse-on-surface: #283044;
+  --outline: #8c909f;
+  --outline-variant: #424754;
+  --surface-tint: #adc6ff;
+  --primary: #adc6ff;
+  --on-primary: #002e6a;
+  --primary-container: #4d8eff;
+  --on-primary-container: #00285d;
+  --inverse-primary: #005ac2;
+  --secondary: #ddb7ff;
+  --on-secondary: #490080;
+  --secondary-container: #6f00be;
+  --on-secondary-container: #d6a9ff;
+  --tertiary: #4edea3;
+  --on-tertiary: #003824;
+  --tertiary-container: #00a572;
+  --on-tertiary-container: #00311f;
+  --error: #ffb4ab;
+  --on-error: #690005;
+  --error-container: #93000a;
+  --on-error-container: #ffdad6;
+  --background: #0b1326;
+  --on-background: #dae2fd;
+  --surface-variant: #2d3449;
+
+  --success: #4edea3;
+  --on-success: #003824;
+  --warning: #ffb86b;
+}
