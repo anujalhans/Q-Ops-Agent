@@ -58,7 +58,7 @@ function App() {
   )
 
   return (
-    <div className="min-h-screen bg-surface text-white">
+    <div className="min-h-screen bg-surface text-on-surface">
       <Routes>
         <Route
           path="/"
