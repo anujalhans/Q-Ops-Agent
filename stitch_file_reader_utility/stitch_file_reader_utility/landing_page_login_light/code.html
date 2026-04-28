@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Q-Ops Agent - AI-Powered QA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 1);
+        }
+        .ai-gradient-border {
+            border: 1px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        linear-gradient(to right, #4f46e5, transparent) border-box;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-container": "#d5e3fc",
+                      "background": "#fcf8ff",
+                      "tertiary-container": "#a44100",
+                      "on-error": "#ffffff",
+                      "surface": "#fcf8ff",
+                      "on-secondary-fixed-variant": "#3a485b",
+                      "surface-container-low": "#f5f2ff",
+                      "inverse-primary": "#c3c0ff",
+                      "tertiary-fixed-dim": "#ffb695",
+                      "on-background": "#1b1b24",
+                      "on-tertiary-fixed-variant": "#7b2f00",
+                      "surface-container-highest": "#e4e1ee",
+                      "primary-fixed": "#e2dfff",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-tint": "#4d44e3",
+                      "on-secondary-fixed": "#0d1c2e",
+                      "on-primary-fixed-variant": "#3323cc",
+                      "surface-dim": "#dcd8e5",
+                      "secondary-fixed": "#d5e3fc",
+                      "on-tertiary-container": "#ffd2be",
+                      "surface-container-high": "#eae6f4",
+                      "on-secondary": "#ffffff",
+                      "surface-variant": "#e4e1ee",
+                      "on-primary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "on-primary-container": "#dad7ff",
+                      "primary-fixed-dim": "#c3c0ff",
+                      "secondary": "#515f74",
+                      "surface-bright": "#fcf8ff",
+                      "on-surface": "#1b1b24",
+                      "outline-variant": "#c7c4d8",
+                      "on-surface-variant": "#464555",
+                      "tertiary": "#7e3000",
+                      "tertiary-fixed": "#ffdbcc",
+                      "on-tertiary-fixed": "#351000",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed": "#0f0069",
+                      "secondary-fixed-dim": "#b9c7df",
+                      "on-tertiary": "#ffffff",
+                      "primary": "#3525cd",
+                      "inverse-on-surface": "#f3effc",
+                      "error-container": "#ffdad6",
+                      "surface-container": "#f0ecf9",
+                      "outline": "#777587",
+                      "on-secondary-container": "#57657a",
+                      "primary-container": "#4f46e5",
+                      "inverse-surface": "#302f39"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "xl": "48px",
+                      "unit": "4px",
+                      "container-max": "1440px",
+                      "gutter": "24px",
+                      "sm": "8px",
+                      "md": "16px",
+                      "xs": "4px"
+              },
+              "fontFamily": {
+                      "body-md": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "title-sm": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "label-caps": ["Inter"]
+              },
+              "fontSize": {
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TopNavBar -->
+<header class="bg-white dark:bg-slate-900 flex justify-between items-center px-6 h-16 w-full sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-200 ease-in-out">
+<div class="flex items-center gap-4">
+<span class="text-lg font-black tracking-tight text-slate-900 dark:text-white">Q-Ops Agent</span>
+<span class="hidden md:block text-xs font-medium text-on-surface-variant bg-surface-container px-2 py-1 rounded">AI-Powered Enterprise</span>
+</div>
+<div class="flex items-center gap-md"><button class="material-symbols-outlined p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-indigo-600 rounded-full transition-colors" data-icon="dark_mode">dark_mode</button>
+<button class="material-symbols-outlined p-2 text-slate-400 dark:text-slate-600 cursor-default" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined p-2 text-slate-400 dark:text-slate-600 cursor-default" data-icon="help">help</button>
+<button class="ml-4 px-4 py-2 bg-primary text-white font-body-sm font-medium rounded-xl hover:opacity-90 transition-opacity">Login</button></div>
+</header>
+<main class="w-full">
+<!-- Hero Section -->
+<section class="relative py-xl px-lg bg-white overflow-hidden">
+<div class="max-w-container-max mx-auto grid lg:grid-cols-2 gap-xl items-center relative z-10">
+<div class="space-y-md">
+<span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-[14px]" data-icon="bolt">bolt</span>
+                        NEXT-GEN QA AUTOMATION
+                    </span>
+<h1 class="font-display-lg text-display-lg text-on-background lg:text-[56px] lg:leading-[64px]">
+                        Build QA That Starts <br/><span class="text-primary">Before Code Exists</span>.
+                    </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xl">Shift-left your testing lifecycle with AI-driven artifacts generated directly from business requirements. Q-Ops Agent doesn't assist QA. It builds it. Eliminate manual test creation and accelerate release cycles.</p>
+<div class="flex flex-wrap gap-md pt-4"><button class="px-8 py-3 bg-primary text-white rounded-xl font-title-sm hover:shadow-lg transition-all">Explore More</button>
+<button class="px-8 py-3 border border-outline text-on-surface rounded-xl font-title-sm hover:bg-surface-container transition-all">Login to Dashboard</button></div>
+</div>
+<div class="relative">
+<div class="absolute -top-12 -right-12 w-64 h-64 bg-primary-fixed/30 rounded-full blur-3xl"></div>
+<img class="rounded-xl border border-outline-variant shadow-2xl relative z-10 w-full object-cover aspect-video" data-alt="Modern enterprise dashboard interface showing automated test generation flow with sleek indigo UI elements and data visualizations" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHo1jYgjhGlEuj_dPP3or7_ewNDREHmwb3Xce0eKj8AExnPYUT68ZcqvWrBtrU38gPmwiLBpxdbDz0TL1kfdhgfNWEdJxAri6Na-5hUffU9O2jqpLtIEyarQDK7ZlY4u1jSkCeSL5DvkPPRw7ZiLqYwVnpTeUdJlJg_72b5chjNvpaWVFq4G7bu1sh-98Lv_zOCpL3b8iAvH-4CeuEEvPmmjHLwKnXuQpwPUurF7Ad7cuwBselHkJCQgGKiSFCP2nl1CaWgFFtSAsK"/>
+</div>
+</div>
+</section>
+<!-- Partners Marquee -->
+<section class="py-md border-y border-outline-variant bg-surface-container-lowest">
+<div class="max-w-container-max mx-auto px-lg">
+<p class="text-center font-label-caps text-label-caps text-on-surface-variant mb-md opacity-60">TRUSTED BY INNOVATIVE ENGINEERING TEAMS</p>
+<div class="flex flex-wrap justify-center gap-xl items-center grayscale opacity-70">
+<img class="h-8 object-contain" data-alt="Corporate logo of a leading tech company in minimalist black and white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVj38RrivA7HxkNW_EmQGERLpCaHA4nwMGeW_aK8q3VYZ6shTe2d3Ny9bRnzM-7vgkDvl13uTaTXnRts-9rF_WRJKXbWl52OGo27R6G8C5H_ZE3nFYzhptsGHeZsZOv8GR56C_haCcjvwHacTRTW4aejJQmaEKkjPRh_KRNTmqfsrBECDTuMnXP1-vOWmqtAZf11lm-n0P269HN3JF0oC67VDPSDgSAuXPy8OVQ0KeSmyIQVkj8b4XQhAb0RPTMnLadW5rvzy8IPqG"/>
+<img class="h-8 object-contain" data-alt="Corporate logo of a global financial institution in minimalist black and white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5n3-9ag9Cxm5L1HyaaTnEQWplwz4V1CkqF9HARw1GXk5ky0bhGISB-W9FoxIeGNxd8rXFGQ9fBWatTVz3EBdEeu2BsHVzYrPgDGAKZql7Od6wAE1pLVJ2lvkk1cjuwwurgskfxYsSGgO8cktWs5ht2i3w24fgPBVMotVtMEayJ8a1xqBeccqm4Q_NPYO5yNqTkwK6I6xYUtK3tHAoCL7hik-gKG3tTtX5-TK3vqLJy6tYdebeBky3zhEb0UGA-QCZfVvz_hGhsT_2"/>
+<img class="h-8 object-contain" data-alt="Corporate logo of a healthcare technology leader in minimalist black and white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNaDzpxsoTmbzKu_Rwsrhw_AnI_gAPNuO3MDgxrjEh-2_aOjsgQeT70Xr-gcbIl6Y_g_Fb2O2QMSDlAE7dGkUGGEdYIbhgtjCjVU9y-mGgRUCGbybvPSA6Ia0bjpGbHw1gOxrJH6nlmKQFEzFQv7lakN-jOzVfZPabQShWRUEnkoGWuUcI_SbstbgzyCqMMopHdPJ3pZAbh7rswWGZXr26GbiIQWZpFUNacNXv_Sp0BOT-_nzvZkTMxG7voAnNZjNvWGKCd_vDGCgu"/>
+<img class="h-8 object-contain" data-alt="Corporate logo of a Fortune 500 manufacturing company in minimalist black and white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcak8DEMLkYLxwPEwZNz3AGlA7r7FBqlIrbbHweV27cYolDP-GToqSyGRLNfUGeIel92j_aj8i-QYuZBFIDrNylVdrjQOrBZoTuLDV5jTkWm6Gik2IgwMHTQH2FIe0f3uAHcBiOKp6i_5bk-KPl7cExzvWl_jgvfAL31ZcLqcemOI0vaFJEaWXovYiUYCEzUwVLdTmaGSwgcZ-Xx_6Z03OylFllRFOFWa9n2fWZi7H9rJaYCEL0VxR9DkMfRUl6AVjCwYjsRxL6lKt"/>
+<img class="h-8 object-contain" data-alt="Corporate logo of a cloud computing pioneer in minimalist black and white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe2wkVeGqCM_R229Axt1z7SDLBER4qvGHy_OHcvXk_zrKMRieYEAVcY4211OwuPBK4GWEB9bgFpfKSAVpK5xLbgO6UlUn5HFuxiC3ZuVcYgDqe4vL6yd849oUIGbYYqhoAP3E4mVGLTX3SPb4OG_UeLXMlvWl9xy7REp5AiOXYArDKH5ZIDrMpyHDfKYfH3tWcZD9HAobRuNAecR-s4FgER9bduwAXlN26KiJAOEFepVyYMYooWH_1Pw0yFK-zdvqoARRRf6lzHAyp"/>
+</div>
+</div>
+</section>
+<!-- Core Capabilities Bento Grid -->
+<section class="py-xl px-lg">
+<div class="max-w-container-max mx-auto">
+<div class="text-center mb-xl">
+<h2 class="font-headline-md text-headline-md text-on-background">Engineered for Precision</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm">Unlock full visibility into your quality ecosystem.</p>
+</div>
+<div class="grid md:grid-cols-3 gap-lg">
+<!-- Capability 1 -->
+<div class="col-span-1 md:col-span-2 ai-gradient-border p-xl rounded-xl">
+<div class="flex flex-col h-full justify-between">
+<div>
+<span class="material-symbols-outlined text-primary p-3 bg-primary-fixed rounded-lg mb-md" data-icon="description">description</span>
+<h3 class="font-title-sm text-title-sm mb-sm">Automated Artifact Generation</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-lg">Turn PRDs and User Stories into Test Plans, Traceability Matrices, and Test Cases in seconds.</p>
+</div>
+<img class="rounded-lg shadow-sm border border-outline-variant w-full h-48 object-cover" data-alt="Close up of a clean document generation interface with AI suggestion highlights and indigo accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2qejnk-805HhJUsNJfoJHZHkkodK7x6af0gLxP3ae4ES_7u0-JKECrX8Yc3zn5baHJgsSo72qtOKzL3hHDqq4gSVNURI9bzAOqN5Xn5AEf3EBQlhDFoewNHCyqDB8P20H0HTeUQQYoPcJuN5ylgkuAT-JyTKUywu43_RbcSwApQS5PWjS_dcxrSFpNaH6LW9N3tjh6XjlPeq5Ci79qdYu69MNN7Fr8oZtUgLcsSmCZLWixcsd29q-gdJYnYYK-b0xr4m2FRnIJ8f2"/>
+</div>
+</div>
+<!-- Capability 2 -->
+<div class="bg-white border border-outline-variant p-xl rounded-xl flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-primary p-3 bg-primary-fixed rounded-lg mb-md" data-icon="query_stats">query_stats</span>
+<h3 class="font-title-sm text-title-sm mb-sm">Predictive Analytics</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Identify potential regression risks before they impact your production environment.</p>
+<div class="mt-auto pt-lg w-full">
+<div class="h-32 bg-slate-50 rounded border border-dashed border-outline-variant flex items-end justify-between px-4 pb-2">
+<div class="w-4 bg-primary h-[40%] rounded-t-sm"></div>
+<div class="w-4 bg-primary h-[60%] rounded-t-sm"></div>
+<div class="w-4 bg-primary h-[50%] rounded-t-sm"></div>
+<div class="w-4 bg-primary h-[85%] rounded-t-sm"></div>
+</div>
+</div>
+</div>
+<!-- Capability 3 -->
+<div class="bg-white border border-outline-variant p-xl rounded-xl">
+<span class="material-symbols-outlined text-primary p-3 bg-primary-fixed rounded-lg mb-md" data-icon="menu_book">menu_book</span>
+<h3 class="font-title-sm text-title-sm mb-sm">Semantic Knowledge Base</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Maintain a living repository of system behavior and historical QA insights.</p>
+</div>
+<!-- Capability 4 -->
+<div class="bg-white border border-outline-variant p-xl rounded-xl">
+<span class="material-symbols-outlined text-primary p-3 bg-primary-fixed rounded-lg mb-md" data-icon="security">security</span>
+<h3 class="font-title-sm text-title-sm mb-sm">Enterprise Security</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">SOC2 Type II compliant with dedicated VPC deployments and encryption at rest.</p>
+</div>
+<!-- Capability 5 -->
+<div class="bg-white border border-outline-variant p-xl rounded-xl">
+<span class="material-symbols-outlined text-primary p-3 bg-primary-fixed rounded-lg mb-md" data-icon="integration_instructions">integration_instructions</span>
+<h3 class="font-title-sm text-title-sm mb-sm">CI/CD Native</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Seamlessly integrates with Jira, GitHub, GitLab, and Azure DevOps.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Real Impact Metrics -->
+<section class="bg-primary py-xl px-lg text-white">
+<div class="max-w-container-max mx-auto">
+<div class="grid md:grid-cols-3 gap-xl text-center">
+<div class="space-y-sm">
+<div class="text-[64px] font-black tracking-tighter leading-none">75%</div>
+<p class="font-body-md text-primary-container uppercase tracking-widest text-xs font-bold">Reduction in Test Creation Time</p>
+</div>
+<div class="space-y-sm">
+<div class="text-[64px] font-black tracking-tighter leading-none">40%</div>
+<p class="font-body-md text-primary-container uppercase tracking-widest text-xs font-bold">Faster Release Cycles</p>
+</div>
+<div class="space-y-sm">
+<div class="text-[64px] font-black tracking-tighter leading-none">50+</div>
+<p class="font-body-md text-primary-container uppercase tracking-widest text-xs font-bold">Enterprise Integrations</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Enterprise Security Note -->
+<section class="py-lg px-lg bg-surface-container-low border-b border-outline-variant">
+<div class="max-w-container-max mx-auto flex flex-col md:flex-row items-center justify-between gap-md">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="verified_user">verified_user</span>
+<p class="font-body-sm text-on-surface-variant italic">"Q-Ops Agent adheres to the highest industry standards for data privacy and security."</p>
+</div>
+<div class="flex gap-lg">
+<span class="font-label-caps text-label-caps text-on-surface-variant opacity-60">SOC2 COMPLIANT</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant opacity-60">GDPR READY</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant opacity-60">HIPAA ELIGIBLE</span>
+</div>
+</div>
+</section>
+<!-- Final CTA -->
+<section class="py-xl px-lg bg-white">
+<div class="max-w-container-max mx-auto">
+<div class="bg-on-background rounded-xl p-xl text-center relative overflow-hidden bg-[#1b1b24]">
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
+<div class="relative z-10 space-y-md">
+<h2 class="font-headline-md text-headline-md text-white">Ready to Modernize Your QA?</h2>
+<p class="font-body-md text-body-md text-outline-variant max-w-xl mx-auto">Join the future of autonomous quality engineering today. Start your 14-day free trial.</p>
+<div class="flex justify-center gap-md pt-md">
+<button class="px-8 py-3 bg-primary text-white rounded-xl font-title-sm hover:scale-105 transition-transform">Get Started Now</button>
+<button class="px-8 py-3 bg-white/10 text-white rounded-xl font-title-sm hover:bg-white/20 transition-all">Talk to Sales</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full flex justify-between items-center px-8 py-lg mt-auto bg-white border-t border-slate-100">
+<div class="font-sans text-xs text-slate-500">
+            © 2024 Q-Ops Agent. AI-Powered Enterprise Solutions.
+        </div>
+<div class="flex gap-md">
+<a class="font-sans text-xs text-slate-500 hover:text-slate-800 transition-colors" href="#">Documentation</a>
+<a class="font-sans text-xs text-slate-500 hover:text-slate-800 transition-colors" href="#">Privacy Policy</a>
+<a class="font-sans text-xs text-slate-500 hover:text-slate-800 transition-colors" href="#">Terms of Service</a>
+<a class="font-sans text-xs text-slate-500 hover:text-slate-800 transition-colors" href="#">System Status</a>
+</div>
+</footer>
+<!-- MODALS (Hidden by default, shown here for demonstration layout) -->
+<!-- Login Modal Overlay -->
+<div class="fixed inset-0 bg-on-background/40 backdrop-blur-sm z-[100] flex items-center justify-center p-md hidden">
+<div class="bg-white w-full max-w-md rounded-xl shadow- soft-ambient p-xl border border-outline-variant animate-in fade-in zoom-in duration-300">
+<div class="flex justify-between items-center mb-xl">
+<h2 class="font-headline-md text-headline-md text-on-background">Sign In</h2>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-on-surface" data-icon="close">close</button>
+</div>
+<form class="space-y-lg">
+<div class="space-y-xs">
+<label class="font-label-caps text-label-caps text-on-surface-variant block">EMAIL ADDRESS</label>
+<input class="w-full border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/10 focus:border-primary px-4 py-3" placeholder="name@company.com" type="email"/>
+</div>
+<div class="space-y-xs">
+<div class="flex justify-between items-center">
+<label class="font-label-caps text-label-caps text-on-surface-variant block">PASSWORD</label>
+<button class="text-xs font-semibold text-primary hover:underline" type="button">Forgot Password?</button>
+</div>
+<input class="w-full border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/10 focus:border-primary px-4 py-3" placeholder="••••••••" type="password"/>
+</div>
+<button class="w-full py-3 bg-primary text-white rounded-xl font-title-sm hover:opacity-90 transition-opacity">Login to Dashboard</button>
+<div class="relative py-md">
+<div class="absolute inset-0 flex items-center"><div class="w-full border-t border-outline-variant"></div></div>
+<div class="relative flex justify-center"><span class="bg-white px-4 text-xs text-on-surface-variant">OR CONTINUE WITH SSO</span></div>
+</div>
+<button class="w-full py-3 border border-outline-variant text-on-surface rounded-xl font-title-sm hover:bg-surface-container transition-all flex items-center justify-center gap-md">
+<img class="w-5 h-5" data-alt="Google logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4UyCeIXGynDCWUWU-iajffg6AMNuR42iBw1jB7D5lT3ZOTd1uSirMhduiGscxruF_8_3En676MrqG8NHVLvOc--JtJeE2VJCmXt8ggkkVpt-qKWlZpASILfnsSHG_LYdMBU43r-Zac9ixHf7muiDkRENirRIpTNd3K9EhTNA775UiQVByW3RskrjCMFWeprKcKH3UprkmSM-istvLriiYnaf5Fv3fDK53Woa8RIOyGI-M3yNpCevmgUKh5tXrSMObC8UA-FlbKdH-"/>
+                    Google Identity
+                </button>
+</form>
+</div>
+</div>
+<!-- Forgot Password Modal -->
+<div class="fixed inset-0 bg-on-background/40 backdrop-blur-sm z-[100] flex items-center justify-center p-md hidden">
+<div class="bg-white w-full max-w-md rounded-xl shadow- soft-ambient p-xl border border-outline-variant">
+<div class="flex justify-between items-center mb-lg">
+<h2 class="font-title-sm text-title-sm text-on-background">Reset Password</h2>
+<button class="material-symbols-outlined text-on-surface-variant" data-icon="close">close</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-xl">Enter your email and we'll send you instructions to reset your password.</p>
+<form class="space-y-lg">
+<div class="space-y-xs">
+<label class="font-label-caps text-label-caps text-on-surface-variant block">EMAIL ADDRESS</label>
+<input class="w-full border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/10 focus:border-primary px-4 py-3" placeholder="name@company.com" type="email"/>
+</div>
+<button class="w-full py-3 bg-primary text-white rounded-xl font-title-sm">Send Reset Link</button>
+<button class="w-full text-center font-body-sm text-on-surface-variant hover:text-primary" type="button">Back to Login</button>
+</form>
+</div>
+</div>
+</body></html>

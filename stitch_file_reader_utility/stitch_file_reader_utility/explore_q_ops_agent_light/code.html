@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-container": "#d5e3fc",
+                    "background": "#fcf8ff",
+                    "tertiary-container": "#a44100",
+                    "on-error": "#ffffff",
+                    "surface": "#fcf8ff",
+                    "on-secondary-fixed-variant": "#3a485b",
+                    "surface-container-low": "#f5f2ff",
+                    "inverse-primary": "#c3c0ff",
+                    "tertiary-fixed-dim": "#ffb695",
+                    "on-background": "#1b1b24",
+                    "on-tertiary-fixed-variant": "#7b2f00",
+                    "surface-container-highest": "#e4e1ee",
+                    "primary-fixed": "#e2dfff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-tint": "#4d44e3",
+                    "on-secondary-fixed": "#0d1c2e",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "surface-dim": "#dcd8e5",
+                    "secondary-fixed": "#d5e3fc",
+                    "on-tertiary-container": "#ffd2be",
+                    "surface-container-high": "#eae6f4",
+                    "on-secondary": "#ffffff",
+                    "surface-variant": "#e4e1ee",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-primary-container": "#dad7ff",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "secondary": "#515f74",
+                    "surface-bright": "#fcf8ff",
+                    "on-surface": "#1b1b24",
+                    "outline-variant": "#c7c4d8",
+                    "on-surface-variant": "#464555",
+                    "tertiary": "#7e3000",
+                    "tertiary-fixed": "#ffdbcc",
+                    "on-tertiary-fixed": "#351000",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#0f0069",
+                    "secondary-fixed-dim": "#b9c7df",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#3525cd",
+                    "inverse-on-surface": "#f3effc",
+                    "error-container": "#ffdad6",
+                    "surface-container": "#f0ecf9",
+                    "outline": "#777587",
+                    "on-secondary-container": "#57657a",
+                    "primary-container": "#4f46e5",
+                    "inverse-surface": "#302f39"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "lg": "24px",
+                    "xl": "48px",
+                    "unit": "4px",
+                    "container-max": "1440px",
+                    "gutter": "24px",
+                    "sm": "8px",
+                    "md": "16px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "title-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "label-caps": ["Inter"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #fcf8ff 0%, #f0ecf9 100%);
+        }
+        .ai-border {
+            border-left: 2px solid;
+            border-image: linear-gradient(to bottom, #4f46e5, transparent) 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<nav class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center px-6 h-16 w-full sticky top-0 z-40 transition-all duration-200 ease-in-out font-sans text-sm font-medium">
+<div class="flex items-center gap-8">
+<span class="text-lg font-black tracking-tight text-slate-900 dark:text-white">Q-Ops Agent</span>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-indigo-600 dark:text-indigo-400 font-bold border-b-2 border-indigo-600 py-5" href="#">Dashboard</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-indigo-600 transition-all" href="#">Artifacts</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-indigo-600 transition-all" href="#">Knowledge Base</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">dark_mode</span>
+</button>
+<button class="p-2 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</button>
+<button class="border border-slate-200 dark:border-slate-700 px-4 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-colors font-medium">Login</button>
+</div>
+</nav>
+<!-- Main Content -->
+<main>
+<!-- Hero Section -->
+<section class="hero-gradient py-xl px-gutter">
+<div class="max-w-container-max mx-auto flex flex-col md:flex-row items-center gap-xl">
+<div class="flex-1 space-y-md">
+<span class="font-label-caps text-label-caps text-primary uppercase">AI-POWERED QA PLATFORM</span>
+<h1 class="font-display-lg text-display-lg text-on-background leading-tight">End-to-end QA flow <br/><span class="text-primary">with clarity</span></h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xl">
+                        Empower your engineering teams with AI-driven testing lifecycle management. Q-Ops Agent transforms static documentation into executable intelligence.
+                    </p>
+<div class="flex gap-md pt-md"><button class="bg-primary text-on-primary px-lg py-sm rounded-lg font-title-sm hover:opacity-90 transition-opacity">Back to Login</button><a class="border border-outline-variant text-on-surface px-lg py-sm rounded-lg font-title-sm hover:bg-surface-container-low transition-colors flex items-center gap-1" href="#flow">See how it works ↓</a></div>
+</div>
+<div class="flex-1 w-full max-w-2xl">
+<div class="bg-white p-unit rounded-xl border border-outline-variant shadow-lg overflow-hidden">
+<img alt="Dashboard visualization" class="rounded-lg w-full h-[400px] object-cover" data-alt="Modern enterprise software interface showing complex data analytics charts and AI-driven testing workflows in a clean light UI" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJgqz7n6ReQ0dotFa42SupWsDiODejHfrkaW70TNf8MBMYgXoMV3jX7KTsO2oAK6AfWL2BJ3H2-yPKSbwenBPo5VJrrMxor0LcQFxrDVsf04STeOB4NTuVgEoYCMxO1HQQn0_o91SDDba4twaVVL0EWqnWCr816EOFKSIcW9Q0nbJWYkumfWsbQTCVWNKSothDmziTCKhZlduQ_fMayYgi5tTwR0iAIk7zfPUlnn41r2TR-ONZrRnHEQ_YCbTke0QrgujTsrFMpvwa"/>
+</div>
+</div>
+</div>
+</section>
+<!-- How it Works -->
+<section class="py-xl bg-surface" id="flow">
+<div class="max-w-container-max mx-auto px-gutter">
+<div class="text-center mb-xl">
+<h2 class="font-headline-md text-headline-md text-on-background mb-sm">How it Works</h2>
+<p class="text-on-surface-variant max-w-2xl mx-auto">Three steps to autonomous quality operations.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<div class="p-lg bg-surface-container-lowest border border-outline-variant rounded-xl text-center space-y-md">
+<div class="w-16 h-16 bg-primary-container text-white rounded-full flex items-center justify-center mx-auto">
+<span class="material-symbols-outlined text-3xl">upload_file</span>
+</div>
+<h3 class="font-title-sm text-title-sm">1. Ingest</h3>
+<p class="text-body-sm text-on-surface-variant">Upload PRDs, user stories, or design docs. Our AI maps the business logic instantly.</p>
+</div>
+<div class="p-lg bg-surface-container-lowest border border-outline-variant rounded-xl text-center space-y-md">
+<div class="w-16 h-16 bg-primary-container text-white rounded-full flex items-center justify-center mx-auto">
+<span class="material-symbols-outlined text-3xl">psychology</span>
+</div>
+<h3 class="font-title-sm text-title-sm">2. Generate</h3>
+<p class="text-body-sm text-on-surface-variant">Automated creation of test plans, edge-case scenarios, and script templates in seconds.</p>
+</div>
+<div class="p-lg bg-surface-container-lowest border border-outline-variant rounded-xl text-center space-y-md">
+<div class="w-16 h-16 bg-primary-container text-white rounded-full flex items-center justify-center mx-auto">
+<span class="material-symbols-outlined text-3xl">dynamic_feed</span>
+</div>
+<h3 class="font-title-sm text-title-sm">3. Optimize</h3>
+<p class="text-body-sm text-on-surface-variant">Continuous learning from execution results to refine and self-heal your test suite.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Feature Grid (Bento Style) -->
+<section class="py-xl bg-surface-container">
+<div class="max-w-container-max mx-auto px-gutter">
+<h2 class="font-headline-md text-headline-md text-on-background mb-xl">Powerful QA Capabilities</h2>
+<div class="grid grid-cols-1 md:grid-cols-6 grid-rows-2 gap-md h-auto md:h-[600px]">
+<!-- Large Card -->
+<div class="md:col-span-3 md:row-span-2 bg-white p-lg rounded-xl border border-outline-variant flex flex-col justify-between group hover:shadow-md transition-shadow">
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-md">auto_awesome</span>
+<h3 class="font-title-sm text-title-sm mb-sm">AI Doc Analysis</h3>
+<p class="text-on-surface-variant">Natural language understanding that extracts testable requirements from unstructured documentation.</p>
+</div>
+<img alt="Server room visualization" class="rounded-lg h-48 object-cover mt-lg" data-alt="Digital representation of neural networks and data processing nodes with soft blue and indigo lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSRiDfvyFDgAEDEs-0xa3TVG9mJzc74Q8prQpb27ERxIc_Rlf1E6bAZV_kl4xcwsfrAQL-3Rl_LsoBPncIYKTN2A7S5wgBzN2hqSOFF8xur-u4Row0LPWW9yv_F8hPjYk_xjX1_bCPnrQwQF8fKiJeWtHJNzjzVdleXnTOXllt57PHuzY0tySu54gtRIx-elJWZAEYfvV-3zbWst9IKj3LxAo2ilr5DGCaQO4uib2XyvUwpDGUCuWOP-UOgNwWuoFdBFnkOPJHFys0"/>
+</div>
+<!-- Small Cards -->
+<div class="md:col-span-3 bg-white p-lg rounded-xl border border-outline-variant flex gap-md hover:shadow-md transition-shadow">
+<div class="flex-shrink-0 w-12 h-12 bg-secondary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container">code</span>
+</div>
+<div>
+<h3 class="font-title-sm text-title-sm mb-xs">Scriptless Automation</h3>
+<p class="text-body-sm text-on-surface-variant">Generate Playwright, Selenium, or Cypress scripts automatically from UI mockups.</p>
+</div>
+</div>
+<div class="md:col-span-3 bg-white p-lg rounded-xl border border-outline-variant flex gap-md hover:shadow-md transition-shadow">
+<div class="flex-shrink-0 w-12 h-12 bg-secondary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container">analytics</span>
+</div>
+<div>
+<h3 class="font-title-sm text-title-sm mb-xs">Impact Prediction</h3>
+<p class="text-body-sm text-on-surface-variant">Visualize exactly which test cases need to run based on code changes.</p>
+</div>
+</div>
+<!-- More compact features -->
+<div class="md:col-span-2 bg-white p-lg rounded-xl border border-outline-variant hover:shadow-md transition-shadow">
+<span class="material-symbols-outlined text-primary mb-sm">history</span>
+<h4 class="font-title-sm text-title-sm mb-xs">History</h4>
+<p class="text-body-sm text-on-surface-variant">Full audit trail of all generated artifacts.</p>
+</div>
+<div class="md:col-span-2 bg-white p-lg rounded-xl border border-outline-variant hover:shadow-md transition-shadow">
+<span class="material-symbols-outlined text-primary mb-sm">group</span>
+<h4 class="font-title-sm text-title-sm mb-xs">Collaboration</h4>
+<p class="text-body-sm text-on-surface-variant">Real-time editing for QA and Dev teams.</p>
+</div>
+<div class="md:col-span-2 bg-white p-lg rounded-xl border border-outline-variant hover:shadow-md transition-shadow">
+<span class="material-symbols-outlined text-primary mb-sm">api</span>
+<h4 class="font-title-sm text-title-sm mb-xs">API Ready</h4>
+<p class="text-body-sm text-on-surface-variant">Direct integration with CI/CD pipelines.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Comparison Table -->
+<section class="py-xl bg-surface" id="flow">
+<div class="max-w-container-max mx-auto px-gutter">
+<div class="text-center mb-xl">
+<h2 class="font-headline-md text-headline-md text-on-background">Market Comparison</h2>
+<p class="text-on-surface-variant">How Q-Ops Agent outpaces traditional QA toolsets.</p>
+</div>
+<div class="bg-white border border-outline-variant rounded-xl overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="p-md font-label-caps text-label-caps text-on-surface-variant">Feature Capability</th>
+<th class="p-md font-label-caps text-label-caps text-primary">Q-Ops Agent</th>
+<th class="p-md font-label-caps text-label-caps text-on-surface-variant">Traditional ALM</th>
+<th class="p-md font-label-caps text-label-caps text-on-surface-variant">Manual QA</th>
+</tr>
+</thead>
+<tbody class="text-body-sm divide-y divide-outline-variant">
+<tr>
+<td class="p-md font-semibold">Requirement Mapping</td>
+<td class="p-md text-primary font-bold">Autonomous AI</td>
+<td class="p-md">Manual Linkage</td>
+<td class="p-md">Spreadsheets</td>
+</tr>
+<tr>
+<td class="p-md font-semibold">Test Case Generation</td>
+<td class="p-md text-primary font-bold">Seconds</td>
+<td class="p-md">Hours/Days</td>
+<td class="p-md">Weeks</td>
+</tr>
+<tr>
+<td class="p-md font-semibold">Edge Case Discovery</td>
+<td class="p-md text-primary font-bold">Exhaustive LLM</td>
+<td class="p-md">Rule-based</td>
+<td class="p-md">Human intuition</td>
+</tr>
+<tr>
+<td class="p-md font-semibold">Self-Healing Scripts</td>
+<td class="p-md text-primary font-bold">Yes (Native)</td>
+<td class="p-md">Plug-in only</td>
+<td class="p-md">No</td>
+</tr>
+<tr class="bg-surface-container-low/50">
+<td class="p-md text-center" colspan="4">
+<button class="text-primary font-bold flex items-center justify-center gap-xs mx-auto">
+                                        See Full 18-Row Comparison <span class="material-symbols-outlined">expand_more</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- Architecture Section -->
+<section class="py-xl bg-surface-container">
+<div class="max-w-container-max mx-auto px-gutter">
+<h2 class="font-headline-md text-headline-md text-on-background mb-xl text-center">Enterprise Architecture</h2>
+<div class="space-y-md max-w-4xl mx-auto">
+<!-- Layer 1 -->
+<div class="bg-white p-lg rounded-xl border border-outline-variant flex items-center gap-lg ai-border shadow-sm">
+<div class="flex-shrink-0 w-12 h-12 bg-primary text-on-primary rounded-full flex items-center justify-center font-bold">01</div>
+<div>
+<h4 class="font-title-sm text-title-sm">Ingestion Layer</h4>
+<p class="text-body-sm text-on-surface-variant">Connects to Jira, Confluence, GitHub, and Figma to synchronize requirements.</p>
+</div>
+</div>
+<!-- Layer 2 -->
+<div class="bg-white p-lg rounded-xl border border-outline-variant flex items-center gap-lg ai-border shadow-sm">
+<div class="flex-shrink-0 w-12 h-12 bg-primary text-on-primary rounded-full flex items-center justify-center font-bold">02</div>
+<div>
+<h4 class="font-title-sm text-title-sm">Cognitive Core</h4>
+<p class="text-body-sm text-on-surface-variant">Proprietary LLM ensemble optimized for software testing logic and domain semantics.</p>
+</div>
+</div>
+<!-- Layer 3 -->
+<div class="bg-white p-lg rounded-xl border border-outline-variant flex items-center gap-lg ai-border shadow-sm">
+<div class="flex-shrink-0 w-12 h-12 bg-primary text-on-primary rounded-full flex items-center justify-center font-bold">03</div>
+<div>
+<h4 class="font-title-sm text-title-sm">Orchestration Engine</h4>
+<p class="text-body-sm text-on-surface-variant">Dynamic scheduling of parallel test executions across cloud browsers.</p>
+</div>
+</div>
+<!-- Layer 4 -->
+<div class="bg-white p-lg rounded-xl border border-outline-variant flex items-center gap-lg ai-border shadow-sm">
+<div class="flex-shrink-0 w-12 h-12 bg-primary text-on-primary rounded-full flex items-center justify-center font-bold">04</div>
+<div>
+<h4 class="font-title-sm text-title-sm">Intelligence Dashboard</h4>
+<p class="text-body-sm text-on-surface-variant">Unified analytics surface providing real-time quality scores and ROI metrics.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Final CTA -->
+<section class="py-xl px-gutter">
+<div class="max-w-container-max mx-auto bg-primary rounded-2xl p-xl text-center text-on-primary relative overflow-hidden">
+<div class="relative z-10">
+<h2 class="font-display-lg text-display-lg mb-md">Ready to Automate Your Quality Ops?</h2>
+<p class="text-on-primary-container max-w-xl mx-auto mb-lg text-lg opacity-90">Join 500+ enterprise teams delivering software 3x faster with Q-Ops Agent.</p>
+<div class="flex justify-center gap-md">
+<button class="bg-white text-primary px-xl py-sm rounded-lg font-title-sm hover:bg-surface-container transition-colors">Start Free Trial</button>
+<button class="border border-white/30 text-white px-xl py-sm rounded-lg font-title-sm hover:bg-white/10 transition-colors">Contact Sales</button>
+</div>
+</div>
+<div class="absolute inset-0 opacity-10 pointer-events-none">
+<img alt="Abstract tech pattern" class="w-full h-full object-cover" data-alt="Abstract futuristic background with glowing grid patterns and soft light trails in deep indigo and violet" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJIDRaq2-KqjYfGRFML7J6vY94utQ_kJHKbX-Y9EQVFh15UUSVM_0qXsp_-IpqgrCYNFfjfqRYRAo_efpdwZdDzvz_o7Q8gKFcL-Zd55qJA-PXmUsHqIAWkXaP1TJa89Fb6dOUgDGqGtZnEUBLm_9ARM4ncOSGtFzpS2pcmRkA995cwuosZbuaTfftNjT6ka-gDpszy93m9iNbUVd95L1ruucKu7H3qALAcb2SzIrgNcWdYQVnZ-gPXRRLMzAOuyQKIgjDfwGSNyIP"/>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 w-full flex flex-col md:flex-row justify-between items-center px-8 py-8 mt-auto font-sans text-xs text-slate-500">
+<div class="flex flex-col gap-2 mb-4 md:mb-0">
+<p>© 2024 Q-Ops Agent. AI-Powered Enterprise Solutions.</p>
+<div class="flex gap-4">
+<a class="text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 transition-colors" href="#">Privacy Policy</a>
+<a class="text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 transition-colors" href="#">Terms of Service</a>
+<a class="text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 transition-colors flex items-center gap-1" href="#">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span> System Status
+                </a>
+</div>
+</div>
+<div class="flex gap-8">
+<div class="flex flex-col gap-2">
+<span class="font-bold text-slate-900 dark:text-white uppercase tracking-tighter">Resources</span>
+<a class="hover:text-indigo-600 transition-colors" href="#">Documentation</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">API Reference</a>
+</div>
+<div class="flex flex-col gap-2">
+<span class="font-bold text-slate-900 dark:text-white uppercase tracking-tighter">Support</span>
+<a class="hover:text-indigo-600 transition-colors" href="#">Help Center</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">Community</a>
+</div>
+</div>
+</footer>
+</body></html>

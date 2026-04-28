@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import ExploreMorePage from './pages/ExploreMorePage'
-import ToastList from './components/ToastList'
+import ToastList from './components/common/ToastList'
 
 type ToastType = 'success' | 'error' | 'info'
 

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Q-Ops Agent | Build QA That Starts Before Code Exists</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#e4e1ee",
+                        "surface-bright": "#fcf8ff",
+                        "on-background": "#1b1b24",
+                        "on-tertiary-fixed": "#351000",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "inverse-primary": "#c3c0ff",
+                        "inverse-surface": "#302f39",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#57657a",
+                        "outline-variant": "#c7c4d8",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#eae6f4",
+                        "primary-container": "#4f46e5",
+                        "on-error-container": "#93000a",
+                        "primary": "#3525cd",
+                        "primary-fixed": "#e2dfff",
+                        "on-surface-variant": "#464555",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "tertiary-container": "#a44100",
+                        "secondary-container": "#d5e3fc",
+                        "on-surface": "#1b1b24",
+                        "inverse-on-surface": "#f3effc",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-primary-container": "#dad7ff",
+                        "tertiary-fixed": "#ffdbcc",
+                        "surface-variant": "#e4e1ee",
+                        "surface-container": "#f0ecf9",
+                        "surface-tint": "#4d44e3",
+                        "outline": "#777587",
+                        "on-tertiary-fixed-variant": "#7b2f00",
+                        "surface-dim": "#dcd8e5",
+                        "on-tertiary-container": "#ffd2be",
+                        "surface": "#fcf8ff",
+                        "secondary": "#515f74",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f5f2ff",
+                        "background": "#fcf8ff",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-primary-fixed": "#0f0069",
+                        "tertiary": "#7e3000",
+                        "on-secondary-fixed": "#0d1c2e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "container-max": "1440px",
+                        "unit": "4px",
+                        "lg": "24px",
+                        "xl": "48px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ai-gradient-border {
+            border-left: 2px solid;
+            border-image: linear-gradient(to bottom, #4f46e5, transparent) 1;
+        }
+        .marquee {
+            display: flex;
+            overflow: hidden;
+            user-select: none;
+            gap: 2rem;
+        }
+        .marquee-content {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-around;
+            min-width: 100%;
+            gap: 2rem;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background antialiased">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-4 h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none transition-colors duration-200 ease-in-out">
+<div class="flex items-center gap-4">
+<button class="text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded-xl transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<span class="text-lg font-black tracking-tighter text-indigo-600 dark:text-indigo-400 font-['Inter']">Q-Ops Agent</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center px-4 py-1.5 bg-primary-container text-on-primary-container font-semibold rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95">
+                Login
+            </button>
+<button class="text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded-xl transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+</button>
+</div>
+</header>
+<main class="pt-14 pb-20">
+<!-- Hero Section -->
+<section class="px-gutter pt-xl pb-lg flex flex-col items-center text-center">
+<div class="inline-flex items-center gap-2 px-3 py-1 mb-md rounded-full bg-surface-container-low border border-outline-variant">
+<span class="material-symbols-outlined text-primary text-xs" data-icon="bolt">bolt</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">AI-Powered</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-background mb-md">Q-Ops Agent doesn't assist QA. <span class="text-primary italic">It builds it.</span></h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm mb-lg">
+                The world's first AI-native Quality Operations platform that shifts testing into the planning phase.
+            </p>
+<div class="flex flex-col w-full gap-3">
+<button class="w-full py-4 bg-primary text-on-primary font-title-sm text-title-sm rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
+                    Explore More
+                    <span class="material-symbols-outlined text-lg" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<button class="w-full py-4 border border-outline-variant text-on-surface font-title-sm text-title-sm rounded-xl hover:bg-surface-container-low transition-colors">Login to Dashboard</button>
+</div>
+</section>
+<!-- Trusted Partners Marquee -->
+<section class="py-lg bg-surface-container-low border-y border-outline-variant overflow-hidden">
+<p class="text-center font-label-caps text-[10px] text-outline uppercase tracking-[0.2em] mb-md">Empowering Infrastructure Teams At</p>
+<div class="marquee opacity-60 grayscale">
+<div class="marquee-content">
+<img alt="TechCorp Logo" class="h-6 w-auto" data-alt="minimalist modern tech company logo silhouette in dark slate grey color" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxe2s1fzl9q2QZXa4KrMN9mlwOmYljPQdakWIq82IHFb1gxqDoSCpQma_u8g2Dda2dXBqrVz4mB3j9BmvSLroNdPn5ViRK3Ac6wGnxUtdhPIC4qTwHNGOFXhxQVjJdHa3T0GH0lXrrJMOZ8pdAQx83TtGkrncBWhBglT7lZ-6Gb8hNljZ_uZFiyRPvsZcMWSOqk-yoZ5UtuDhMWsjynNKmpdKby2MoPSxyKZwUOVktWsEgAO-sB7_4obh1cxHwlWnT5NiVxqwLdb_4"/>
+<img alt="DataFlow Logo" class="h-6 w-auto" data-alt="minimalist abstract logo for a data processing company in dark slate grey color" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDT4gqO44H6XuzeU74vJn9WWUhqtj1JZApo2q7UKiqcXuIq4gu2VYuGhowrBLfGPUPJpKcbxWQiO7D6tekGU_aFk3Ewv_D3u7_UnDGD6BERaRmVZN0vIhlyX9EdNe8pse6K4m13aJvjq0_6dCeEZc7G5jeH2IcoIUKZSDdHxuAqRtjOnjjg8JQl8dGWED5WRlj_CHVEqIdgYG5Kb16yNpJpv0_cuoeWbrAZHnrWL5fRw6icnYvY9PSu6BgXK3z2WM6tKbFo9n7gEL17"/>
+<img alt="NovaSoft Logo" class="h-6 w-auto" data-alt="sleek corporate software company logo mark in dark grey" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArTvLEcMZBBPCXghLre2jAm1flgn4VMFnNfgor7lzLQIU9O5HtNwBmUwxPTzJWD5nvQ8oLziZaKsIkVvRKnyPih_dELf-0pWhi_ieewvSfdsnefb6wQ-AhqKgzO4F8Wv4buq6jUTYiD5qRkDQthsxxJOt60weGO5DCdtRu0nfjXcrSiVYSFij37re_it5uUUV-ZobzlxRzzkn70DWhruk4VTrlxdbex7oNuawMga1t35WtupHetbPJvc3m0Xo5PNtelza7zzKxju3a"/>
+<img alt="CloudNet Logo" class="h-6 w-auto" data-alt="abstract cloud and network connection logo symbol in dark slate" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgi0VaM33Qbgs7XtM-_Mx3zc_eVzKl0feobe6CFYk09yaWCtBQGCQxYkbAis-bcxQMIeahitNdIRARrrWmGXZMg_srYqkaZgyVs-2p1Vzn2QCJAZzZMWZe7KNExYQovLNi_ARbzgfKp8cNBxNycQH7SC7P8Ks6bpjcQSIrE_F-Qd0VwGc9nvO1ayUOEgVTe0FJ9aFpfoVYZuEoP2e3z3ba-6QytrO9dFyhcJ4zZJn6UOcgwf9pEmMpMtEEQm3_s_e1mt50M5dSdDD6"/>
+<img alt="ApexSystems Logo" class="h-6 w-auto" data-alt="professional geometric mountain apex logo for systems engineering in dark grey" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5Rr3SRTCh92Gx3WA2mDIiyJCxFZgNuF5kYmELKgiIdmR6Ia6ljQysBUNUlCmLMr_GBNXSmumbW9e6hBs8hlalvjd1cX6pPZTaoEEzrPzYZS3IHXL-n0fn0z6FzmOtq0QgIJsDzhbWdBkcTDaCppYFPXi80xvmoBo5ynYxc2LjNw2-HAXXf97ZMWWoq1CaBx4TQXcbo0WLVh4oapaKDazKJQ3r-JfjULllV8UDoEj5yAYDobBqovy2a6gsw5MnOf0A1ouf6voffFcg"/>
+</div>
+</div>
+</section>
+<!-- Core Capabilities Grid (Stacked for Mobile) -->
+<section class="px-gutter py-xl">
+<div class="mb-lg">
+<h2 class="font-headline-md text-headline-md text-on-background mb-xs">Core Capabilities</h2>
+<div class="w-12 h-1 bg-primary rounded-full"></div>
+</div>
+<div class="flex flex-col gap-gutter">
+<!-- Capability 1 -->
+<div class="group p-md bg-white border border-outline-variant rounded-xl transition-all hover:border-primary-container">
+<div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary mb-md group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<h3 class="font-title-sm text-title-sm mb-sm">Predictive Test Generation</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">AI analyzes PR descriptions and design docs to generate comprehensive test suites before a single line is merged.</p>
+</div>
+<!-- Capability 2 -->
+<div class="group p-md bg-white border border-outline-variant rounded-xl transition-all hover:border-primary-container">
+<div class="w-12 h-12 rounded-xl bg-tertiary-container/10 flex items-center justify-center text-tertiary mb-md group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+</div>
+<h3 class="font-title-sm text-title-sm mb-sm">Autonomous Agent Execution</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Self-healing agents that navigate your UI, identifying visual regressions and logic flaws in real-time.</p>
+</div>
+<!-- Capability 3 -->
+<div class="group p-md bg-white border border-outline-variant rounded-xl transition-all hover:border-primary-container">
+<div class="w-12 h-12 rounded-xl bg-secondary-container/10 flex items-center justify-center text-secondary mb-md group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+</div>
+<h3 class="font-title-sm text-title-sm mb-sm">Deep Coverage Analytics</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Unified visibility into cross-platform testing health with automated risk scoring and bottleneck detection.</p>
+</div>
+</div>
+</section>
+<!-- Real Impact Metrics (Stacked) -->
+<section class="px-gutter py-xl bg-surface-container-low">
+<div class="mb-lg text-center">
+<h2 class="font-headline-md text-headline-md text-on-background mb-xs">Real Impact</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Measured across 500+ enterprise deployments</p>
+</div>
+<div class="flex flex-col gap-md">
+<div class="flex items-center gap-gutter p-gutter bg-white border border-outline-variant rounded-full shadow-sm">
+<div class="flex-1">
+<p class="font-display-lg text-display-lg text-primary leading-none">85%</p>
+<p class="font-label-caps text-label-caps text-outline uppercase mt-1">Faster CI/CD</p>
+</div>
+<div class="w-16 h-16 rounded-full border-4 border-primary-container/20 border-t-primary rotate-45"></div>
+</div>
+<div class="flex items-center gap-gutter p-gutter bg-white border border-outline-variant rounded-full shadow-sm">
+<div class="flex-1">
+<p class="font-display-lg text-display-lg text-tertiary leading-none">12x</p>
+<p class="font-label-caps text-label-caps text-outline uppercase mt-1">Bug Detection</p>
+</div>
+<div class="w-16 h-16 rounded-full border-4 border-tertiary-container/20 border-t-tertiary -rotate-12"></div>
+</div>
+<div class="flex items-center gap-gutter p-gutter bg-white border border-outline-variant rounded-full shadow-sm">
+<div class="flex-1">
+<p class="font-display-lg text-display-lg text-secondary leading-none">0</p>
+<p class="font-label-caps text-label-caps text-outline uppercase mt-1">Manual Scripts</p>
+</div>
+<div class="w-16 h-16 rounded-full border-4 border-secondary-container/20 border-t-secondary rotate-180"></div>
+</div>
+</div>
+</section>
+<!-- AI Suggestion Box Component -->
+<section class="px-gutter py-xl">
+<div class="ai-gradient-border p-gutter bg-surface-container-lowest border border-outline-variant rounded-xl">
+<div class="flex items-center gap-2 mb-sm">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="psychology">psychology</span>
+<span class="font-label-caps text-label-caps text-primary uppercase">Agent Intelligence</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface italic">
+                    "I noticed your last 3 builds had flakey API responses in the Auth module. I've automatically added 5 stress tests to the next run."
+                </p>
+<div class="mt-md flex gap-2">
+<button class="text-xs font-semibold text-primary hover:underline">Apply Optimization</button>
+<span class="text-outline">/</span>
+<button class="text-xs font-semibold text-on-surface-variant hover:underline">Ignore</button>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<section class="px-gutter py-xl">
+<div class="bg-slate-900 rounded-2xl p-gutter text-center shadow-xl">
+<h2 class="text-white font-headline-md mb-sm">Ready to automate your quality operations?</h2>
+<p class="text-slate-400 font-body-sm mb-lg">Join 500+ teams shifting QA to the left with predictive intelligence.</p>
+<button class="w-full py-4 bg-primary text-white font-title-sm rounded-xl transition-transform active:scale-[0.98]">Get Started Now</button>
+</div>
+</section><footer class="w-full flex flex-col items-center gap-2 py-8 mb-20 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800">
+<div class="font-bold text-slate-900 dark:text-white">Q-Ops Intelligence</div>
+<div class="flex gap-4 mb-2">
+<a class="text-xs text-slate-500 dark:text-slate-400 no-underline hover:text-indigo-600 dark:hover:text-indigo-400 opacity-80 hover:opacity-100 transition-colors" href="#">Privacy</a>
+<a class="text-xs text-slate-500 dark:text-slate-400 no-underline hover:text-indigo-600 dark:hover:text-indigo-400 opacity-80 hover:opacity-100 transition-colors" href="#">Terms</a>
+<a class="text-xs text-slate-500 dark:text-slate-400 no-underline hover:text-indigo-600 dark:hover:text-indigo-400 opacity-80 hover:opacity-100 transition-colors" href="#">Support</a>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400">© 2024 Q-Ops Intelligence</p>
+</footer>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 py-3 pb-safe bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 shadow-[0_-1px_3px_rgba(0,0,0,0.05)]">
+<a class="flex flex-col items-center justify-center text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl px-3 py-1 active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-[10px] font-semibold tracking-wide uppercase">Fleet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-300 active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+<span class="text-[10px] font-semibold tracking-wide uppercase">Agents</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-300 active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+<span class="text-[10px] font-semibold tracking-wide uppercase">Insights</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-300 active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-[10px] font-semibold tracking-wide uppercase">Settings</span>
+</a>
+</nav>
+</body></html>

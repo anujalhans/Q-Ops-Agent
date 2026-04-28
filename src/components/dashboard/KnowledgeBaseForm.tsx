@@ -1,0 +1,118 @@
+import { useState } from 'react'
+import type { FormEvent } from 'react'
+import { FileText, Folder, Image as ImageIcon, Mic, RefreshCw, Rocket } from 'lucide-react'
+import Button from '../common/Button'
+import Card from '../common/Card'
+import Input from '../common/Input'
+import FileDropField from './FileDropField'
+import { uploadKnowledgeBase } from '../../lib/api'
+import type { KnowledgeBasePayload, UploadResponse } from '../../lib/api'
+
+type ToastType = 'success' | 'error' | 'info'
+type AddToast = (t: { title: string; message: string; type: ToastType }) => void
+
+type Props = {
+  onJobStarted: (response: UploadResponse) => void
+  addToast: AddToast
+}
+
+export default function KnowledgeBaseForm({ onJobStarted, addToast }: Props) {
+  const [projectName, setProjectName] = useState('')
+  const [brd, setBrd] = useState<File | null>(null)
+  const [frd, setFrd] = useState<File | null>(null)
+  const [hld, setHld] = useState<File | null>(null)
+  const [lld, setLld] = useState<File | null>(null)
+  const [transcript, setTranscript] = useState<File | null>(null)
+  const [images, setImages] = useState<File[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    try {
+      const payload: KnowledgeBasePayload = { projectName, brd, frd, hld, lld, transcript, images }
+      const res = await uploadKnowledgeBase(payload)
+      onJobStarted(res)
+      addToast({ title: 'Ingestion started', message: 'Knowledge base ingestion queued.', type: 'info' })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Something went wrong'
+      setError(msg)
+      addToast({ title: 'Upload failed', message: msg, type: 'error' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleReset = () => {
+    setProjectName('')
+    setBrd(null)
+    setFrd(null)
+    setHld(null)
+    setLld(null)
+    setTranscript(null)
+    setImages([])
+    setError('')
+    addToast({ title: 'Form reset', message: 'All files and data have been cleared.', type: 'info' })
+  }
+
+  const setFile = (setter: (f: File | null) => void) => (v: File | File[] | null) => {
+    setter(Array.isArray(v) ? v[0] ?? null : v)
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <Input
+        label="Project name"
+        value={projectName}
+        onChange={(e) => setProjectName(e.target.value)}
+        placeholder="Enter knowledge project name"
+        helper="Give a clear, descriptive project name for traceability."
+      />
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card>
+          <p className="mb-3 text-sm font-semibold text-on-surface">Business Documents</p>
+          <div className="space-y-3">
+            <FileDropField label="BRD document" accept=".pdf,.doc,.docx" value={brd} onChange={setFile(setBrd)} icon={<FileText className="h-4 w-4 text-on-surface-variant" />} />
+            <FileDropField label="FRD document" accept=".pdf,.doc,.docx" value={frd} onChange={setFile(setFrd)} icon={<FileText className="h-4 w-4 text-on-surface-variant" />} />
+          </div>
+        </Card>
+        <Card>
+          <p className="mb-3 text-sm font-semibold text-on-surface">Technical Documents</p>
+          <div className="space-y-3">
+            <FileDropField label="HLD document" accept=".pdf,.doc,.docx" value={hld} onChange={setFile(setHld)} icon={<Folder className="h-4 w-4 text-on-surface-variant" />} />
+            <FileDropField label="LLD document" accept=".pdf,.doc,.docx" value={lld} onChange={setFile(setLld)} icon={<Folder className="h-4 w-4 text-on-surface-variant" />} />
+          </div>
+        </Card>
+        <Card>
+          <p className="mb-3 text-sm font-semibold text-on-surface">Supporting Assets</p>
+          <div className="space-y-3">
+            <FileDropField label="Transcript file" accept=".txt" value={transcript} onChange={setFile(setTranscript)} icon={<Mic className="h-4 w-4 text-on-surface-variant" />} />
+            <FileDropField
+              label="UI designs"
+              accept=".jpg,.png"
+              multiple
+              value={images}
+              onChange={(v) => setImages(Array.isArray(v) ? v : v ? [v] : [])}
+              helper="Upload one or more design images for your UI assets."
+              icon={<ImageIcon className="h-4 w-4 text-on-surface-variant" />}
+            />
+          </div>
+        </Card>
+      </div>
+
+      {error ? <p className="text-sm text-error">{error}</p> : null}
+
+      <div className="flex flex-wrap gap-3">
+        <Button type="submit" variant="primary" disabled={loading} leftIcon={<Rocket className="h-4 w-4" />}>
+          {loading ? 'Creating knowledge base...' : 'Create Knowledge Base'}
+        </Button>
+        <Button type="button" variant="secondary" onClick={handleReset} leftIcon={<RefreshCw className="h-4 w-4" />}>
+          Reset
+        </Button>
+      </div>
+    </form>
+  )
+}
