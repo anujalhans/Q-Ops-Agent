@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Bell,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
@@ -48,11 +47,16 @@ const condensedRows = comparisonRows.filter(([capability]) =>
   ].includes(capability),
 )
 
+const AUTH_KEY = 'qops-agent-auth'
+
 export default function ExploreMorePage() {
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
   const [expanded, setExpanded] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
+  const isAuthenticated = localStorage.getItem(AUTH_KEY) === 'true'
+  const ctaLabel = isAuthenticated ? 'Open Dashboard' : 'Login'
+  const ctaTarget = isAuthenticated ? '/dashboard' : '/'
 
   useEffect(() => {
     if (!modalOpen) return
@@ -72,7 +76,7 @@ export default function ExploreMorePage() {
             <span className="font-display text-base font-black tracking-tight text-on-surface sm:text-lg">Q-Ops Agent</span>
           </div>
           <div className="hidden items-center gap-6 md:flex">
-            <button onClick={() => navigate('/')} className="border-b-2 border-primary py-5 font-bold text-primary">Back to login</button>
+            <button onClick={() => navigate(ctaTarget)} className="border-b-2 border-primary py-5 font-bold text-primary">{ctaLabel}</button>
             <a href="#flow" className="text-on-surface-variant transition-colors hover:text-primary">Workflow</a>
             <a href="#comparison" className="text-on-surface-variant transition-colors hover:text-primary">Comparison</a>
             <a href="#architecture" className="text-on-surface-variant transition-colors hover:text-primary">Architecture</a>
@@ -82,11 +86,8 @@ export default function ExploreMorePage() {
           <button type="button" onClick={toggle} className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="Toggle theme">
             {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
           </button>
-          <button className="hidden rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-high sm:inline-flex" aria-label="Notifications">
-            <Bell className="h-5 w-5" />
-          </button>
-          <button onClick={() => navigate('/')} className="rounded-lg border border-outline-variant px-4 py-1.5 text-sm font-medium text-on-surface transition-colors hover:bg-surface-container-high">
-            Login
+          <button onClick={() => navigate(ctaTarget)} className="rounded-lg border border-outline-variant px-4 py-1.5 text-sm font-medium text-on-surface transition-colors hover:bg-surface-container-high">
+            {ctaLabel}
           </button>
         </div>
       </nav>
@@ -105,10 +106,10 @@ export default function ExploreMorePage() {
               </p>
               <div className="flex flex-wrap gap-3 pt-2">
                 <a href="#flow" className="rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition-opacity hover:opacity-90">
-                  See how it works ↓
+                  See how it works
                 </a>
-                <button onClick={() => navigate('/')} className="rounded-lg border border-outline-variant px-6 py-3 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-high">
-                  Back to login
+                <button onClick={() => navigate(ctaTarget)} className="rounded-lg border border-outline-variant px-6 py-3 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-high">
+                  {ctaLabel}
                 </button>
               </div>
             </div>
@@ -248,11 +249,11 @@ export default function ExploreMorePage() {
               Explore how Q-Ops Agent delivers a complete QA intelligence workflow, from artifact ingestion through production-ready test delivery.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <button onClick={() => navigate('/')} className="rounded-lg bg-on-primary px-8 py-3 text-sm font-semibold text-primary transition-colors hover:bg-on-primary/90 sm:px-10">
-                Get Started
+              <button onClick={() => navigate(ctaTarget)} className="rounded-lg bg-on-primary px-8 py-3 text-sm font-semibold text-primary transition-colors hover:bg-on-primary/90 sm:px-10">
+                {isAuthenticated ? 'Open Dashboard' : 'Get Started'}
               </button>
-              <button onClick={() => navigate('/')} className="rounded-lg border border-on-primary/30 px-8 py-3 text-sm font-semibold text-on-primary transition-colors hover:bg-on-primary/10 sm:px-10">
-                Return to login
+              <button onClick={() => navigate(ctaTarget)} className="rounded-lg border border-on-primary/30 px-8 py-3 text-sm font-semibold text-on-primary transition-colors hover:bg-on-primary/10 sm:px-10">
+                {ctaLabel}
               </button>
             </div>
           </div>

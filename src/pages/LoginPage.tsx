@@ -38,15 +38,18 @@ function LoginModal({
   onClose,
   onSubmit,
   onForgot,
+  onStatus,
 }: {
   open: boolean
   onClose: () => void
   onSubmit: (username: string, password: string) => boolean
   onForgot: () => void
+  onStatus: () => void
 }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [helper, setHelper] = useState('')
 
   useEffect(() => {
     if (!open) return
@@ -66,9 +69,17 @@ function LoginModal({
       setUsername('')
       setPassword('')
       setError('')
+      setHelper('')
     } else {
       setError('Invalid username or password.')
     }
+  }
+
+  const fillDemoAccess = () => {
+    setUsername('admin')
+    setPassword('admin')
+    setError('')
+    setHelper('Demo credentials filled. Click Login to continue.')
   }
 
   return (
@@ -104,7 +115,7 @@ function LoginModal({
             </div>
             <input
               className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-              placeholder="••••••••"
+              placeholder="********"
               autoComplete="current-password"
               type="password"
               value={password}
@@ -114,10 +125,16 @@ function LoginModal({
             {error ? <p className="pt-1 text-xs font-medium text-error">{error}</p> : null}
           </div>
           <div className="text-center text-xs">
-            <p className="text-on-surface-variant">Having trouble? Try demo access</p>
-            <p className="mt-1 inline-flex items-center gap-1.5 text-success">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" /> All systems operational
+            <p className="text-on-surface-variant">
+              Having trouble?{' '}
+              <button type="button" onClick={fillDemoAccess} className="font-semibold text-primary hover:underline">
+                Try demo access
+              </button>
             </p>
+            {helper ? <p className="mt-1 font-medium text-primary">{helper}</p> : null}
+            <button type="button" onClick={onStatus} className="mt-1 inline-flex items-center gap-1.5 text-success hover:underline">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" /> All systems operational
+            </button>
           </div>
           <button className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-on-primary transition-opacity hover:opacity-90">
             Login
@@ -199,6 +216,7 @@ export default function LoginPage({ onSuccess, addToast }: Props) {
   const { theme, toggle } = useTheme()
   const [showLogin, setShowLogin] = useState(false)
   const [showForgot, setShowForgot] = useState(false)
+  const [infoModal, setInfoModal] = useState<'docs' | 'privacy' | 'terms' | 'status' | null>(null)
 
   const handleLogin = (username: string, password: string) => {
     if (username.trim() === 'admin' && password === 'admin') {
@@ -363,9 +381,9 @@ export default function LoginPage({ onSuccess, addToast }: Props) {
                   <button onClick={() => navigate('/explore')} className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition-transform hover:scale-105 sm:px-8">
                     Explore Q-Ops Agent
                   </button>
-                  <a href="#docs" className="rounded-xl bg-white/10 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-white/20 sm:px-8">
+                  <button onClick={() => setInfoModal('docs')} className="rounded-xl bg-white/10 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-white/20 sm:px-8">
                     Documentation
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
@@ -376,10 +394,10 @@ export default function LoginPage({ onSuccess, addToast }: Props) {
       <footer className="flex w-full flex-col items-center justify-between gap-3 border-t border-outline-variant bg-surface-container-lowest px-6 py-6 text-xs text-on-surface-variant sm:flex-row sm:py-8">
         <div>&copy; 2024 Q-Ops Agent. AI-Powered Enterprise Solutions.</div>
         <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-          <a href="#docs" className="hover:text-on-surface">Documentation</a>
-          <a href="#" className="hover:text-on-surface">Privacy Policy</a>
-          <a href="#" className="hover:text-on-surface">Terms of Service</a>
-          <a href="#" className="hover:text-on-surface">System Status</a>
+          <button onClick={() => setInfoModal('docs')} className="hover:text-on-surface">Documentation</button>
+          <button onClick={() => setInfoModal('privacy')} className="hover:text-on-surface">Privacy Policy</button>
+          <button onClick={() => setInfoModal('terms')} className="hover:text-on-surface">Terms of Service</button>
+          <button onClick={() => setInfoModal('status')} className="hover:text-on-surface">System Status</button>
         </div>
       </footer>
 
@@ -391,6 +409,7 @@ export default function LoginPage({ onSuccess, addToast }: Props) {
           setShowLogin(false)
           setShowForgot(true)
         }}
+        onStatus={() => setInfoModal('status')}
       />
       <ForgotModal
         open={showForgot}
@@ -404,6 +423,80 @@ export default function LoginPage({ onSuccess, addToast }: Props) {
           setShowLogin(true)
         }}
       />
+      <InfoModal kind={infoModal} onClose={() => setInfoModal(null)} />
+    </div>
+  )
+}
+
+function InfoModal({ kind, onClose }: { kind: 'docs' | 'privacy' | 'terms' | 'status' | null; onClose: () => void }) {
+  useEffect(() => {
+    if (!kind) return
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [kind, onClose])
+
+  if (!kind) return null
+
+  const content = {
+    docs: {
+      title: 'Documentation',
+      rows: [
+        ['Create a project', 'Open the dashboard, use New Project, then upload BRD, FRD, HLD, LLD, transcripts, and UI designs.'],
+        ['Build a knowledge base', 'Artifacts are submitted to the n8n upload webhook and tracked as a long-running job.'],
+        ['Generate QA outputs', 'Choose test strategy, test plan, risk matrix, test cases, traceability matrix, or Jira-ready epics and stories.'],
+        ['Troubleshoot backend', 'Confirm the local n8n backend is running at http://localhost:5678 and the webhooks are active.'],
+      ],
+    },
+    privacy: {
+      title: 'Privacy Policy',
+      rows: [
+        ['Uploaded data', 'Project artifacts are sent only to the configured backend for QA processing.'],
+        ['Storage and retention', 'This demo UI stores local project metadata in browser storage. Backend retention depends on your n8n/Supabase setup.'],
+        ['Model training', 'Production policy language should be reviewed before external release.'],
+        ['User controls', 'Users can clear local browser storage or update backend settings in the dashboard.'],
+      ],
+    },
+    terms: {
+      title: 'Terms of Service',
+      rows: [
+        ['Demo credentials', 'The static admin/admin login is intended for local demonstration only.'],
+        ['Backend dependency', 'Knowledge ingestion and document generation require the configured n8n backend.'],
+        ['Acceptable use', 'Use the tool for authorized QA planning and project documentation workflows.'],
+        ['Review required', 'Legal terms should be reviewed before production or customer use.'],
+      ],
+    },
+    status: {
+      title: 'System Status',
+      rows: [
+        ['Frontend', 'Operational. The React application is loaded.'],
+        ['n8n backend', 'Configured by default at http://localhost:5678. Use dashboard Settings to change it.'],
+        ['Upload webhook', '/webhook/upload-test-artifacts'],
+        ['Document generation webhook', '/webhook/generate-qa-doc'],
+      ],
+    },
+  }[kind]
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-inverse-surface/40 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className="max-h-[86vh] w-full max-w-2xl overflow-auto rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-on-surface">{content.title}</h2>
+          <button onClick={onClose} className="rounded-full p-2 text-on-surface-variant hover:bg-surface-container-high" aria-label="Close">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="space-y-3">
+          {content.rows.map(([title, text]) => (
+            <section key={title} className="rounded-lg border border-outline-variant bg-surface-container-low p-4">
+              <h3 className="font-semibold text-on-surface">{title}</h3>
+              <p className="mt-1 text-sm leading-6 text-on-surface-variant">{text}</p>
+            </section>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

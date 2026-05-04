@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .ai-glow {
+            box-shadow: 0 0 20px rgba(173, 198, 255, 0.05);
+        }
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed": "#001a42",
+                    "on-secondary-fixed-variant": "#6900b3",
+                    "error-container": "#93000a",
+                    "secondary-container": "#6f00be",
+                    "primary-fixed": "#d8e2ff",
+                    "outline": "#8c909f",
+                    "on-surface": "#dae2fd",
+                    "inverse-primary": "#005ac2",
+                    "on-primary": "#002e6a",
+                    "tertiary-fixed": "#6ffbbe",
+                    "surface": "#0b1326",
+                    "tertiary": "#4edea3",
+                    "secondary-fixed-dim": "#ddb7ff",
+                    "on-primary-container": "#00285d",
+                    "outline-variant": "#424754",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "primary": "#adc6ff",
+                    "surface-container-highest": "#2d3449",
+                    "secondary": "#ddb7ff",
+                    "on-tertiary-fixed": "#002113",
+                    "surface-variant": "#2d3449",
+                    "surface-container-low": "#131b2e",
+                    "primary-fixed-dim": "#adc6ff",
+                    "inverse-on-surface": "#283044",
+                    "on-error": "#690005",
+                    "surface-bright": "#31394d",
+                    "on-tertiary": "#003824",
+                    "surface-dim": "#0b1326",
+                    "surface-tint": "#adc6ff",
+                    "background": "#0b1326",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "tertiary-container": "#00a572",
+                    "on-error-container": "#ffdad6",
+                    "primary-container": "#4d8eff",
+                    "on-secondary-fixed": "#2c0051",
+                    "error": "#ffb4ab",
+                    "on-surface-variant": "#c2c6d6",
+                    "on-secondary": "#490080",
+                    "surface-container-high": "#222a3d",
+                    "secondary-fixed": "#f0dbff",
+                    "surface-container-lowest": "#060e20",
+                    "on-primary-fixed-variant": "#004395",
+                    "on-background": "#dae2fd",
+                    "inverse-surface": "#dae2fd",
+                    "surface-container": "#171f33",
+                    "on-tertiary-container": "#00311f",
+                    "on-secondary-container": "#d6a9ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "body-sm": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "h3": ["Space Grotesk"],
+                    "h2": ["Space Grotesk"],
+                    "h1": ["Space Grotesk"],
+                    "data-mono": ["Space Grotesk"],
+                    "body-lg": ["Inter"]
+            },
+          }
+        }
+      }
+    </script>
+</head>
+<body class="font-body-lg overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-6 h-16 bg-slate-900/80 backdrop-blur-xl border-b border-white/10 shadow-xl shadow-indigo-500/5">
+<div class="flex items-center gap-8">
+<span class="font-h2 text-xl font-bold text-slate-50 tracking-tighter">Q-Ops Agent</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-blue-400 font-semibold border-b-2 border-blue-500 pb-1 font-body-sm" href="#">Dashboard</a>
+<a class="text-slate-400 font-medium hover:bg-white/5 hover:text-white transition-all duration-200 font-body-sm" href="#">AI Agents</a>
+<a class="text-slate-400 font-medium hover:bg-white/5 hover:text-white transition-all duration-200 font-body-sm" href="#">QA Pipeline</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-surface-container-low rounded-full px-3 py-1 border border-outline-variant">
+<span class="material-symbols-outlined text-primary text-sm mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-sm text-on-surface w-48" placeholder="Search operations..." type="text"/>
+</div>
+<div class="flex items-center gap-2"><button class="px-4 py-2 bg-primary text-on-primary-container font-body-sm font-semibold rounded-lg hover:brightness-110 transition-all">Login</button><button class="p-2 text-slate-500 cursor-default opacity-60" disabled=""><span class="material-symbols-outlined text-xl" data-icon="notifications">notifications</span></button><button class="p-2 text-slate-500 cursor-default opacity-60" disabled=""><span class="material-symbols-outlined text-xl" data-icon="help">help</span></button></div>
+</div>
+</header>
+<main class="pt-16">
+<!-- Hero Section -->
+<section class="relative min-h-[921px] flex flex-col items-center justify-center text-center px-6 overflow-hidden">
+<div class="absolute inset-0 z-0">
+<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-[120px]"></div>
+</div>
+<div class="relative z-10 max-w-4xl"><div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 mb-8"><span class="material-symbols-outlined text-primary text-sm" data-icon="bolt" data-weight="fill" style="font-variation-settings: 'FILL' 1;">bolt</span><span class="font-label-caps text-primary uppercase">AI-Powered Intelligence Engine Now Live</span></div><h1 class="font-h1 text-6xl md:text-7xl mb-6 text-on-background tracking-tight">Q-Ops Agent doesn't assist QA. <span class="text-primary italic">It builds it.</span></h1><p class="font-body-lg text-on-surface-variant text-xl max-w-2xl mx-auto mb-10 leading-relaxed">Build QA That Starts Before Code Exists. Deploy AI Agents that transform specifications into test logic automatically.</p><div class="flex flex-col sm:flex-row items-center justify-center gap-4"><button class="px-8 py-4 bg-primary text-on-primary-container font-h3 rounded-lg hover:brightness-110 transition-all active:scale-95 shadow-lg shadow-primary/20">Explore More</button><button class="px-8 py-4 border border-outline-variant bg-white/5 text-on-surface font-h3 rounded-lg hover:bg-white/10 transition-all active:scale-95">Login to Dashboard</button></div></div>
+<!-- Dashboard Preview Visual -->
+<div class="relative mt-20 w-full max-w-6xl mx-auto px-4 z-10 group">
+<div class="glass-panel p-2 rounded-xl ai-glow transform transition-transform duration-500 hover:-translate-y-2">
+<img class="rounded-lg border border-white/5 opacity-90 group-hover:opacity-100 transition-opacity" data-alt="high-tech software interface with complex data visualizations dark mode glowing blue graphs and system architecture diagrams" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2-_5OblbAN1MJs8EnWdQU5IlE8c0LcDuUG0HkaW0yehQ6t3mSiMMCsGUc0DuXxRNe2a9Iaa0_yB6yzClP5mi3ySjkfM0NfKTuX2NGF2aoR8_dtF2CG5BYEnB7147oxBwboy9NV-C65BEGFKgvXJ1TCjUKFxrC5TXrvHyL6ZCr-zyJlmPv35tRFqVWeUyCQBN5guSCsff4GRo_tYcLAmeZzP6h_5Nms64Hr8YoNu5m5hPPS65EXndWigDrxV_avrzYLb2_oURfEpfM"/>
+</div>
+</div>
+</section>
+<!-- Trusted Partners Marquee -->
+<section class="py-16 border-y border-white/5 bg-slate-950/30">
+<div class="container mx-auto px-6">
+<p class="text-center font-label-caps text-outline mb-10 tracking-widest uppercase">Trusted by Global QA Orchestrators</p>
+<div class="flex flex-wrap justify-center items-center gap-12 opacity-30 grayscale transition-all">
+<div class="h-8 w-32 bg-slate-700 rounded-md animate-pulse"></div>
+<div class="h-8 w-32 bg-slate-700 rounded-md animate-pulse"></div>
+<div class="h-8 w-32 bg-slate-700 rounded-md animate-pulse"></div>
+<div class="h-8 w-32 bg-slate-700 rounded-md animate-pulse"></div>
+<div class="h-8 w-32 bg-slate-700 rounded-md animate-pulse"></div>
+</div>
+</div>
+</section>
+<!-- Real Impact Metrics -->
+<section class="py-24 bg-surface">
+<div class="container mx-auto px-6">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="glass-panel p-8 rounded-xl border-l-4 border-l-primary">
+<div class="font-h1 text-5xl text-primary mb-2">75%</div>
+<div class="font-h3 text-on-surface mb-2">Faster Cycle Times</div>
+<p class="font-body-sm text-on-surface-variant">Autonomous generation of test suites from PRD documentation before a single line of code is written.</p>
+</div>
+<div class="glass-panel p-8 rounded-xl border-l-4 border-l-secondary">
+<div class="font-h1 text-5xl text-secondary mb-2">40%</div>
+<div class="font-h3 text-on-surface mb-2">Efficiency Gain</div>
+<p class="font-body-sm text-on-surface-variant">Reduction in maintenance overhead for legacy test scripts through self-healing AI agents.</p>
+</div>
+<div class="glass-panel p-8 rounded-xl border-l-4 border-l-tertiary">
+<div class="font-h1 text-5xl text-tertiary mb-2">50+</div>
+<div class="font-h3 text-on-surface mb-2">Enterprise Hooks</div>
+<p class="font-body-sm text-on-surface-variant">Native integrations with JIRA, Jenkins, GitHub, and major CI/CD orchestration layers.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Core Capabilities Bento Grid -->
+<section class="py-24">
+<div class="container mx-auto px-6">
+<div class="mb-16 text-center max-w-2xl mx-auto">
+<h2 class="font-h2 text-4xl mb-4">Core Capabilities</h2>
+<p class="font-body-lg text-on-surface-variant">Precision-engineered tools for high-stakes technical environments.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 grid-rows-2 gap-4 h-full md:h-[600px]">
+<!-- Primary Feature -->
+<div class="md:col-span-8 md:row-span-2 glass-panel rounded-xl overflow-hidden group">
+<div class="p-8 h-1/2">
+<span class="material-symbols-outlined text-primary mb-4 block" data-icon="terminal">terminal</span>
+<h3 class="font-h3 text-2xl mb-2 text-on-surface">Auto-Architect Suite</h3>
+<p class="text-on-surface-variant max-w-md">Our LLM-native engine scans your architecture and creates deep-link integration tests without manual input.</p>
+</div>
+<div class="h-1/2 w-full relative">
+<img class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" data-alt="abstract technical visualization of glowing neon blue lines representing network connections and data pathways in dark space" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFTws5WYS93aiOhjx2mxbqoGS2gfEdVS6P6t6DtGaodQvkVL3R8gdmkF6cl6-blvT8D8ntAiYG1UKutnoDwpfcksnkpmEmkiTH-650lVMt_xqESPGHAjRlvFHPtmjuIjpRwkJqWwLnx-_Dyei0-MWhLH-kPjch9NqMMUF5YxG2_dUJjsEnSbls0W_xVenUIFmRxIUf7pjUlp2bZVBO4Q-kTChpvOo6REOjR9z4Td5T3QE_WGihUfLzih6zPvyAQJMpnwooWg7ZXv7h"/>
+</div>
+</div>
+<!-- Secondary Features -->
+<div class="md:col-span-4 md:row-span-1 glass-panel rounded-xl p-8 flex flex-col justify-between border-t border-t-tertiary/20">
+<div>
+<span class="material-symbols-outlined text-tertiary mb-4 block" data-icon="monitoring">monitoring</span>
+<h3 class="font-h3 text-xl mb-2 text-on-surface">Real-Time Drift</h3>
+</div>
+<p class="text-on-surface-variant text-sm">Alerting when deployment shifts away from the initial QA specification.</p>
+</div>
+<div class="md:col-span-4 md:row-span-1 glass-panel rounded-xl p-8 flex flex-col justify-between border-t border-t-secondary/20">
+<div>
+<span class="material-symbols-outlined text-secondary mb-4 block" data-icon="security">security</span>
+<h3 class="font-h3 text-xl mb-2 text-on-surface">SOC2 Isolation</h3>
+</div>
+<p class="text-on-surface-variant text-sm">Data remains in your VPC. Our agents process logic without exfiltrating sensitive PII.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Login Preview (As requested) -->
+<section class="py-24 relative overflow-hidden bg-[#060e20]">
+<div class="absolute top-0 right-0 w-1/3 h-full bg-primary/5 blur-[100px] pointer-events-none"></div>
+<div class="container mx-auto px-6 flex flex-col md:flex-row items-center gap-20">
+<div class="w-full md:w-1/2">
+<h2 class="font-h2 text-4xl mb-6">Secure Access to Control Center</h2>
+<p class="text-on-surface-variant mb-8 font-body-lg">Enterprise-grade authentication with single sign-on (SSO) and biometric validation for administrative nodes.</p>
+<ul class="space-y-4">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary text-sm" data-icon="check_circle">check_circle</span>
+<span class="text-on-surface font-body-sm">SAML/OIDC Integration</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary text-sm" data-icon="check_circle">check_circle</span>
+<span class="text-on-surface font-body-sm">Hardware Token Support (Yubikey)</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary text-sm" data-icon="check_circle">check_circle</span>
+<span class="text-on-surface font-body-sm">Audit Logged Sessions</span>
+</li>
+</ul>
+</div>
+<div class="w-full md:w-[400px]">
+<div class="glass-panel p-8 rounded-xl shadow-2xl">
+<div class="mb-8">
+<h3 class="font-h3 text-2xl text-on-surface">Login</h3>
+<p class="text-on-surface-variant text-sm">Enter your system credentials</p>
+</div>
+<div class="space-y-4">
+<div>
+<label class="block font-label-caps text-outline mb-2 uppercase">Identity Handle</label>
+<input class="w-full bg-slate-900 border border-outline-variant rounded-lg px-4 py-3 text-on-surface focus:border-primary transition-colors focus:ring-1 focus:ring-primary outline-none" placeholder="user@q-ops.internal" type="email"/>
+</div>
+<div>
+<label class="block font-label-caps text-outline mb-2 uppercase">Access Key</label>
+<input class="w-full bg-slate-900 border border-outline-variant rounded-lg px-4 py-3 text-on-surface focus:border-primary transition-colors focus:ring-1 focus:ring-primary outline-none" placeholder="••••••••" type="password"/>
+</div>
+<button class="w-full py-4 bg-primary text-on-primary-container font-h3 rounded-lg hover:brightness-110 transition-all active:scale-95 mt-4">
+                                Establish Session
+                            </button>
+<div class="text-center mt-6">
+<a class="text-outline hover:text-primary transition-colors font-body-sm underline-offset-4 underline" href="#">Forgot Access Key?</a>
+</div>
+</div>
+<div class="mt-8 pt-8 border-t border-white/5">
+<button class="w-full flex items-center justify-center gap-3 py-3 border border-outline-variant rounded-lg hover:bg-white/5 transition-colors">
+<img class="w-5 h-5 grayscale contrast-200" data-alt="minimalist clean google logo for single sign on authentication" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCp7gKfF6SXyYOBHnR8oO6AZjDozGaUVwxHHSK5289yXM-TBejn1gnLVDu7XJX1JCHyFk9XerjG6VTfU7FB8S0tJ4cHfAVf88fb9v4l2os0LNxNq1WYce7XAUEcgmmDWhHS9-L_GETV5LlBmjhnNjwu86lDgCJ8T3Rt2cRCYqttfVFLm8mgdzXeuOW4fXqBvqe1Po10W5ld8qgi22hQj7Zz_PoJAzAUpa8XMeYfJiTEuPPhswO5LRju8aq_d6QxiF83KoayaaMOcPf5"/>
+<span class="text-on-surface font-body-sm">Sign in with Enterprise SSO</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-950/50 border-t border-white/5 px-12 py-12 w-full mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-start gap-10">
+<div class="max-w-xs">
+<span class="font-h2 text-xl font-bold text-slate-50 tracking-tighter block mb-4">Q-Ops Agent</span>
+<p class="text-slate-500 font-body-sm leading-relaxed">Defining the next generation of autonomous quality engineering for technical-first organizations.</p>
+</div>
+<div class="flex gap-16">
+<div class="flex flex-col gap-3">
+<p class="font-label-caps text-slate-400 mb-2 uppercase tracking-widest">Resources</p>
+<a class="text-slate-500 hover:text-blue-400 transition-colors font-body-sm" href="#">Documentation</a>
+<a class="text-slate-500 hover:text-blue-400 transition-colors font-body-sm" href="#">API Reference</a>
+</div>
+<div class="flex flex-col gap-3">
+<p class="font-label-caps text-slate-400 mb-2 uppercase tracking-widest">Legal</p>
+<a class="text-slate-500 hover:text-blue-400 transition-colors font-body-sm" href="#">Terms of Service</a>
+<a class="text-slate-500 hover:text-blue-400 transition-colors font-body-sm" href="#">Privacy Policy</a>
+</div>
+</div>
+</div>
+<div class="mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="font-body-sm text-slate-500">© 2024 Q-Ops Agent. All rights reserved.</p>
+<div class="flex gap-6">
+<span class="material-symbols-outlined text-slate-500 hover:text-primary transition-colors cursor-pointer" data-icon="brand_awareness">brand_awareness</span>
+<span class="material-symbols-outlined text-slate-500 hover:text-primary transition-colors cursor-pointer" data-icon="webhook">webhook</span>
+<span class="material-symbols-outlined text-slate-500 hover:text-primary transition-colors cursor-pointer" data-icon="cloud_done">cloud_done</span>
+</div>
+</div>
+</footer>
+</body></html>

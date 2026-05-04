@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#ffb695",
+                        "surface-dim": "#dcd8e5",
+                        "inverse-surface": "#302f39",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#f3effc",
+                        "primary": "#3525cd",
+                        "on-tertiary-container": "#ffd2be",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-primary": "#ffffff",
+                        "secondary": "#515f74",
+                        "surface-container": "#f0ecf9",
+                        "primary-container": "#4f46e5",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-tertiary-fixed": "#351000",
+                        "outline-variant": "#c7c4d8",
+                        "on-background": "#1b1b24",
+                        "on-surface": "#1b1b24",
+                        "tertiary-container": "#a44100",
+                        "error-container": "#ffdad6",
+                        "primary-fixed": "#e2dfff",
+                        "secondary-container": "#d5e3fc",
+                        "on-primary-container": "#dad7ff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-secondary-container": "#57657a",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#fcf8ff",
+                        "on-primary-fixed": "#0f0069",
+                        "on-error-container": "#93000a",
+                        "on-surface-variant": "#464555",
+                        "inverse-primary": "#c3c0ff",
+                        "outline": "#777587",
+                        "surface-tint": "#4d44e3",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e4e1ee",
+                        "surface-variant": "#e4e1ee",
+                        "background": "#fcf8ff",
+                        "tertiary-fixed": "#ffdbcc",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "tertiary": "#7e3000",
+                        "surface-container-low": "#f5f2ff",
+                        "surface-container-high": "#eae6f4",
+                        "surface-bright": "#fcf8ff",
+                        "on-tertiary-fixed-variant": "#7b2f00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "lg": "24px",
+                        "gutter": "24px",
+                        "container-max": "1440px",
+                        "unit": "4px",
+                        "xs": "4px",
+                        "xl": "48px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .command-palette-backdrop {
+            background-color: rgba(27, 27, 36, 0.4);
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-background min-h-screen">
+<!-- Top Navigation Anchor -->
+<header class="bg-white dark:bg-slate-950 font-inter antialiased text-sm font-medium border-b border-slate-200 dark:border-slate-800 flat no shadows docked full-width top-0 z-40">
+<div class="flex justify-between items-center w-full px-6 py-3">
+<div class="flex items-center gap-lg">
+<span class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Q-Ops Agent</span>
+<nav class="hidden md:flex items-center gap-md">
+<a class="text-indigo-600 dark:text-indigo-400 font-semibold transition-all" href="#">Dashboard</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors px-3 py-1.5 rounded-lg" href="#">Artifacts</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors px-3 py-1.5 rounded-lg" href="#">Analytics</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative group hidden sm:block">
+<div class="bg-surface-container-low border border-outline-variant rounded-xl flex items-center px-3 py-1.5 w-64">
+<span class="material-symbols-outlined text-outline text-[20px] mr-2">search</span>
+<span class="text-on-surface-variant/60 font-body-sm">Search...</span>
+<kbd class="ml-auto bg-surface-container-highest px-1.5 py-0.5 rounded border border-outline-variant text-[10px] font-sans font-bold text-outline">CTRL K</kbd>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors rounded-full">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+</div>
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-xl font-semibold text-sm active:opacity-80 transition-all">
+                    Create Project
+                </button>
+</div>
+</div>
+</header>
+<!-- Side Navigation Anchor -->
+<aside class="fixed left-0 top-0 h-full w-64 border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 font-inter text-sm tracking-wide flex flex-col h-full py-6 z-30">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-icon="token" data-weight="fill" style="font-variation-settings: 'FILL' 1;">token</span>
+</div>
+<div>
+<h2 class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">Enterprise QA</h2>
+<p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">V2.4.0-Stable</p>
+</div>
+</div>
+<nav class="flex-1 px-3 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border-r-4 border-indigo-600 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span>Artifacts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-3 space-y-1">
+<button class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-2.5 rounded-xl font-bold mb-4 active:opacity-80 transition-all">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+                New Run
+            </button>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 hover:text-slate-900 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span>Documentation</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 hover:text-slate-900 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="support_agent">support_agent</span>
+<span>Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas (Background behind palette) -->
+<main class="ml-64 pt-16 p-lg">
+<div class="grid grid-cols-12 gap-lg">
+<div class="col-span-12 lg:col-span-8 space-y-lg">
+<section class="bg-white border border-outline-variant p-lg rounded-xl">
+<h1 class="font-display-lg text-display-lg text-on-background mb-sm">Project Statistics</h1>
+<p class="font-body-md text-on-surface-variant max-w-2xl">Monitor real-time performance metrics and regression tests across your automated QA suites.</p>
+</section>
+<div class="grid grid-cols-2 gap-md">
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl">
+<div class="flex justify-between items-start mb-sm">
+<span class="text-label-caps font-label-caps text-outline">SUCCESS RATE</span>
+<span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-xs font-bold">98.2%</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-emerald-500 w-[98%]"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl">
+<div class="flex justify-between items-start mb-sm">
+<span class="text-label-caps font-label-caps text-outline">TOTAL RUNS</span>
+<span class="text-primary font-bold">1,248</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[75%]"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4">
+<div class="bg-white border border-outline-variant p-md rounded-xl sticky top-24">
+<h3 class="font-title-sm text-title-sm text-on-background mb-md">Recent Activity</h3>
+<div class="space-y-md">
+<div class="flex gap-md">
+<div class="w-2 h-10 bg-primary rounded-full"></div>
+<div>
+<p class="text-body-sm font-bold text-on-surface">Alpha Suite Complete</p>
+<p class="text-[12px] text-outline">12 minutes ago</p>
+</div>
+</div>
+<div class="flex gap-md">
+<div class="w-2 h-10 bg-tertiary rounded-full"></div>
+<div>
+<p class="text-body-sm font-bold text-on-surface">Artifact Uploaded</p>
+<p class="text-[12px] text-outline">45 minutes ago</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- COMMAND PALETTE OVERLAY -->
+<div class="fixed inset-0 z-50 command-palette-backdrop flex items-start justify-center pt-32 px-4">
+<div class="w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-outline-variant overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+<!-- Search Header -->
+<div class="flex items-center px-4 py-4 border-b border-outline-variant gap-3">
+<span class="material-symbols-outlined text-primary text-[24px]">search</span>
+<input autofocus="" class="flex-1 border-none focus:ring-0 text-title-sm text-on-background placeholder:text-outline/60 bg-transparent" placeholder="Search projects, artifacts, or help..." type="text"/>
+<div class="flex items-center gap-1">
+<kbd class="bg-surface-container-highest px-2 py-1 rounded border border-outline-variant text-[10px] font-bold text-outline">ESC</kbd>
+</div>
+</div>
+<!-- Content Area -->
+<div class="max-h-[614px] overflow-y-auto p-2">
+<!-- Group: Projects -->
+<div class="mb-4">
+<h3 class="px-3 py-2 text-label-caps font-label-caps text-outline">PROJECTS</h3>
+<div class="space-y-1">
+<button class="w-full text-left flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-surface-container transition-colors group">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="rocket_launch">rocket_launch</span>
+</div>
+<div>
+<span class="text-body-sm font-bold text-on-surface">Cloud Scale Infrastructure</span>
+<p class="text-[12px] text-outline">Active • 12 Contributors</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">subdirectory_arrow_left</span>
+</button>
+<button class="w-full text-left flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-surface-container transition-colors group">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="terminal">terminal</span>
+</div>
+<div>
+<span class="text-body-sm font-bold text-on-surface">API Gateway Regression</span>
+<p class="text-[12px] text-outline">Pending • 4 Contributors</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">subdirectory_arrow_left</span>
+</button>
+</div>
+</div>
+<!-- Group: Artifacts -->
+<div class="mb-4">
+<h3 class="px-3 py-2 text-label-caps font-label-caps text-outline">ARTIFACTS</h3>
+<div class="space-y-1">
+<button class="w-full text-left flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-surface-container transition-colors group">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded bg-secondary-container text-on-secondary-container">
+<span class="material-symbols-outlined text-[20px]" data-icon="description">description</span>
+</div>
+<div>
+<span class="text-body-sm font-bold text-on-surface">deployment_spec_v2.yaml</span>
+<p class="text-[12px] text-outline">Modified 2h ago by System</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">subdirectory_arrow_left</span>
+</button>
+</div>
+</div>
+<!-- Group: Jobs -->
+<div class="mb-4">
+<h3 class="px-3 py-2 text-label-caps font-label-caps text-outline">JOBS</h3>
+<div class="space-y-1">
+<button class="w-full text-left flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-surface-container transition-colors group">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded bg-tertiary-fixed text-tertiary">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings_slow_motion">settings_slow_motion</span>
+</div>
+<div>
+<span class="text-body-sm font-bold text-on-surface">Nightly Security Audit</span>
+<p class="text-[12px] text-outline">Running • 84% Complete</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">subdirectory_arrow_left</span>
+</button>
+</div>
+</div>
+<!-- AI Suggestion Box (from Style Guidance) -->
+<div class="m-2 p-4 rounded-xl border-l-2 border-primary bg-primary/5 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-2 opacity-10">
+<span class="material-symbols-outlined text-[48px]">auto_awesome</span>
+</div>
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-[18px]">auto_awesome</span>
+<span class="text-label-caps font-label-caps text-primary">AI SUGGESTION</span>
+</div>
+<p class="text-body-sm text-on-surface-variant mb-3 italic">"You recently accessed 'Legacy QA Suite' three times this week. Would you like to pin it to your dashboard?"</p>
+<button class="text-primary font-bold text-body-sm flex items-center gap-1 hover:underline">
+                        Enable Auto-Pinning
+                        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<!-- Group: Help -->
+<div class="mb-2">
+<h3 class="px-3 py-2 text-label-caps font-label-caps text-outline">HELP &amp; DOCUMENTATION</h3>
+<div class="space-y-1">
+<button class="w-full text-left flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-surface-container transition-colors group">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded bg-surface-container-high text-outline">
+<span class="material-symbols-outlined text-[20px]" data-icon="menu_book">menu_book</span>
+</div>
+<span class="text-body-sm font-medium text-on-surface">Configure CI/CD Pipelines</span>
+</div>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer Hints -->
+<div class="bg-surface-container-low px-4 py-3 border-t border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5">
+<kbd class="bg-white px-1.5 py-0.5 rounded border border-outline-variant text-[10px] font-bold text-outline">↵</kbd>
+<span class="text-[11px] text-outline font-medium">to select</span>
+</div>
+<div class="flex items-center gap-1.5">
+<kbd class="bg-white px-1.5 py-0.5 rounded border border-outline-variant text-[10px] font-bold text-outline">↑↓</kbd>
+<span class="text-[11px] text-outline font-medium">to navigate</span>
+</div>
+</div>
+<div class="text-[11px] text-outline/60 flex items-center gap-1">
+                    Powered by <span class="font-bold text-primary">Q-Ops Intelligence</span>
+</div>
+</div>
+</div>
+</div>
+</body></html>

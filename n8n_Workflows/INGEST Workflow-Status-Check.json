@@ -1,0 +1,167 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "path": "/job-status",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "af164116-dc44-4621-91fb-6591d7d4ff9d",
+      "name": "Webhook",
+      "webhookId": "f40b7289-5d71-4a56-819c-c1acca548c1e"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d492c575-93f6-4483-bf92-dce1038f21b2",
+              "name": "jobId",
+              "value": "={{ $json.query.jobId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "652fae32-7fdf-4882-939b-9d9e7bdd61d5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputJobId = $input.first().json.jobId;\n\nif (!$json || !$json.job_id) {\n  return [\n    {\n      json: {\n        jobId: inputJobId,\n        status: \"not_found\"\n      }\n    }\n  ];\n}\n\nreturn [\n  {\n    json: {\n      jobId: $json.job_id,\n      status: $json.status\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "0ba49eb3-85c6-4215-9030-5b013b4f8923",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"jobId\": \"{{ $json.jobId }}\",\n  \"status\": \"{{ $json.status }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        832,
+        0
+      ],
+      "id": "0f8e3456-648d-447a-9fbf-17f8296c816a",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "job_id",
+              "value": "=eq.{{ $json.jobId }}"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            },
+            {
+              "name": "select",
+              "value": "job_id,status"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "3e1adb45-75ff-45e0-8df1-41e45cefe562",
+      "name": "Check Status",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "skQ4rOdSijyBM3Yv",
+          "name": "Header Auth account"
+        },
+        "httpCustomAuth": {
+          "id": "W6PsBv4SlXFSR6Kk",
+          "name": "supabase-anon-key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Check Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Status": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "e8825c62dab716716b7ba371e5b41411b530556dbdff5be5bbe9383a1666c627"
+  }
+}

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#4edea3",
+                        "primary-fixed-dim": "#adc6ff",
+                        "tertiary": "#4edea3",
+                        "on-tertiary-fixed": "#002113",
+                        "on-surface": "#dae2fd",
+                        "surface-container-lowest": "#060e20",
+                        "tertiary-container": "#00a572",
+                        "surface-bright": "#31394d",
+                        "primary-container": "#4d8eff",
+                        "primary-fixed": "#d8e2ff",
+                        "on-secondary-fixed-variant": "#6900b3",
+                        "on-error-container": "#ffdad6",
+                        "error": "#ffb4ab",
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-primary-fixed-variant": "#004395",
+                        "error-container": "#93000a",
+                        "inverse-surface": "#dae2fd",
+                        "surface-container": "#171f33",
+                        "surface-container-high": "#222a3d",
+                        "on-primary-container": "#00285d",
+                        "on-secondary-container": "#d6a9ff",
+                        "on-tertiary-container": "#00311f",
+                        "inverse-primary": "#005ac2",
+                        "surface-variant": "#2d3449",
+                        "on-surface-variant": "#c2c6d6",
+                        "on-error": "#690005",
+                        "secondary-fixed": "#f0dbff",
+                        "on-primary": "#002e6a",
+                        "primary": "#adc6ff",
+                        "background": "#0b1326",
+                        "surface-container-low": "#131b2e",
+                        "surface-tint": "#adc6ff",
+                        "outline-variant": "#424754",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-container-highest": "#2d3449",
+                        "outline": "#8c909f",
+                        "on-background": "#dae2fd",
+                        "on-secondary-fixed": "#2c0051",
+                        "on-secondary": "#490080",
+                        "on-primary-fixed": "#001a42",
+                        "surface": "#0b1326",
+                        "secondary": "#ddb7ff",
+                        "on-tertiary": "#003824",
+                        "inverse-on-surface": "#283044",
+                        "surface-dim": "#0b1326",
+                        "secondary-fixed-dim": "#ddb7ff",
+                        "secondary-container": "#6f00be"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "grid_gutter": "16px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "xl": "40px",
+                        "grid_columns": "12",
+                        "container_margin": "24px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "h2": ["Space Grotesk"],
+                        "body-sm": ["Inter"],
+                        "h1": ["Space Grotesk"],
+                        "data-mono": ["Space Grotesk"],
+                        "h3": ["Space Grotesk"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["11px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                        "h2": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "data-mono": ["13px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "400"}],
+                        "h3": ["18px", {"lineHeight": "1.4", "letterSpacing": "0em", "fontWeight": "500"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .ai-glow {
+            box-shadow: 0 0 15px 2px rgba(168, 85, 247, 0.15);
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-sm selection:bg-primary/30">
+<!-- TOP APP BAR -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+<div class="flex items-center gap-4">
+<span class="text-xl font-bold text-slate-50 tracking-tighter font-h1">Q-Ops Agent</span>
+<nav class="hidden md:flex items-center gap-6 ml-8">
+<a class="font-h3 text-sm text-slate-400 hover:text-slate-200 transition-colors" href="#">Projects</a>
+<a class="font-h3 text-sm text-slate-400 hover:text-slate-200 transition-colors" href="#">Pipelines</a>
+<a class="font-h3 text-sm text-slate-400 hover:text-slate-200 transition-colors" href="#">Nodes</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-400 hover:bg-white/5 transition-colors rounded-lg">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="p-2 text-[#3b82f6] hover:bg-white/5 transition-colors rounded-lg relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+<div class="h-8 w-px bg-white/10 mx-2"></div>
+<img alt="User Avatar" class="w-8 h-8 rounded-full border border-white/20" data-alt="A professional studio headshot of a high-tech software architect with a focused expression, set against a dark, moody background with subtle blue rim lighting. The style is sharp, cinematic, and fits a high-stakes enterprise AI environment with a palette of deep slate and charcoal tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3t9OOQ1rfpGT3oKEqft9cCz49ViMKXPw_QjbgoXeLiLyD9HJ4dsrugA7-biA2ft5ERqyaB59tiH7gBr4VBAf5QyRGGfVGCtNRY12SJnsn8T88XRfbc1KACLMLfdot9cwbxLOkQFZy5mCuRtZcHP0oqiRz3m9B7nix2L87gRW-Z_BTo3DEDONKodgUq8a25-gmtYBJNK-a599URrwH1RR_sxX5lUnPfVb09uVdQFRHyTXj2DhRFdDHx5PTBir94Xcg0ymGKu6uRMZj"/>
+</div>
+</header>
+<!-- SIDE NAVIGATION -->
+<aside class="fixed left-0 top-16 bottom-0 flex flex-col pt-8 bg-[#1e293b] w-64 border-r border-white/5 z-40">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="terminal">terminal</span>
+</div>
+<div>
+<p class="text-lg font-black text-[#3b82f6] font-h2 leading-none">Q-Ops Node</p>
+<p class="font-label-caps text-[10px] text-slate-500 mt-1">AI ENTERPRISE QA</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 bg-blue-500/10 text-[#3b82f6] border-r-4 border-[#3b82f6] font-label-caps transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-white/5 hover:text-slate-200 font-label-caps transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+                Artifacts
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-white/5 hover:text-slate-200 font-label-caps transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+                Integrations
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-white/5 hover:text-slate-200 font-label-caps transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings_suggest">settings_suggest</span>
+                Settings
+            </a>
+</nav>
+<div class="p-4 border-t border-white/5">
+<button class="w-full py-3 bg-primary text-on-primary font-h3 text-sm rounded transition-transform active:scale-95">
+                Launch Scan
+            </button>
+</div>
+</aside>
+<!-- MAIN DASHBOARD CONTENT (BACKGROUND LAYER) -->
+<main class="pl-64 pt-16 min-h-screen">
+<div class="p-8">
+<div class="mb-8">
+<h1 class="font-h1 text-h1 text-on-surface">System Performance Dashboard</h1>
+<p class="font-body-lg text-on-surface-variant">Monitoring 12 active QA nodes across global clusters.</p>
+</div>
+<!-- BENTO GRID DASHBOARD -->
+<div class="grid grid-cols-12 gap-6">
+<div class="col-span-8 h-64 glass-panel rounded-xl p-6 relative overflow-hidden">
+<div class="flex justify-between items-start mb-4">
+<h3 class="font-h3 text-h3">Neural Test Coverage</h3>
+<span class="text-emerald-400 font-data-mono text-sm">98.4% Uptime</span>
+</div>
+<div class="w-full h-32 flex items-end gap-1">
+<div class="flex-1 bg-primary/20 h-[60%] hover:bg-primary/40 transition-all rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 h-[80%] hover:bg-primary/40 transition-all rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 h-[40%] hover:bg-primary/40 transition-all rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 h-[90%] hover:bg-primary/40 transition-all rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 h-[70%] hover:bg-primary/40 transition-all rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 h-[85%] hover:bg-primary/40 transition-all rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 h-[95%] hover:bg-primary/40 transition-all rounded-t-sm"></div>
+</div>
+</div>
+<div class="col-span-4 h-64 glass-panel rounded-xl p-6 ai-glow flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-2 text-[#a855f7] mb-2">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-label-caps text-xs">AI INSIGHT</span>
+</div>
+<h3 class="font-h3 text-h3 leading-tight">Optimization Recommended</h3>
+<p class="text-sm text-slate-400 mt-2">Node 04-B is experiencing latency in Artifact generation.</p>
+</div>
+<button class="w-full py-2 bg-[#a855f7]/10 border border-[#a855f7]/30 text-[#a855f7] rounded hover:bg-[#a855f7]/20 transition-all text-sm font-semibold">
+                        Review Protocol
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- NOTIFICATION CENTER DRAWER (RIGHT SIDE OVERLAY) -->
+<div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55]"></div>
+<aside class="fixed right-0 top-0 bottom-0 z-[60] w-96 glass-panel border-l border-purple-500/20 flex flex-col shadow-[-10px_0_30px_rgba(0,0,0,0.5)]">
+<!-- Header -->
+<div class="p-6 border-b border-white/10 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
+<span class="material-symbols-outlined text-[#a855f7]" data-icon="intelligence_feed">notifications</span>
+</div>
+<div>
+<h2 class="font-h2 text-lg text-slate-100 font-bold leading-none">Intelligence Feed</h2>
+<p class="font-label-caps text-[10px] text-slate-400 mt-1 uppercase">Real-time QA insights</p>
+</div>
+</div>
+<button class="p-2 hover:bg-white/5 rounded-lg text-slate-400">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<!-- Filter Tabs -->
+<div class="px-6 py-4 flex gap-2 overflow-x-auto border-b border-white/5">
+<button class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-500/10 text-[#a855f7] border border-purple-500/40 whitespace-nowrap">
+                All Alerts
+            </button>
+<button class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:bg-white/5 whitespace-nowrap">
+                System Health
+            </button>
+<button class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:bg-white/5 whitespace-nowrap">
+                Activity Log
+            </button>
+</div>
+<!-- Notifications List -->
+<div class="flex-1 overflow-y-auto custom-scrollbar">
+<!-- Success Notification -->
+<div class="p-6 border-b border-white/5 hover:bg-white/5 transition-colors group">
+<div class="flex gap-4">
+<div class="mt-1 w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-h3 text-sm text-slate-200 font-semibold">Knowledge Base Completed</h4>
+<span class="text-[10px] font-data-mono text-slate-500">2m ago</span>
+</div>
+<p class="text-sm text-slate-400 leading-relaxed">Intelligence node successfully indexed 1,240 technical documents for Project Alpha.</p>
+<div class="mt-3 flex items-center gap-2">
+<button class="text-xs font-semibold text-[#3b82f6] hover:underline flex items-center gap-1">
+                                View Artifact <span class="material-symbols-outlined text-[14px]" data-icon="arrow_right_alt">arrow_right_alt</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Error Notification -->
+<div class="p-6 border-b border-white/5 bg-red-500/[0.03] hover:bg-red-500/[0.06] transition-colors group">
+<div class="flex gap-4">
+<div class="mt-1 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-h3 text-sm text-red-400 font-semibold">Doc Gen Failed</h4>
+<span class="text-[10px] font-data-mono text-slate-500">14m ago</span>
+</div>
+<p class="text-sm text-slate-400 leading-relaxed">Timeout error on Cluster-09. Markdown conversion interrupted by node instability.</p>
+<div class="mt-4 flex gap-3">
+<button class="px-3 py-1.5 rounded bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="refresh">refresh</span>
+                                Retry
+                            </button>
+<button class="px-3 py-1.5 rounded border border-white/10 text-slate-400 text-xs font-bold hover:bg-white/5 transition-all">
+                                Dismiss
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Info Notification -->
+<div class="p-6 border-b border-white/5 hover:bg-white/5 transition-colors group">
+<div class="flex gap-4">
+<div class="mt-1 w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-h3 text-sm text-slate-200 font-semibold">Risk Matrix Ready</h4>
+<span class="text-[10px] font-data-mono text-slate-500">1h ago</span>
+</div>
+<p class="text-sm text-slate-400 leading-relaxed">Predictive analysis complete for current sprint. 3 high-priority vulnerabilities identified.</p>
+<div class="mt-3">
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border border-[#1e293b]" data-alt="Close up portrait of a male data scientist with professional glasses, lit with subtle neon purple accents against a dark slate background, conveying high-end technical intelligence and expertise." src="https://lh3.googleusercontent.com/aida-public/AB6AXuArueNjg1OF2BjNcNxw6UmXNboHka7LMLrIQsc0e_1DM6OVO0YimmemcRnDLuow1EwR1MD17gmx760Ya9MjOuDUePghApa_Tz6F23OPZxjus7-6LZqlk-jkgXUik6wV1fgGT2cl74XQJIukYxAzRgtxZ2Vf5NOBNQ-xG9ElVjPQaAeOlE4tpg87WBAEl2JjI7AuID6yCKRN0E01KvoydlpLrxkBtG-X51SvijA97eD0mdSbyrG_rTZjJZWFe_xpzgZGo6tBEqmHAaQV"/>
+<img class="w-6 h-6 rounded-full border border-[#1e293b]" data-alt="A portrait of a focused female software engineer in a dark office, with high-contrast cinematic lighting and a professional tech aesthetic using deep blues and subtle purples." src="https://lh3.googleusercontent.com/aida-public/AB6AXuClNK6iBvgqfWvtc6jidIMdTXQ-QOLD9uo8o0Q7VIKLLPDKdg0VoDavCMTsJxmCCa6MMACTu8uklhArejG4vTa8EAvKr7QqF1fdogWmJkC1T4cF3cxryJ4U2stfaKHwEzvHnlViCJoi8yDL_4ZSs2JkMDKRb6pKjSijs7BbBeBlTT2V11MEZXYKCgRfdU8xevPZ9e4mfk4lv9qMDKrdCi4-N3UjfDpvrBkq4lOdviqIyhlVz2kwFQp9obbWu0NqD6o2eAoy1DKEC0D8"/>
+<div class="w-6 h-6 rounded-full bg-slate-700 border border-[#1e293b] flex items-center justify-center text-[8px] font-bold">+2</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- System Info -->
+<div class="p-6 border-b border-white/5 hover:bg-white/5 transition-colors group">
+<div class="flex gap-4">
+<div class="mt-1 w-2 h-2 rounded-full bg-[#3b82f6] shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-h3 text-sm text-slate-200 font-semibold">Integrations Updated</h4>
+<span class="text-[10px] font-data-mono text-slate-500">3h ago</span>
+</div>
+<p class="text-sm text-slate-400 leading-relaxed">Jira and GitHub synchronization protocols were successfully patched to v2.4.1.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="p-6 bg-[#0f172a]/50 backdrop-blur-xl border-t border-white/10 mt-auto">
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 py-3 px-4 rounded border border-white/10 text-slate-400 text-xs font-bold hover:bg-white/5 hover:text-slate-200 transition-all uppercase tracking-widest">
+<span class="material-symbols-outlined text-sm" data-icon="delete_sweep">delete_sweep</span>
+                    Clear All
+                </button>
+<button class="flex items-center justify-center gap-2 py-3 px-4 rounded border border-white/10 text-slate-400 text-xs font-bold hover:bg-white/5 hover:text-slate-200 transition-all uppercase tracking-widest">
+<span class="material-symbols-outlined text-sm" data-icon="settings">settings</span>
+                    Settings
+                </button>
+</div>
+</div>
+</aside>
+<!-- FAB -->
+<button class="fixed bottom-8 right-[416px] w-14 h-14 bg-[#a855f7] text-white rounded-full shadow-[0_8px_30px_rgba(168,85,247,0.4)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+</body></html>

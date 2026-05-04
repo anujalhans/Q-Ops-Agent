@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#ffb695",
+                        "surface-dim": "#dcd8e5",
+                        "inverse-surface": "#302f39",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#f3effc",
+                        "primary": "#3525cd",
+                        "on-tertiary-container": "#ffd2be",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-primary": "#ffffff",
+                        "secondary": "#515f74",
+                        "surface-container": "#f0ecf9",
+                        "primary-container": "#4f46e5",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-tertiary-fixed": "#351000",
+                        "outline-variant": "#c7c4d8",
+                        "on-background": "#1b1b24",
+                        "on-surface": "#1b1b24",
+                        "tertiary-container": "#a44100",
+                        "error-container": "#ffdad6",
+                        "primary-fixed": "#e2dfff",
+                        "secondary-container": "#d5e3fc",
+                        "on-primary-container": "#dad7ff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-secondary-container": "#57657a",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#fcf8ff",
+                        "on-primary-fixed": "#0f0069",
+                        "on-error-container": "#93000a",
+                        "on-surface-variant": "#464555",
+                        "inverse-primary": "#c3c0ff",
+                        "outline": "#777587",
+                        "surface-tint": "#4d44e3",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e4e1ee",
+                        "surface-variant": "#e4e1ee",
+                        "background": "#fcf8ff",
+                        "tertiary-fixed": "#ffdbcc",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "tertiary": "#7e3000",
+                        "surface-container-low": "#f5f2ff",
+                        "surface-container-high": "#eae6f4",
+                        "surface-bright": "#fcf8ff",
+                        "on-tertiary-fixed-variant": "#7b2f00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "lg": "24px",
+                        "gutter": "24px",
+                        "container-max": "1440px",
+                        "unit": "4px",
+                        "xs": "4px",
+                        "xl": "48px",
+                        "md": "16px"
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden">
+<!-- Top Navigation Shell -->
+<header class="bg-white dark:bg-slate-950 font-inter antialiased text-sm font-medium border-b border-slate-200 dark:border-slate-800 docked full-width top-0 z-40 flex justify-between items-center w-full px-6 py-3 fixed">
+<div class="flex items-center gap-md">
+<span class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Q-Ops Agent</span>
+<div class="hidden md:flex gap-lg ml-xl items-center">
+<a class="text-indigo-600 dark:text-indigo-400 font-semibold transition-all" href="#">Dashboard</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" href="#">Artifacts</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" href="#">Analytics</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors" href="#">Settings</a>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined p-2 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors rounded-full" data-icon="search">search</button>
+<button class="material-symbols-outlined p-2 bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400 rounded-full" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined p-2 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors rounded-full" data-icon="help">help</button>
+<button class="material-symbols-outlined p-2 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors rounded-full" data-icon="settings">settings</button>
+<button class="ml-2 bg-primary-container text-white px-4 py-2 rounded-xl text-sm font-semibold active:opacity-80 transition-all">Create Project</button>
+</div>
+</header>
+<div class="flex h-screen pt-[60px]">
+<!-- Side Navigation Shell -->
+<aside class="bg-slate-50 dark:bg-slate-900 font-inter text-sm tracking-wide fixed left-0 top-[60px] h-full w-64 border-r border-slate-200 dark:border-slate-800 flex flex-col py-6">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-white" data-icon="token">token</span>
+</div>
+<div>
+<div class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">Enterprise QA</div>
+<div class="text-[10px] text-slate-500 font-medium">V2.4.0-Stable</div>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border-r-4 border-indigo-600 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span>Artifacts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="px-4 py-6 border-t border-slate-200 dark:border-slate-800 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span>Documentation</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="support_agent">support_agent</span>
+<span>Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area (Background) -->
+<main class="ml-64 flex-1 p-lg bg-surface min-h-full">
+<div class="max-w-7xl mx-auto">
+<div class="mb-lg flex justify-between items-end">
+<div>
+<h1 class="font-headline-md text-headline-md text-on-surface mb-xs">Active Run Overview</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Monitoring real-time quality operations across regional clusters.</p>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-lg">
+<!-- Metric Card -->
+<div class="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg rounded-xl shadow-sm">
+<div class="flex items-center justify-between mb-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Success Rate</span>
+<span class="material-symbols-outlined text-primary" data-icon="trending_up">trending_up</span>
+</div>
+<div class="font-display-lg text-display-lg text-primary">99.4%</div>
+<div class="mt-xs text-body-sm text-emerald-600 flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-sm" data-icon="arrow_upward">arrow_upward</span>
+                            0.2% from last hour
+                        </div>
+</div>
+<!-- Metric Card -->
+<div class="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg rounded-xl shadow-sm">
+<div class="flex items-center justify-between mb-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">System Latency</span>
+<span class="material-symbols-outlined text-secondary" data-icon="speed">speed</span>
+</div>
+<div class="font-display-lg text-display-lg text-on-surface">42ms</div>
+<div class="mt-xs text-body-sm text-on-surface-variant font-medium">Optimal Performance</div>
+</div>
+<!-- AI Sugggestion Box -->
+<div class="col-span-12 md:col-span-4 bg-surface-container-lowest border-l-4 border-l-primary-container p-lg rounded-xl shadow-sm relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl" data-icon="psychology">psychology</span>
+</div>
+<div class="font-label-caps text-label-caps text-primary mb-sm uppercase">AI Insight</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">Cluster-7 artifact generation is 12% faster today. Recommended: Scale down testing nodes to optimize compute costs.</p>
+<button class="mt-md text-primary font-semibold text-sm flex items-center gap-2">
+                            Optimize Now
+                            <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+<!-- Main Graph Placeholder -->
+<div class="col-span-12 lg:col-span-8 h-96 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm relative overflow-hidden">
+<div class="p-lg border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-title-sm text-title-sm text-on-surface">Execution Timeline</h3>
+<div class="flex gap-sm">
+<span class="px-3 py-1 bg-surface-container text-body-sm rounded-full">1h</span>
+<span class="px-3 py-1 bg-primary text-white text-body-sm rounded-full">24h</span>
+<span class="px-3 py-1 bg-surface-container text-body-sm rounded-full">7d</span>
+</div>
+</div>
+<img class="w-full h-full object-cover opacity-50" data-alt="A clean, minimalist data visualization dashboard showing a complex multi-line performance chart against a pure white background. The graph lines are thin and colored in shades of indigo and slate. The lighting is bright and airy, reflecting a professional high-density enterprise UI. Small geometric data points dot the lines, giving a sense of precision and modern analytics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7QfdFfWV9zXpCruInEFLi5Rs0yZeZEMGSPAE7MSF3VsVralCtbUhL_20MxtpZXuhxbXIqP1sHMWIAp6Q3GQRsN-at_koF02hw8Aq8xpaVTnNXG3OImjx8DNDbeigF1jyo677D0qv-ANY5j1-3OpjJP-5POrCCWvslFel8GPmxEZwEpHoSzv75H8qdRwau8SbD8xlCtql8VOwglJCclpLwTFrsMFUg4rWqfZ2xMFtfNw1kPYNAv0RQS93q7Pvu7uz4FMvpPsMQ6Wgp"/>
+</div>
+<!-- Secondary List -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
+<div class="p-lg border-b border-outline-variant">
+<h3 class="font-title-sm text-title-sm text-on-surface">System Logs</h3>
+</div>
+<div class="p-md space-y-md">
+<div class="flex items-start gap-md">
+<div class="w-2 h-2 mt-2 rounded-full bg-emerald-500"></div>
+<div class="flex-1">
+<div class="text-body-sm font-medium">Gateway Initialized</div>
+<div class="text-[12px] text-on-surface-variant">09:42:12 AM</div>
+</div>
+</div>
+<div class="flex items-start gap-md">
+<div class="w-2 h-2 mt-2 rounded-full bg-indigo-500"></div>
+<div class="flex-1">
+<div class="text-body-sm font-medium">Buffer Synchronized</div>
+<div class="text-[12px] text-on-surface-variant">09:40:01 AM</div>
+</div>
+</div>
+<div class="flex items-start gap-md">
+<div class="w-2 h-2 mt-2 rounded-full bg-slate-400"></div>
+<div class="flex-1">
+<div class="text-body-sm font-medium">Auto-Archive Triggered</div>
+<div class="text-[12px] text-on-surface-variant">09:12:55 AM</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Notification Drawer Overlay -->
+<div class="fixed inset-0 z-50 pointer-events-none">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-slate-900/20 backdrop-blur-sm transition-opacity opacity-100"></div>
+<!-- Right Drawer -->
+<div class="absolute right-0 top-0 bottom-0 w-[400px] bg-white shadow-2xl border-l border-outline-variant pointer-events-auto flex flex-col">
+<!-- Drawer Header -->
+<div class="p-lg border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary" data-icon="notifications">notifications</span>
+<h2 class="font-title-sm text-title-sm text-on-surface">Notification Center</h2>
+</div>
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<!-- Tabs/Filters -->
+<div class="px-lg py-md flex gap-md border-b border-outline-variant">
+<button class="text-body-sm font-semibold text-primary border-b-2 border-primary pb-1">All Jobs</button>
+<button class="text-body-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors pb-1">Success</button>
+<button class="text-body-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors pb-1">Failed</button>
+</div>
+<!-- Notifications List -->
+<div class="flex-1 overflow-y-auto">
+<!-- Success Notification -->
+<div class="p-lg border-b border-outline-variant hover:bg-slate-50 transition-colors group">
+<div class="flex gap-md">
+<div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-emerald-600" data-icon="check_circle" data-weight="fill">check_circle</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-body-md font-semibold text-on-surface leading-tight">Knowledge Base Completed</h4>
+<span class="text-[11px] text-on-surface-variant">2m ago</span>
+</div>
+<p class="text-body-sm text-on-surface-variant mb-md">Semantic indexing for the 'Enterprise-Wiki-V4' has been completed successfully across all nodes.</p>
+<div class="flex gap-md">
+<a class="text-sm font-semibold text-primary hover:underline flex items-center gap-1" href="#">
+                                    View Index
+                                    <span class="material-symbols-outlined text-sm" data-icon="open_in_new">open_in_new</span>
+</a>
+<button class="text-sm font-medium text-on-surface-variant hover:text-on-surface">Dismiss</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Error Notification -->
+<div class="p-lg border-b border-outline-variant hover:bg-slate-50 transition-colors bg-red-50/30">
+<div class="flex gap-md">
+<div class="w-10 h-10 rounded-full bg-error-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-error" data-icon="error" data-weight="fill">error</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-body-md font-semibold text-on-surface leading-tight">Doc Gen Failed</h4>
+<span class="text-[11px] text-on-surface-variant">15m ago</span>
+</div>
+<p class="text-body-sm text-on-surface-variant mb-md">Job ID #8841-B failed due to timeout in the Markdown parser. 4 files were left unprocessed.</p>
+<div class="flex gap-md">
+<button class="px-3 py-1.5 bg-error text-white text-[12px] font-bold rounded-lg active:scale-95 transition-all">Retry Job</button>
+<button class="text-sm font-medium text-on-surface-variant hover:text-on-surface">View Logs</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Info/Ready Notification -->
+<div class="p-lg border-b border-outline-variant hover:bg-slate-50 transition-colors">
+<div class="flex gap-md">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary" data-icon="assignment_turned_in" data-weight="fill">assignment_turned_in</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-body-md font-semibold text-on-surface leading-tight">Risk Matrix Ready</h4>
+<span class="text-[11px] text-on-surface-variant">1h ago</span>
+</div>
+<p class="text-body-sm text-on-surface-variant mb-md">The vulnerability assessment for the Q3 Security Sprint has been aggregated into the Risk Matrix.</p>
+<div class="flex gap-md">
+<a class="text-sm font-semibold text-primary hover:underline" href="#">Download CSV</a>
+<a class="text-sm font-semibold text-primary hover:underline" href="#">Share Report</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Subtle Job History Entry -->
+<div class="p-lg opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all border-b border-outline-variant">
+<div class="flex gap-md">
+<div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-slate-500" data-icon="history">history</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-body-md font-semibold text-on-surface leading-tight">Routine Sync Finished</h4>
+<span class="text-[11px] text-on-surface-variant">4h ago</span>
+</div>
+<p class="text-body-sm text-on-surface-variant">Global cache was refreshed without incident.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Drawer Footer -->
+<div class="p-lg border-t border-outline-variant bg-surface-container-low flex justify-between items-center">
+<button class="text-sm font-medium text-on-surface-variant hover:text-on-surface flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="delete_sweep">delete_sweep</span>
+                    Clear All
+                </button>
+<button class="text-sm font-semibold text-primary flex items-center gap-2 hover:bg-white px-3 py-1.5 rounded-lg transition-colors">
+                    See Notification Settings
+                    <span class="material-symbols-outlined text-sm" data-icon="settings">settings</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

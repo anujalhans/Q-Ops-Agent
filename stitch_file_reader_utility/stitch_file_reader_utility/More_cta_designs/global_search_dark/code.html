@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Q-Ops Agent | Global Search</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #0b1326;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed-dim": "#4edea3",
+                      "primary-fixed-dim": "#adc6ff",
+                      "tertiary": "#4edea3",
+                      "on-tertiary-fixed": "#002113",
+                      "on-surface": "#dae2fd",
+                      "surface-container-lowest": "#060e20",
+                      "tertiary-container": "#00a572",
+                      "surface-bright": "#31394d",
+                      "primary-container": "#4d8eff",
+                      "primary-fixed": "#d8e2ff",
+                      "on-secondary-fixed-variant": "#6900b3",
+                      "on-error-container": "#ffdad6",
+                      "error": "#ffb4ab",
+                      "tertiary-fixed": "#6ffbbe",
+                      "on-primary-fixed-variant": "#004395",
+                      "error-container": "#93000a",
+                      "inverse-surface": "#dae2fd",
+                      "surface-container": "#171f33",
+                      "surface-container-high": "#222a3d",
+                      "on-primary-container": "#00285d",
+                      "on-secondary-container": "#d6a9ff",
+                      "on-tertiary-container": "#00311f",
+                      "inverse-primary": "#005ac2",
+                      "surface-variant": "#2d3449",
+                      "on-surface-variant": "#c2c6d6",
+                      "on-error": "#690005",
+                      "secondary-fixed": "#f0dbff",
+                      "on-primary": "#002e6a",
+                      "primary": "#adc6ff",
+                      "background": "#0b1326",
+                      "surface-container-low": "#131b2e",
+                      "surface-tint": "#adc6ff",
+                      "outline-variant": "#424754",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "surface-container-highest": "#2d3449",
+                      "outline": "#8c909f",
+                      "on-background": "#dae2fd",
+                      "on-secondary-fixed": "#2c0051",
+                      "on-secondary": "#490080",
+                      "on-primary-fixed": "#001a42",
+                      "surface": "#0b1326",
+                      "secondary": "#ddb7ff",
+                      "on-tertiary": "#003824",
+                      "inverse-on-surface": "#283044",
+                      "surface-dim": "#0b1326",
+                      "secondary-fixed-dim": "#ddb7ff",
+                      "secondary-container": "#6f00be"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "sm": "8px",
+                      "md": "16px",
+                      "grid_gutter": "16px",
+                      "xs": "4px",
+                      "lg": "24px",
+                      "xl": "40px",
+                      "grid_columns": "12",
+                      "container_margin": "24px"
+              },
+              "fontFamily": {
+                      "label-caps": ["Inter"],
+                      "h2": ["Space Grotesk"],
+                      "body-sm": ["Inter"],
+                      "h1": ["Space Grotesk"],
+                      "data-mono": ["Space Grotesk"],
+                      "h3": ["Space Grotesk"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "label-caps": ["11px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                      "h2": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400"}],
+                      "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "data-mono": ["13px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "400"}],
+                      "h3": ["18px", {"lineHeight": "1.4", "letterSpacing": "0em", "fontWeight": "500"}],
+                      "body-lg": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-sm antialiased overflow-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+<div class="flex items-center gap-md">
+<span class="text-xl font-bold text-slate-50 tracking-tighter font-h2">Q-Ops Agent</span>
+<nav class="hidden md:flex items-center gap-md ml-lg">
+<a class="font-['Space_Grotesk'] tracking-tight text-sm text-slate-400 hover:text-slate-200 transition-colors" href="#">Dashboard</a>
+<a class="font-['Space_Grotesk'] tracking-tight text-sm text-[#3b82f6] border-b-2 border-[#3b82f6] pb-1" href="#">Projects</a>
+<a class="font-['Space_Grotesk'] tracking-tight text-sm text-slate-400 hover:text-slate-200 transition-colors" href="#">Nodes</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-sm px-md py-xs bg-white/5 rounded-lg border border-white/10 group cursor-pointer">
+<span class="material-symbols-outlined text-slate-400 text-sm">search</span>
+<span class="text-slate-400 text-sm font-['Space_Grotesk']">Global Search</span>
+<span class="ml-lg px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-slate-500 font-mono">⌘K</span>
+</div>
+<div class="flex items-center gap-sm">
+<button class="material-symbols-outlined text-slate-400 hover:text-white transition-colors">notifications</button>
+<button class="material-symbols-outlined text-slate-400 hover:text-white transition-colors">history</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-white/20">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a senior software engineer with a neutral expression, set against a blurred high-tech office background with soft blue and purple lighting. The image is crisp, modern, and fits a premium enterprise software aesthetic with cool tones and high contrast." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6YS9DWzAGuK3HoVyB1uz1yBfgIpUSMkI9ybKQNWF1bw-nifktSoXKtpcBPg5lY_7rrjipqzXWvIl1f1GCmwIiGwgqI-u0BldJrhItAU0sJrnsgfy3oAYnsSLO8cOxen_s1UuKHHunOe2PW0T1D2uClpTToFJS5XeU6VNqwjxgSh_RAhc0i4dZRzQ7ddDLwhX15C-MQ9ubrk5AWlv0tdM0RrYvjUUHET6uIxs63THdaZ2ZerKQrhjoH8fzN4gafsM1kLXqMpwAeZpq"/>
+</div>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 bottom-0 flex flex-col pt-8 bg-[#1e293b] w-64 border-r border-white/5 z-40">
+<div class="px-6 mb-lg">
+<div class="flex items-center gap-sm mb-xs">
+<span class="material-symbols-outlined text-[#3b82f6]" style="font-variation-settings: 'FILL' 1;">hub</span>
+<span class="text-lg font-black text-[#3b82f6] font-h3 tracking-tight">Q-Ops Node</span>
+</div>
+<p class="font-['Space_Grotesk'] uppercase text-xs font-semibold tracking-widest text-slate-500">AI Enterprise QA</p>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-md px-4 py-3 text-slate-500 hover:bg-white/5 hover:text-slate-200 transition-all font-label-caps" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-md px-4 py-3 bg-blue-500/10 text-[#3b82f6] border-r-4 border-[#3b82f6] font-label-caps" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+                Artifacts
+            </a>
+<a class="flex items-center gap-md px-4 py-3 text-slate-500 hover:bg-white/5 hover:text-slate-200 transition-all font-label-caps" href="#">
+<span class="material-symbols-outlined">hub</span>
+                Integrations
+            </a>
+<a class="flex items-center gap-md px-4 py-3 text-slate-500 hover:bg-white/5 hover:text-slate-200 transition-all font-label-caps" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+                Settings
+            </a>
+</nav>
+<div class="p-4 mt-auto border-t border-white/5">
+<button class="w-full py-3 bg-[#3b82f6] text-white font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-sm shadow-lg shadow-blue-500/20">
+<span class="material-symbols-outlined text-sm">rocket_launch</span>
+                Launch Scan
+            </button>
+</div>
+</aside>
+<!-- Main Canvas (Background Content) -->
+<main class="pl-64 pt-16 h-screen w-full bg-background overflow-y-auto">
+<div class="p-lg grid grid-cols-12 gap-grid_gutter opacity-20 pointer-events-none">
+<!-- Mock Content -->
+<div class="col-span-12 h-40 bg-surface-container rounded-xl border border-white/10"></div>
+<div class="col-span-4 h-64 bg-surface-container rounded-xl border border-white/10"></div>
+<div class="col-span-8 h-64 bg-surface-container rounded-xl border border-white/10"></div>
+<div class="col-span-12 h-80 bg-surface-container rounded-xl border border-white/10"></div>
+</div>
+</main>
+<!-- Global Search / Command Palette Overlay -->
+<div class="fixed inset-0 z-[100] flex items-start justify-center pt-[102px] bg-background/60 backdrop-blur-md">
+<div class="w-full max-w-3xl bg-surface-container-high border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
+<!-- Search Header -->
+<div class="p-md flex items-center gap-md border-b border-white/5 bg-surface-container-highest/50">
+<span class="material-symbols-outlined text-primary text-2xl">search</span>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-h3 font-h3 text-on-surface placeholder-outline" placeholder="Search projects, artifacts, or help..." type="text" value="Cloud Scale"/>
+<div class="flex items-center gap-xs px-2 py-1 bg-surface-container-lowest rounded border border-white/10">
+<span class="text-[10px] text-slate-500 font-mono">ESC</span>
+</div>
+</div>
+<!-- Content Area -->
+<div class="flex-1 max-h-[614px] overflow-y-auto p-md space-y-lg">
+<!-- AI Suggestion Card -->
+<div class="relative group p-md rounded-xl bg-secondary-container/5 border border-secondary/20 shadow-[0_0_15px_rgba(168,85,247,0.05)] overflow-hidden">
+<div class="absolute top-0 right-0 p-sm">
+<span class="text-[10px] font-label-caps text-secondary uppercase tracking-widest bg-secondary/10 px-2 py-0.5 rounded-full">AI Insight</span>
+</div>
+<div class="flex items-start gap-md">
+<div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div class="flex-1">
+<h4 class="text-secondary font-h3 text-body-lg mb-xs">Auto-Pin Recommendation</h4>
+<p class="text-on-surface-variant text-body-sm leading-relaxed mb-md">
+                                You've accessed "Nightly Security Audit" 4 times today. Would you like to pin this job to your dashboard?
+                            </p>
+<div class="flex gap-sm">
+<button class="px-md py-1.5 bg-secondary text-on-secondary rounded font-label-caps text-xs hover:opacity-90 transition-opacity">Confirm Pin</button>
+<button class="px-md py-1.5 border border-secondary/30 text-secondary rounded font-label-caps text-xs hover:bg-secondary/10 transition-colors">Dismiss</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Projects Group -->
+<section>
+<div class="flex items-center justify-between mb-sm px-sm">
+<h5 class="text-label-caps text-outline uppercase font-semibold">Projects</h5>
+<span class="text-[10px] text-outline font-mono">1 RESULT</span>
+</div>
+<div class="space-y-1">
+<div class="group flex items-center justify-between p-sm rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10 cursor-pointer transition-all">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-md">rocket</span>
+</div>
+<div>
+<div class="text-on-surface font-medium flex items-center gap-xs">
+                                        Cloud Scale Infrastructure
+                                        <span class="text-[10px] bg-primary/20 text-primary-fixed-dim px-1.5 py-0.5 rounded-full">Production</span>
+</div>
+<div class="text-xs text-outline">AWS US-East-1 • 42 Nodes Active</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Artifacts Group -->
+<section>
+<div class="flex items-center justify-between mb-sm px-sm">
+<h5 class="text-label-caps text-outline uppercase font-semibold">Artifacts</h5>
+<span class="text-[10px] text-outline font-mono">1 RESULT</span>
+</div>
+<div class="space-y-1">
+<div class="group flex items-center justify-between p-sm rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10 cursor-pointer transition-all">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-md">description</span>
+</div>
+<div>
+<div class="text-on-surface font-medium font-data-mono">deployment_spec.yaml</div>
+<div class="text-xs text-outline">Modified 2h ago by AI-Agent-Alpha</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Jobs Group -->
+<section>
+<div class="flex items-center justify-between mb-sm px-sm">
+<h5 class="text-label-caps text-outline uppercase font-semibold">Jobs</h5>
+<span class="text-[10px] text-outline font-mono">1 RESULT</span>
+</div>
+<div class="space-y-1">
+<div class="group flex items-center justify-between p-sm rounded-lg bg-white/5 border border-white/10 cursor-pointer transition-all">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded bg-error/10 flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-md">security</span>
+</div>
+<div>
+<div class="text-on-surface font-medium">Nightly Security Audit</div>
+<div class="text-xs text-error flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+                                        Failed - 12 Critical Vulnerabilities
+                                    </div>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<span class="text-[10px] px-2 py-0.5 rounded bg-white/10 text-slate-500 font-mono">RETURN</span>
+<span class="material-symbols-outlined text-primary">keyboard_return</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer Meta -->
+<div class="px-md py-sm border-t border-white/5 bg-surface-container-highest/20 flex items-center justify-between">
+<div class="flex items-center gap-lg">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-outline text-xs">keyboard_arrow_up</span>
+<span class="material-symbols-outlined text-outline text-xs">keyboard_arrow_down</span>
+<span class="text-[10px] text-outline uppercase font-semibold">Navigate</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-outline text-xs">keyboard_return</span>
+<span class="text-[10px] text-outline uppercase font-semibold">Open</span>
+</div>
+</div>
+<div class="flex items-center gap-xs text-outline">
+<span class="material-symbols-outlined text-xs">info</span>
+<span class="text-[10px] uppercase font-semibold">Deep Search Enabled</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Background Decoration for Glassmorphism Context -->
+<div class="fixed top-1/4 right-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] -z-10"></div>
+<div class="fixed bottom-1/4 left-1/4 w-[400px] h-[400px] bg-secondary/10 rounded-full blur-[100px] -z-10"></div>
+</body></html>

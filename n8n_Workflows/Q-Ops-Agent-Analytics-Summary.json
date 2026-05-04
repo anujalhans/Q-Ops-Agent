@@ -1,0 +1,386 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "path": "/analytics-summary",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -16,
+        0
+      ],
+      "id": "3571fb6b-d72c-4eb7-8113-4f030861e5f2",
+      "name": "Webhook",
+      "webhookId": "3f1b2db2-55ce-47d1-b7de-85dce568a742"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f107718f-2686-47a8-871c-e0a625b56a88",
+              "name": "pipeline",
+              "value": "={{ $json.query.pipeline || 'all' }}",
+              "type": "string"
+            },
+            {
+              "id": "d117ea1d-7e49-42ca-8b55-ad4ead99a1d7",
+              "name": "days",
+              "value": "={{ parseInt($json.query.days) || 30 }}",
+              "type": "string"
+            },
+            {
+              "id": "42de7abc-0bfd-48bc-aa2a-27a1187bc71a",
+              "name": "dateFrom",
+              "value": "={{ new Date(Date.now() - ((parseInt($json.query.days) || 30) * 24 * 60 * 60 * 1000)).toISOString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        0
+      ],
+      "id": "419f988e-6602-45e4-abab-45a2351139de",
+      "name": "Set Default Params"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/rpc/get_analytics_overview",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_date_from\": \"{{ $('Set Default Params').item.json.dateFrom }}\",\n  \"p_pipeline\":  \"{{ $('Set Default Params').item.json.pipeline }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        512,
+        -256
+      ],
+      "id": "fd4294cd-0a50-4c44-805d-14a91ca63402",
+      "name": "Query: Overview Stats",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "W6PsBv4SlXFSR6Kk",
+          "name": "supabase-anon-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/rpc/get_analytics_by_document_type",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_date_from\": \"={{ $('Set Default Params').item.json.dateFrom }}\",\n  \"p_pipeline\":  \"={{ $('Set Default Params').item.json.pipeline }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        512,
+        -64
+      ],
+      "id": "70efbabb-abec-4767-9cb1-5a1e40842bfe",
+      "name": "Query: By Document Type",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "W6PsBv4SlXFSR6Kk",
+          "name": "supabase-anon-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/rpc/get_analytics_failure_rate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_date_from\": \"{{ $('Set Default Params').item.json.dateFrom }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        512,
+        192
+      ],
+      "id": "36ebb23b-defd-4ca7-9c32-b3f181377b31",
+      "name": "Query: Failure Rate",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "W6PsBv4SlXFSR6Kk",
+          "name": "supabase-anon-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "event",
+              "value": "eq.JOB_COMPLETED"
+            },
+            {
+              "name": "order",
+              "value": "created_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "10"
+            },
+            {
+              "name": "select",
+              "value": "job_id,project_name,document_type,pipeline,event,status,duration_ms,word_count,tokens_total,estimated_cost_usd,created_at"
+            },
+            {
+              "name": "created_at",
+              "value": "={{ 'gte.' + $('Set Default Params').item.json.dateFrom }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        512,
+        384
+      ],
+      "id": "0382e3f6-3527-43cf-8d60-e11545be6476",
+      "name": "Query: Recent Jobs",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "W6PsBv4SlXFSR6Kk",
+          "name": "supabase-anon-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 4,
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        912,
+        16
+      ],
+      "id": "01f2addb-fa3d-438d-8ec8-222e9cf46ce3",
+      "name": "Wait for All Queries",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pull results from each parallel query by node name\nconst overviewRaw = $items(\"Query: Overview Stats\")[0]?.json || {};\nconst byDocTypeRaw = $items(\"Query: By Document Type\")[0]?.json;\nconst failureRateRaw = $items(\"Query: Failure Rate\")[0]?.json || {};\nconst recentJobsRaw = $items(\"Query: Recent Jobs\");\n\n// ✅ Overview — Supabase RPC returns the jsonb directly as the response object\nconst overview = {\n  totalJobsCompleted:          overviewRaw.totalJobsCompleted || 0,\n  totalDocumentsGenerated:     overviewRaw.totalDocumentsGenerated || 0,\n  totalIngestionJobsCompleted: overviewRaw.totalIngestionJobsCompleted || 0,\n  totalJobsFailed:             overviewRaw.totalJobsFailed || 0,\n  successRate:                 parseFloat(overviewRaw.successRate) || 100,\n  totalCostUsd:                parseFloat(overviewRaw.totalCostUsd) || 0,\n  avgCostPerDocument:          parseFloat(overviewRaw.avgCostPerDocument) || 0,\n  totalTokensConsumed:         parseInt(overviewRaw.totalTokensConsumed) || 0,\n  totalChunksIngested:         parseInt(overviewRaw.totalChunksIngested) || 0,\n  avgDurationMs:               parseInt(overviewRaw.avgDurationMs) || 0\n};\n\n// ✅ By Document Type — RPC returns jsonb array\nlet byDocumentType = [];\nif (Array.isArray(byDocTypeRaw)) {\n  byDocumentType = byDocTypeRaw;\n} else if (byDocTypeRaw && typeof byDocTypeRaw === 'object') {\n  // Sometimes Supabase wraps single results\n  byDocumentType = [byDocTypeRaw];\n}\n\n// ✅ Failure Rate — RPC returns { generation: 0.0, ingestion: 0.0 }\nconst failureRate = {\n  generation: parseFloat(failureRateRaw.generation) || 0,\n  ingestion:  parseFloat(failureRateRaw.ingestion) || 0\n};\n\n// ✅ Recent Jobs — direct table query returns array of items\nconst recentJobs = recentJobsRaw.map(item => ({\n  jobId:            item.json.job_id,\n  projectName:      item.json.project_name,\n  documentType:     item.json.document_type,\n  pipeline:         item.json.pipeline,\n  status:           item.json.status,\n  durationMs:       item.json.duration_ms,\n  wordCount:        item.json.word_count,\n  tokensTotal:      item.json.tokens_total,\n  estimatedCostUsd: parseFloat(item.json.estimated_cost_usd) || 0,\n  createdAt:        item.json.created_at\n}));\n\n// ✅ Final response\nreturn [\n  {\n    json: {\n      overview,\n      byDocumentType,\n      failureRate,\n      recentJobs,\n      meta: {\n        generatedAt:  new Date().toISOString(),\n        dateFrom:     $('Set Default Params').item.json.dateFrom,\n        pipeline:     $('Set Default Params').item.json.pipeline,\n        daysRequested: $('Set Default Params').item.json.days\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        16
+      ],
+      "id": "75e4cd90-4b4e-4ffb-bcc9-6a7e7f707615",
+      "name": "Build Analytics Response",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1424,
+        0
+      ],
+      "id": "d9b06251-a1af-4659-8aa3-5a07f0e96ed4",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"error\": true,\n  \"message\": \"Analytics query failed\",\n  \"details\": \"={{ $json.message || 'Unknown error' }}\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1424,
+        256
+      ],
+      "id": "3e834c64-965e-4f36-b9c4-20d7b371bb18",
+      "name": "FAILED: Respond to Webhook"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Default Params",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Default Params": {
+      "main": [
+        [
+          {
+            "node": "Query: Overview Stats",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Query: By Document Type",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Query: Failure Rate",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Query: Recent Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query: Overview Stats": {
+      "main": [
+        [
+          {
+            "node": "Wait for All Queries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query: By Document Type": {
+      "main": [
+        [
+          {
+            "node": "Wait for All Queries",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Query: Failure Rate": {
+      "main": [
+        [
+          {
+            "node": "Wait for All Queries",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Query: Recent Jobs": {
+      "main": [
+        [
+          {
+            "node": "Wait for All Queries",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Wait for All Queries": {
+      "main": [
+        [
+          {
+            "node": "Build Analytics Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FAILED: Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Analytics Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FAILED: Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "e8825c62dab716716b7ba371e5b41411b530556dbdff5be5bbe9383a1666c627"
+  }
+}

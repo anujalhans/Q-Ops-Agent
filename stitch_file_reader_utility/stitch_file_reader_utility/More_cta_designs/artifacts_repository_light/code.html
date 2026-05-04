@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#ffb695",
+                        "surface-dim": "#dcd8e5",
+                        "inverse-surface": "#302f39",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#f3effc",
+                        "primary": "#3525cd",
+                        "on-tertiary-container": "#ffd2be",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-primary": "#ffffff",
+                        "secondary": "#515f74",
+                        "surface-container": "#f0ecf9",
+                        "primary-container": "#4f46e5",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-tertiary-fixed": "#351000",
+                        "outline-variant": "#c7c4d8",
+                        "on-background": "#1b1b24",
+                        "on-surface": "#1b1b24",
+                        "tertiary-container": "#a44100",
+                        "error-container": "#ffdad6",
+                        "primary-fixed": "#e2dfff",
+                        "secondary-container": "#d5e3fc",
+                        "on-primary-container": "#dad7ff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-secondary-container": "#57657a",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#fcf8ff",
+                        "on-primary-fixed": "#0f0069",
+                        "on-error-container": "#93000a",
+                        "on-surface-variant": "#464555",
+                        "inverse-primary": "#c3c0ff",
+                        "outline": "#777587",
+                        "surface-tint": "#4d44e3",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e4e1ee",
+                        "surface-variant": "#e4e1ee",
+                        "background": "#fcf8ff",
+                        "tertiary-fixed": "#ffdbcc",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "tertiary": "#7e3000",
+                        "surface-container-low": "#f5f2ff",
+                        "surface-container-high": "#eae6f4",
+                        "surface-bright": "#fcf8ff",
+                        "on-tertiary-fixed-variant": "#7b2f00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "lg": "24px",
+                        "gutter": "24px",
+                        "container-max": "1440px",
+                        "unit": "4px",
+                        "xs": "4px",
+                        "xl": "48px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #fcf8ff;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-background antialiased overflow-x-hidden">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-full w-64 border-r border-slate-200 bg-slate-50 flex flex-col py-6 z-50">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-white" data-icon="inventory_2">inventory_2</span>
+</div>
+<div>
+<h1 class="text-lg font-black text-indigo-600 leading-tight">Enterprise QA</h1>
+<p class="text-xs text-slate-500">V2.4.0-Stable</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 transition-all duration-200 ease-in-out font-inter text-sm tracking-wide group" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- Active State: Artifacts -->
+<a class="flex items-center gap-3 px-4 py-3 bg-indigo-50 text-indigo-700 border-r-4 border-indigo-600 transition-all duration-200 ease-in-out font-inter text-sm tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="font-semibold">Artifacts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 transition-all duration-200 ease-in-out font-inter text-sm tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 transition-all duration-200 ease-in-out font-inter text-sm tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="px-4 py-3">
+<button class="w-full py-3 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm hover:opacity-90 active:opacity-80 transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                New Run
+            </button>
+</div>
+<div class="mt-auto px-4 pt-4 border-t border-slate-200 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 hover:bg-slate-100 transition-all duration-200 ease-in-out font-inter text-sm tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span>Documentation</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 hover:bg-slate-100 transition-all duration-200 ease-in-out font-inter text-sm tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="support_agent">support_agent</span>
+<span>Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="ml-64 min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 w-full bg-white border-b border-slate-200 flex justify-between items-center px-6 py-3">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tight text-slate-900 font-inter antialiased">Q-Ops Agent</span>
+<!-- Project Selector -->
+<div class="relative flex items-center">
+<label class="sr-only" for="project-select">Select Project</label>
+<div class="flex items-center bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 gap-2 cursor-pointer hover:bg-slate-100 transition-colors">
+<span class="material-symbols-outlined text-indigo-600" data-icon="folder_shared">folder_shared</span>
+<span class="text-sm font-medium text-slate-700">Project Phoenix Alpha</span>
+<span class="material-symbols-outlined text-slate-400 text-sm" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-200">
+<span class="material-symbols-outlined text-slate-400 text-sm" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-48 text-slate-600" placeholder="Search artifacts..." type="text"/>
+</div>
+<div class="flex items-center gap-1 border-r border-slate-200 pr-4 mr-1">
+<button class="p-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"><span class="material-symbols-outlined" data-icon="notifications">notifications</span></button>
+<button class="p-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"><span class="material-symbols-outlined" data-icon="help">help</span></button>
+<button class="p-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"><span class="material-symbols-outlined" data-icon="settings">settings</span></button>
+</div>
+<button class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="create_new_folder">create_new_folder</span>
+                    Create Project
+                </button>
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-slate-200" data-alt="A professional headshot of a software engineer in a clean, modern studio setting. The lighting is soft and natural, emphasizing a approachable and intelligent expression. The background is a soft-focus office environment with subtle hints of glass and white furniture, maintaining a light-mode corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6j-B2Dz68LwdONorOvrXQLVX1fKHtC_jqmmnsnkB2GQ6PQt3tohWSzW_UhpwZiDct1kpce34ClLOzQt7Nl2Yg4sQyxfzVyldN5vWiBVuhgaBM7XP87ewl9pFyRWcaF28fZrdtiZGtICBAWeoWhTqTTH0uTs2Jbfk7iGulJ1ObvvQy5WS8tmcJXMsbPUAO1Wdzaan4ruWdInmIRQlGgHlfqL9_oaw_RnYnE9aSN9tPMxoXREydQMkSGH7vaPzkDKJkx0tJrd4E-sxo"/>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-lg max-w-container-max mx-auto w-full">
+<!-- Breadcrumbs & Header -->
+<div class="mb-lg flex justify-between items-end">
+<div>
+<nav class="flex items-center gap-2 text-xs text-slate-400 mb-2 font-label-caps">
+<span>HOME</span>
+<span class="material-symbols-outlined text-[10px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-indigo-600">ARTIFACTS REPOSITORY</span>
+</nav>
+<h2 class="text-display-lg font-display-lg text-slate-900">Artifacts Repository</h2>
+<p class="text-body-md text-slate-500 mt-1">Manage and track documentation assets for the current engineering sprint.</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-4 py-2 border border-slate-200 bg-white rounded-lg text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span>
+                        Filter
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
+<span class="material-symbols-outlined text-sm" data-icon="upload">upload</span>
+                        Upload Artifacts
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Stats Section -->
+<div class="grid grid-cols-4 gap-gutter mb-lg">
+<div class="bg-white p-md border border-slate-200 rounded-xl">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+</div>
+<span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">+12%</span>
+</div>
+<p class="text-sm font-medium text-slate-500 font-label-caps">TOTAL ARTIFACTS</p>
+<p class="text-3xl font-bold text-slate-900 mt-1">1,284</p>
+</div>
+<div class="bg-white p-md border border-slate-200 rounded-xl">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-emerald-50 rounded-lg text-emerald-600">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+</div>
+<span class="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded">Stable</span>
+</div>
+<p class="text-sm font-medium text-slate-500 font-label-caps">PROCESSED OK</p>
+<p class="text-3xl font-bold text-slate-900 mt-1">98.2%</p>
+</div>
+<div class="bg-white p-md border border-slate-200 rounded-xl">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-tertiary-fixed-dim/20 rounded-lg text-tertiary">
+<span class="material-symbols-outlined" data-icon="pending">pending</span>
+</div>
+<span class="text-xs font-bold text-tertiary bg-tertiary-fixed/30 px-2 py-1 rounded">8 Tasks</span>
+</div>
+<p class="text-sm font-medium text-slate-500 font-label-caps">IN PIPELINE</p>
+<p class="text-3xl font-bold text-slate-900 mt-1">24</p>
+</div>
+<div class="bg-white p-md border border-slate-200 rounded-xl">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-red-50 rounded-lg text-red-600">
+<span class="material-symbols-outlined" data-icon="error_outline">error_outline</span>
+</div>
+<span class="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">-2.1%</span>
+</div>
+<p class="text-sm font-medium text-slate-500 font-label-caps">FAILED UPLOADS</p>
+<p class="text-3xl font-bold text-slate-900 mt-1">12</p>
+</div>
+</div>
+<!-- Table Container -->
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+<div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
+<h3 class="text-title-sm font-title-sm text-slate-800">Recent Artifacts</h3>
+<div class="flex gap-2">
+<button class="p-1.5 text-slate-500 hover:bg-slate-200 rounded transition-colors">
+<span class="material-symbols-outlined" data-icon="refresh">refresh</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:bg-slate-200 rounded transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50">
+<th class="px-6 py-4 text-xs font-bold text-slate-800 tracking-wider font-label-caps border-b border-slate-200">FILE NAME</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-800 tracking-wider font-label-caps border-b border-slate-200">TYPE</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-800 tracking-wider font-label-caps border-b border-slate-200">DATE UPLOADED</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-800 tracking-wider font-label-caps border-b border-slate-200">STATUS</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-800 tracking-wider font-label-caps border-b border-slate-200">ACTIONS</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-indigo-400" data-icon="article">article</span>
+<div>
+<p class="text-sm font-semibold text-slate-900">BRD_Core_Banking_V2.pdf</p>
+<p class="text-[11px] text-slate-400">4.2 MB • User: Admin</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full uppercase tracking-tighter">BRD</span>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-slate-600">Oct 12, 2023</p>
+<p class="text-[11px] text-slate-400">14:24 PM</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 w-fit px-3 py-1 rounded-full border border-emerald-100">
+<span class="w-1.5 h-1.5 bg-emerald-600 rounded-full"></span>
+<span class="text-xs font-semibold">Processed</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<button class="text-slate-400 hover:text-indigo-600 transition-colors"><span class="material-symbols-outlined" data-icon="download">download</span></button>
+<button class="ml-4 text-slate-400 hover:text-red-500 transition-colors"><span class="material-symbols-outlined" data-icon="delete">delete</span></button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-indigo-400" data-icon="description">description</span>
+<div>
+<p class="text-sm font-semibold text-slate-900">FRD_Auth_Service_Spec.docx</p>
+<p class="text-[11px] text-slate-400">1.8 MB • User: J. Doe</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-xs font-bold text-secondary-container text-on-secondary-container bg-secondary-fixed-dim px-2.5 py-1 rounded-full uppercase tracking-tighter">FRD</span>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-slate-600">Oct 11, 2023</p>
+<p class="text-[11px] text-slate-400">09:12 AM</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 w-fit px-3 py-1 rounded-full border border-emerald-100">
+<span class="w-1.5 h-1.5 bg-emerald-600 rounded-full"></span>
+<span class="text-xs font-semibold">Processed</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<button class="text-slate-400 hover:text-indigo-600 transition-colors"><span class="material-symbols-outlined" data-icon="download">download</span></button>
+<button class="ml-4 text-slate-400 hover:text-red-500 transition-colors"><span class="material-symbols-outlined" data-icon="delete">delete</span></button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50 transition-colors bg-red-50/20">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-red-400" data-icon="error">error</span>
+<div>
+<p class="text-sm font-semibold text-slate-900">HLD_Database_Schema_v4.png</p>
+<p class="text-[11px] text-slate-400">12.5 MB • User: S. Chen</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-xs font-bold text-slate-600 bg-slate-200 px-2.5 py-1 rounded-full uppercase tracking-tighter">HLD</span>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-slate-600">Oct 10, 2023</p>
+<p class="text-[11px] text-slate-400">18:45 PM</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-red-600 bg-red-50 w-fit px-3 py-1 rounded-full border border-red-100">
+<span class="w-1.5 h-1.5 bg-red-600 rounded-full"></span>
+<span class="text-xs font-semibold">Failed</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<button class="text-indigo-600 font-semibold text-xs flex items-center gap-1"><span class="material-symbols-outlined text-xs" data-icon="restart_alt">restart_alt</span> Retry</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-indigo-400" data-icon="architecture">architecture</span>
+<div>
+<p class="text-sm font-semibold text-slate-900">HLD_System_Infrastructure.pdf</p>
+<p class="text-[11px] text-slate-400">8.9 MB • User: Admin</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-xs font-bold text-slate-600 bg-slate-200 px-2.5 py-1 rounded-full uppercase tracking-tighter">HLD</span>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-slate-600">Oct 09, 2023</p>
+<p class="text-[11px] text-slate-400">11:30 AM</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 w-fit px-3 py-1 rounded-full border border-emerald-100">
+<span class="w-1.5 h-1.5 bg-emerald-600 rounded-full"></span>
+<span class="text-xs font-semibold">Processed</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<button class="text-slate-400 hover:text-indigo-600 transition-colors"><span class="material-symbols-outlined" data-icon="download">download</span></button>
+<button class="ml-4 text-slate-400 hover:text-red-500 transition-colors"><span class="material-symbols-outlined" data-icon="delete">delete</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-4 bg-white border-t border-slate-200 flex justify-between items-center">
+<p class="text-xs text-slate-500 font-body-sm">Showing 1 to 4 of 1,284 artifacts</p>
+<div class="flex gap-1">
+<button class="px-3 py-1 border border-slate-200 rounded text-xs hover:bg-slate-50">Prev</button>
+<button class="px-3 py-1 bg-primary text-white rounded text-xs">1</button>
+<button class="px-3 py-1 border border-slate-200 rounded text-xs hover:bg-slate-50">2</button>
+<button class="px-3 py-1 border border-slate-200 rounded text-xs hover:bg-slate-50">3</button>
+<span class="px-2 text-slate-400">...</span>
+<button class="px-3 py-1 border border-slate-200 rounded text-xs hover:bg-slate-50">Next</button>
+</div>
+</div>
+</div>
+<!-- AI Suggestion Area -->
+<div class="mt-lg p-lg bg-indigo-50/30 border-l-4 border-indigo-500 rounded-r-xl relative overflow-hidden">
+<div class="absolute right-0 top-0 opacity-10 pointer-events-none">
+<span class="material-symbols-outlined text-9xl" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<div class="relative z-10">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-indigo-600" data-icon="psychology">psychology</span>
+<h4 class="text-sm font-bold text-indigo-900 tracking-wide font-label-caps">AI INSIGHTS</h4>
+</div>
+<p class="text-body-sm text-indigo-800/80 leading-relaxed max-w-2xl">
+                        I've detected missing <span class="font-bold underline decoration-indigo-300">Test Strategy</span> documentation for Project Phoenix. 
+                        Uploading this artifact will allow the agent to generate more accurate test scenarios based on your quality governance rules.
+                    </p>
+<div class="mt-4 flex gap-4">
+<button class="text-xs font-bold text-indigo-600 hover:underline">Dismiss Recommendation</button>
+<button class="text-xs font-bold text-white bg-indigo-600 px-4 py-2 rounded-lg shadow hover:bg-indigo-700 transition-colors">Generate Draft with AI</button>
+</div>
+</div>
+<!-- AI Suggestion Box Gradient Border Sig -->
+<div class="absolute inset-0 border border-transparent pointer-events-none" style="background: linear-gradient(to right, rgba(79, 70, 229, 0.1), transparent) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: destination-out; mask-composite: exclude;"></div>
+</div>
+</div>
+</main>
+<!-- Contextual Floating Action Button -->
+<div class="fixed bottom-lg right-lg group">
+<div class="absolute bottom-full right-0 mb-4 flex flex-col items-end gap-2 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all pointer-events-none group-hover:pointer-events-auto">
+<button class="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:bg-slate-50 whitespace-nowrap">
+<span class="material-symbols-outlined text-sm" data-icon="scanner">scanner</span>
+                Scan Document
+            </button>
+<button class="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:bg-slate-50 whitespace-nowrap">
+<span class="material-symbols-outlined text-sm" data-icon="cloud_sync">cloud_sync</span>
+                Sync from Jira
+            </button>
+</div>
+<button class="w-14 h-14 bg-indigo-600 text-white rounded-full shadow-xl flex items-center justify-center hover:bg-indigo-700 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-2xl" data-icon="add">add</span>
+</button>
+</div>
+</body></html>

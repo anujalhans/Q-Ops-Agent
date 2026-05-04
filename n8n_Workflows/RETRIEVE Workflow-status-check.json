@@ -1,0 +1,163 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "path": "/job-status-retrieve",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -384,
+        112
+      ],
+      "id": "4d657a03-26be-4bf7-9489-8a0a7e861f18",
+      "name": "Webhook",
+      "webhookId": "f40b7289-5d71-4a56-819c-c1acca548c1e"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d492c575-93f6-4483-bf92-dce1038f21b2",
+              "name": "jobId",
+              "value": "={{ $json.query.jobId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -176,
+        112
+      ],
+      "id": "3f5b568b-10f4-4546-a3c7-ae5a7ca41723",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "job_id",
+              "value": "=eq.{{ $json.jobId }}"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            },
+            {
+              "name": "select",
+              "value": "job_id,status,output"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \n  \"Content-Type\": \"application/json\" \n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        32,
+        112
+      ],
+      "id": "b4eb7550-dfba-44ad-adb9-86a63b199913",
+      "name": "Check Status",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "W6PsBv4SlXFSR6Kk",
+          "name": "supabase-anon-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputJobId = $input.first().json.jobId;\n\n// Handle both array and object responses\nlet record = Array.isArray($json) ? $json[0] : $json;\n\nif (!record || !record.job_id) {\n  return [\n    {\n      json: {\n        jobId: inputJobId,\n        status: \"not_found\",\n        output: null\n      }\n    }\n  ];\n}\n\n// 🔥 Ensure output is ALWAYS either null OR object (never string)\nlet output = record.output ?? null;\n\n// Optional safety (only if your DB might accidentally store stringified JSON)\nif (typeof output === \"string\") {\n  try {\n    output = JSON.parse(output);\n  } catch (e) {\n    output = null;\n  }\n}\n\nreturn [\n  {\n    json: {\n      jobId: record.job_id,\n      status: record.status,\n      output: output\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        112
+      ],
+      "id": "cac52f7c-5046-494c-afd6-49fd33c0d555",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  jobId: $json.jobId,\n  status: $json.status,\n  output: $json.output\n} }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        112
+      ],
+      "id": "5abd57a5-86ba-49a3-b83c-f3c243e55742",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Check Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Status": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "e8825c62dab716716b7ba371e5b41411b530556dbdff5be5bbe9383a1666c627"
+  }
+}

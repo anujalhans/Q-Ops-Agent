@@ -1,0 +1,171 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-qa-doc",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5008,
+        416
+      ],
+      "id": "1a5e3fca-09c9-4a93-bccc-bdadfbbceaa4",
+      "name": "Webhook",
+      "webhookId": "ffc3f9cd-499d-4388-a218-1ff22375e09a"
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst datePart = now.toISOString().slice(2,10).replace(/-/g, ''); // YYMMDD\n\nconst randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();\n\nconst jobId = `GEN-${datePart}-${randomPart}`;\n\nreturn [{\n  json: {\n    jobId,\n    input: $json.body\n  }\n}];\n\n/*return [{\n  json: {\n    jobId: \"JOB_\" + Date.now(),\n    input: $json.body\n  }\n}];*/"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4768,
+        416
+      ],
+      "id": "4d22a06c-6316-4ee8-bae0-26d56496bbeb",
+      "name": "Generate Job ID"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \n  \"Content-Type\": \"application/json\" \n}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "job_id",
+              "value": "={{ $json.jobId }}"
+            },
+            {
+              "name": "status",
+              "value": "pending"
+            },
+            {
+              "name": "input",
+              "value": "={{ $json.input }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -4528,
+        416
+      ],
+      "id": "4c270433-163c-4960-b343-b626f1605156",
+      "name": "Insert JobID into Supabase DB",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "W6PsBv4SlXFSR6Kk",
+          "name": "supabase-anon-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"jobId\": \"{{ $('Generate Job ID').item.json.jobId }}\",\n  \"status\": \"queued\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -4080,
+        416
+      ],
+      "id": "6e345aa6-d3cc-4c62-9a5e-cf6aa5820dd5",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Prefer\": \"return=minimal\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"job_id\":       \"{{ $('Generate Job ID').item.json.jobId }}\",\n  \"project_name\": \"{{ $('Generate Job ID').item.json.input.projectName }}\",\n  \"document_type\":\"{{ $('Generate Job ID').item.json.input.documentType }}\",\n  \"pipeline\":     \"generation\",\n  \"event\":        \"JOB_QUEUED\",\n  \"status\":       \"info\",\n  \"metadata\": {\n    \"product_owner\": \"{{ $('Generate Job ID').item.json.input.productOwner }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -4320,
+        416
+      ],
+      "id": "d405bd53-a23b-4a12-95a1-2269188a109e",
+      "name": "LOG: Job Queued",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "W6PsBv4SlXFSR6Kk",
+          "name": "supabase-anon-key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Generate Job ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Job ID": {
+      "main": [
+        [
+          {
+            "node": "Insert JobID into Supabase DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert JobID into Supabase DB": {
+      "main": [
+        [
+          {
+            "node": "LOG: Job Queued",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOG: Job Queued": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "e8825c62dab716716b7ba371e5b41411b530556dbdff5be5bbe9383a1666c627"
+  }
+}

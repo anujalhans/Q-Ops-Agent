@@ -1,7 +1,13 @@
-const KB_UPLOAD_URL = 'http://localhost:5678/webhook/upload-test-artifacts'
-const KB_STATUS_URL = 'http://localhost:5678/webhook/job-status'
-const DOC_GENERATE_URL = 'http://localhost:5678/webhook/generate-qa-doc'
-const DOC_STATUS_URL = 'http://localhost:5678/webhook/job-status-retrieve'
+export const API_BASE_URL_KEY = 'qops-agent-api-base-url'
+export const DEFAULT_API_BASE_URL = 'http://localhost:5678'
+
+export function getApiBaseUrl() {
+  return localStorage.getItem(API_BASE_URL_KEY) || DEFAULT_API_BASE_URL
+}
+
+function webhookUrl(path: string) {
+  return `${getApiBaseUrl()}${path}`
+}
 
 export type JobStatus = 'idle' | 'queued' | 'processing' | 'completed' | 'failed' | 'not_found'
 
@@ -33,14 +39,14 @@ export async function uploadKnowledgeBase(payload: KnowledgeBasePayload): Promis
   if (payload.transcript) fd.append('transcript', payload.transcript)
   payload.images.forEach((img) => fd.append('image', img))
 
-  const res = await fetch(KB_UPLOAD_URL, { method: 'POST', body: fd })
+  const res = await fetch(webhookUrl('/webhook/upload-test-artifacts'), { method: 'POST', body: fd })
   const data = await res.json()
   if (!data?.jobId) throw new Error('Invalid response from backend')
   return data
 }
 
 export async function fetchKbStatus(jobId: string): Promise<StatusResponse | null> {
-  const res = await fetch(`${KB_STATUS_URL}?jobId=${encodeURIComponent(jobId)}`)
+  const res = await fetch(`${webhookUrl('/webhook/job-status')}?jobId=${encodeURIComponent(jobId)}`)
   if (!res.ok) throw new Error('Failed to fetch job status')
   const raw = await res.json()
   const data = Array.isArray(raw) ? raw[0] : raw
@@ -80,7 +86,7 @@ export type GenerateDocPayload = {
 }
 
 export async function generateDocument(payload: GenerateDocPayload): Promise<UploadResponse> {
-  const res = await fetch(DOC_GENERATE_URL, {
+  const res = await fetch(webhookUrl('/webhook/generate-qa-doc'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -95,7 +101,7 @@ export async function generateDocument(payload: GenerateDocPayload): Promise<Upl
 }
 
 export async function fetchDocStatus(jobId: string): Promise<StatusResponse | null> {
-  const res = await fetch(`${DOC_STATUS_URL}?jobId=${encodeURIComponent(jobId)}`)
+  const res = await fetch(`${webhookUrl('/webhook/job-status-retrieve')}?jobId=${encodeURIComponent(jobId)}`)
   if (!res.ok) throw new Error('Failed to fetch doc job status')
   const raw = await res.json()
   const data = Array.isArray(raw) ? raw[0] : raw
