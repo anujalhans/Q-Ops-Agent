@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#adc6ff",
+                        "surface-container-lowest": "#060e20",
+                        "secondary-fixed-dim": "#ddb7ff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "primary-container": "#4d8eff",
+                        "inverse-surface": "#dae2fd",
+                        "outline": "#8c909f",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-secondary": "#490080",
+                        "on-error": "#690005",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-surface-variant": "#c2c6d6",
+                        "tertiary-fixed": "#6ffbbe",
+                        "secondary-fixed": "#f0dbff",
+                        "on-primary": "#002e6a",
+                        "surface-variant": "#2d3449",
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-dim": "#0b1326",
+                        "surface-bright": "#31394d",
+                        "secondary-container": "#6f00be",
+                        "error": "#ffb4ab",
+                        "on-secondary-fixed-variant": "#6900b3",
+                        "inverse-on-surface": "#283044",
+                        "on-secondary-container": "#d6a9ff",
+                        "inverse-primary": "#005ac2",
+                        "on-error-container": "#ffdad6",
+                        "background": "#0b1326",
+                        "surface": "#0b1326",
+                        "secondary": "#ddb7ff",
+                        "tertiary": "#4edea3",
+                        "surface-container-low": "#131b2e",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed": "#2c0051",
+                        "primary-fixed": "#d8e2ff",
+                        "on-surface": "#dae2fd",
+                        "surface-container-high": "#222a3d",
+                        "surface-container-highest": "#2d3449",
+                        "on-tertiary-container": "#00311f",
+                        "outline-variant": "#424754",
+                        "tertiary-container": "#00a572",
+                        "surface-tint": "#adc6ff",
+                        "surface-container": "#171f33",
+                        "on-background": "#dae2fd",
+                        "on-primary-fixed": "#001a42",
+                        "on-tertiary-fixed": "#002113",
+                        "on-tertiary": "#003824",
+                        "on-primary-container": "#00285d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "grid_gutter": "16px",
+                        "lg": "24px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "md": "16px",
+                        "xl": "40px",
+                        "grid_columns": "12",
+                        "container_margin": "24px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "h3": ["Space Grotesk"],
+                        "h1": ["Space Grotesk"],
+                        "data-mono": ["Space Grotesk"],
+                        "label-caps": ["Inter"],
+                        "h2": ["Space Grotesk"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "h3": ["18px", {"lineHeight": "1.4", "letterSpacing": "0em", "fontWeight": "500"}],
+                        "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "data-mono": ["13px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "400"}],
+                        "label-caps": ["11px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                        "h2": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .ai-glow {
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.1);
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #424754;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-lg overflow-hidden">
+<!-- Top Navigation -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-slate-50 tracking-tighter font-h1">Q-Ops Agent</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-slate-400 hover:text-slate-200 font-['Space_Grotesk'] tracking-tight text-sm transition-colors" href="#">Analytics</a>
+<a class="text-slate-400 hover:text-slate-200 font-['Space_Grotesk'] tracking-tight text-sm transition-colors" href="#">Artifacts</a>
+<a class="text-[#3b82f6] border-b-2 border-[#3b82f6] pb-1 font-['Space_Grotesk'] tracking-tight text-sm" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 bg-surface-container-highest px-3 py-1.5 rounded-full border border-outline-variant">
+<span class="material-symbols-outlined text-outline text-[20px]">search</span>
+<span class="text-on-surface-variant text-body-sm">Global Search</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 hover:text-white cursor-pointer">notifications</span>
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+<img alt="User Avatar" class="w-8 h-8 rounded-full object-cover" data-alt="A professional headshot of a software engineer with short dark hair and a focused expression, wearing a charcoal grey knit sweater. The lighting is crisp and modern with cool blue ambient tones reflecting off a dark glass-like background, maintaining a high-end corporate AI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLA5eMn0FreUULhFOTO7q2UNEB18XCbQyzwTYZmA1TrVYoVegi3HY1v7ob_C782SqPD6QNEJrZdzgWLVxwEB3DcSJhEti2unf-Y-ep9jeeVAF7Pld4FSUtFpfyUd5ulyjUSrIpwL_OoKG0FOVef88QWkSMCgmVgyOSOKfSuMVBisSldMGcQCRhjE00eNUyOxU2neSMCcggrsCa8JZPTFqbU7PU-rL5Ra_rvwFyMKHsvgVClbvpa0P1p67FZgzyy7kWn8b_IBKy61YU"/>
+</div>
+</div>
+</header>
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-16 bottom-0 flex flex-col pt-8 bg-[#1e293b] w-64 border-r border-white/5 z-40">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">dns</span>
+</div>
+<div>
+<div class="text-lg font-black text-[#3b82f6] font-h3 leading-none">Q-Ops Node</div>
+<div class="text-[10px] font-semibold tracking-widest text-slate-500 uppercase mt-1">AI Enterprise QA</div>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-white/5 hover:text-slate-200 transition-all font-label-caps tracking-widest uppercase" href="#">
+<span class="material-symbols-outlined text-sm">dashboard</span> Analytics
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-white/5 hover:text-slate-200 transition-all font-label-caps tracking-widest uppercase" href="#">
+<span class="material-symbols-outlined text-sm">inventory_2</span> Artifacts
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-white/5 hover:text-slate-200 transition-all font-label-caps tracking-widest uppercase" href="#">
+<span class="material-symbols-outlined text-sm">hub</span> Integrations
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-blue-500/10 text-[#3b82f6] border-r-4 border-[#3b82f6] font-label-caps tracking-widest uppercase" href="#">
+<span class="material-symbols-outlined text-sm">settings_suggest</span> Settings
+            </a>
+</nav>
+<div class="p-4 mt-auto border-t border-white/5 space-y-2">
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 text-sm font-label-caps uppercase tracking-widest hover:text-white" href="#">
+<span class="material-symbols-outlined text-sm">contact_support</span> Support
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 text-sm font-label-caps uppercase tracking-widest hover:text-white" href="#">
+<span class="material-symbols-outlined text-sm">menu_book</span> Documentation
+            </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-16 h-screen overflow-hidden relative">
+<div class="p-container_margin">
+<header class="flex justify-between items-end mb-8">
+<div>
+<h1 class="font-h1 text-h1 text-on-surface">Users &amp; Permissions</h1>
+<p class="text-on-surface-variant font-body-sm mt-1">Manage enterprise access and security roles for the node.</p>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded font-label-caps tracking-widest flex items-center gap-2 hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-sm">person_add</span> INVITE MEMBER
+                </button>
+</header>
+<!-- User Table -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-lg overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-high">
+<tr>
+<th class="px-6 py-4 font-label-caps text-on-surface-variant tracking-widest text-[10px]">USER IDENTITY</th>
+<th class="px-6 py-4 font-label-caps text-on-surface-variant tracking-widest text-[10px]">ACCESS ROLE</th>
+<th class="px-6 py-4 font-label-caps text-on-surface-variant tracking-widest text-[10px]">CONNECTED PROJECTS</th>
+<th class="px-6 py-4 font-label-caps text-on-surface-variant tracking-widest text-[10px]">STATUS</th>
+<th class="px-6 py-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<tr class="hover:bg-white/[0.02] transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border border-primary/20 p-0.5">
+<img alt="User" class="w-full h-full rounded-full object-cover" data-alt="A portrait of a male data scientist with glasses, looking directly at the camera with a calm and professional demeanor. He is in a dimly lit studio with subtle cyan and purple backlighting that emphasizes sharp silhouettes against a dark charcoal background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGt3p2nbAjs6P-g5_rNTVAyt0JQsLwFHvw-vGRxA9go8V0mkDR1vAYUuaNdk2t1pE3atbBzTHZz6DLiuDHCem62QYTWCsPNsCWSskWQjBcVhMExGM-e-6r49wTp3DrSnR45pTW1PM86BuojQZY73jWyqwhuiqlrhPmyfq05zjiLMaPDD4Qo6chONHHGyyoGgHnAuSV7vDpA8LtEveHLhxRms0rxBHFtSHX8ZIMszLKbfFUdbHkVqlFBpyAVClpclIRUIg4pcKaXb10"/>
+</div>
+<div>
+<div class="text-on-surface font-medium text-sm">Marcus Chen</div>
+<div class="text-on-surface-variant text-[11px] font-data-mono">m.chen@qops-node.ai</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary-container/20 text-secondary border border-secondary/30">ADMINISTRATOR</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant text-xs">
+<div class="flex gap-1">
+<span class="bg-surface-container-high px-2 py-0.5 rounded border border-outline-variant/50">Core-Alpha</span>
+<span class="bg-surface-container-high px-2 py-0.5 rounded border border-outline-variant/50">Neural-Ops</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span class="text-xs text-on-surface">Active Now</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-white">more_vert</span>
+</td>
+</tr>
+<tr class="hover:bg-white/[0.02] transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border border-primary/20 p-0.5">
+<img alt="User" class="w-full h-full rounded-full object-cover" data-alt="A professional woman of African descent in her late 30s with her hair tied back, wearing a sleek black blazer. The environment is a high-tech lab with glowing server racks in the background, out of focus. Lighting is cold and precise, with blue and magenta rim lights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkQVzqGAVFzkBbQed5rWOqLwiQLQc4scauNouG-aoOCS7m89ziOnkFXjWS2C5tvAsOAwmFJQg_6gDajc1bVTacdpaxKJ-RqNQkjn6OdJKIZh5fMUodhu84dyICJicyxejY2u4MlKNPctm3Y9jHo_XfZ76Z1a7IpKbFukvRhy8C8evMUGAAlFw3nsgr0xx1Nq1PZYUuZKRs4SMHNfitOxweelz0k5wg33ilAP9W1StWCfraW0ryT_Gt20zVxBWgEJTzUL12CHB5fz0y"/>
+</div>
+<div>
+<div class="text-on-surface font-medium text-sm">Sarah Jenkins</div>
+<div class="text-on-surface-variant text-[11px] font-data-mono">s.jenkins@qops-node.ai</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-container-highest text-on-surface-variant border border-outline-variant">SYSTEM USER</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant text-xs">
+<div class="flex gap-1">
+<span class="bg-surface-container-high px-2 py-0.5 rounded border border-outline-variant/50">Data-Stream</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+<span class="text-xs text-on-surface">Away</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-white">more_vert</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Right Side Drawer (Invite User Overlay) -->
+<div class="fixed inset-0 bg-background/60 backdrop-blur-sm z-[100] flex justify-end">
+<!-- Modal Container -->
+<div class="fixed right-0 top-0 bottom-0 z-[110] p-6 h-full w-[440px] bg-[#1e293b]/95 backdrop-blur-2xl border-l border-purple-500/20 shadow-[-10px_0_30px_rgba(0,0,0,0.5)] flex flex-col">
+<header class="flex justify-between items-center mb-8">
+<div>
+<h2 class="font-h2 text-h2 text-slate-100 font-bold">Invite Team Member</h2>
+<p class="text-slate-400 font-['Space_Grotesk'] text-sm leading-relaxed mt-1">Grant access to intelligence nodes</p>
+</div>
+<button class="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-slate-400">close</span>
+</button>
+</header>
+<div class="flex-1 space-y-8 overflow-y-auto pr-2">
+<!-- Email Input -->
+<div class="space-y-2">
+<label class="block font-label-caps text-[10px] tracking-widest text-slate-400 uppercase">EMAIL ADDRESS</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary-container focus:ring-1 focus:ring-primary-container rounded px-4 py-3 text-sm text-on-surface outline-none transition-all placeholder:text-slate-600" placeholder="colleague@enterprise.com" type="email"/>
+<span class="material-symbols-outlined absolute right-4 top-3 text-outline text-lg">alternate_email</span>
+</div>
+</div>
+<!-- Role Radio Group -->
+<div class="space-y-4">
+<label class="block font-label-caps text-[10px] tracking-widest text-slate-400 uppercase">ACCESS PERMISSION LEVEL</label>
+<div class="space-y-3">
+<label class="flex items-start gap-4 p-4 rounded-lg bg-purple-500/5 border border-purple-500/20 ai-glow cursor-pointer group transition-all hover:bg-purple-500/10">
+<div class="mt-1">
+<div class="w-5 h-5 rounded-full border-2 border-primary-container flex items-center justify-center">
+<div class="w-2.5 h-2.5 rounded-full bg-primary-container"></div>
+</div>
+</div>
+<div>
+<div class="text-on-surface font-semibold text-sm flex items-center gap-2">
+                                        Node Administrator
+                                        <span class="material-symbols-outlined text-[#a855f7] text-sm" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div class="text-slate-400 text-[11px] mt-1 leading-relaxed">Full system override, billing access, and global permissions management.</div>
+</div>
+</label>
+<label class="flex items-start gap-4 p-4 rounded-lg border border-outline-variant cursor-pointer transition-all hover:bg-white/5">
+<div class="mt-1">
+<div class="w-5 h-5 rounded-full border-2 border-outline-variant"></div>
+</div>
+<div>
+<div class="text-on-surface font-semibold text-sm">System User</div>
+<div class="text-slate-400 text-[11px] mt-1 leading-relaxed">Standard access to analytics, artifacts, and node health monitoring.</div>
+</div>
+</label>
+</div>
+</div>
+<!-- Project Tagging -->
+<div class="space-y-3">
+<label class="block font-label-caps text-[10px] tracking-widest text-slate-400 uppercase">PROJECT ASSIGNMENT</label>
+<div class="flex flex-wrap gap-2">
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary-container/40 bg-primary-container/10 text-primary text-[11px] font-medium transition-all hover:bg-primary-container/20">
+                                Core-Alpha <span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-outline-variant text-on-surface-variant text-[11px] hover:border-white/40">
+                                Neural-Ops <span class="material-symbols-outlined text-[14px]">add</span>
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-outline-variant text-on-surface-variant text-[11px] hover:border-white/40">
+                                Data-Stream <span class="material-symbols-outlined text-[14px]">add</span>
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-outline-variant text-on-surface-variant text-[11px] hover:border-white/40">
+                                Quantum-Gate <span class="material-symbols-outlined text-[14px]">add</span>
+</button>
+</div>
+</div>
+<!-- Insight Tip -->
+<div class="p-4 bg-secondary-container/5 border border-secondary-fixed-dim/20 rounded-lg flex gap-3">
+<span class="material-symbols-outlined text-secondary text-lg">auto_awesome</span>
+<div class="text-[11px] text-on-secondary-container leading-relaxed italic">
+                            AI Insight: Inviting this user as an Admin will allow them to modify the neural training schedules for active nodes.
+                        </div>
+</div>
+</div>
+<div class="pt-6 mt-6 border-t border-white/10 flex gap-3">
+<button class="flex-1 py-3 px-4 bg-primary-container text-on-primary-container rounded font-label-caps tracking-widest hover:opacity-90 transition-all font-bold">SEND INVITATION</button>
+<button class="px-6 py-3 border border-outline-variant text-slate-300 rounded font-label-caps tracking-widest hover:bg-white/5 transition-all">CANCEL</button>
+</div>
+</div>
+</div>
+<!-- Activity Feed (Floating Drawer Guidance) -->
+<div class="fixed right-4 bottom-4 z-10">
+<button class="w-12 h-12 bg-secondary-container rounded-full flex items-center justify-center shadow-lg border border-secondary text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">history_edu</span>
+</button>
+</div>
+</main>
+<!-- Bottom Nav for Mobile -->
+<nav class="md:hidden fixed bottom-0 w-full bg-surface-container-low h-16 border-t border-outline-variant/30 flex justify-around items-center px-4 z-50">
+<span class="material-symbols-outlined text-slate-400">dashboard</span>
+<span class="material-symbols-outlined text-slate-400">inventory_2</span>
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">settings_suggest</span>
+<span class="material-symbols-outlined text-slate-400">notifications</span>
+</nav>
+</body></html>

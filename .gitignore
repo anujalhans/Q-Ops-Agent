@@ -86,6 +86,8 @@ logs/
 # ----- Runtime / Dev Server Artifacts -----
 .codex-dev-server*
 *.pid
+tools/sonarqube-mcp-server/
+tools/sonarqube-mcp-storage/
 
 # ----- Archives / Large Files -----
 *.zip
@@ -96,4 +98,5 @@ logs/
 coverage/
 *.lcov
 test-results/
+playwright-report/
 surefire-reports/

@@ -1,0 +1,293 @@
+- generic [ref=e149]:
+  - complementary [ref=e150]:
+    - generic [ref=e151]:
+      - img [ref=e153]
+      - generic [ref=e158]:
+        - heading "Q-Ops Agent" [level=1] [ref=e159]
+        - paragraph [ref=e160]: A Purpose-Built AI System for QA Engineering
+    - navigation [ref=e161]:
+      - button "Dashboard" [ref=e162] [cursor=pointer]:
+        - img [ref=e163]
+        - generic [ref=e168]: Dashboard
+      - button "Artifacts" [ref=e169] [cursor=pointer]:
+        - img [ref=e170]
+        - generic [ref=e173]: Artifacts
+      - button "Doc Gen" [ref=e174] [cursor=pointer]:
+        - img [ref=e175]
+        - generic [ref=e178]: Doc Gen
+      - button "Knowledge Base" [ref=e179] [cursor=pointer]:
+        - img [ref=e180]
+        - generic [ref=e182]: Knowledge Base
+      - button "Analytics" [active] [ref=e183] [cursor=pointer]:
+        - img [ref=e184]
+        - generic [ref=e186]: Analytics
+    - generic [ref=e187]:
+      - button "Settings" [ref=e188] [cursor=pointer]:
+        - img [ref=e189]
+        - generic [ref=e192]: Settings
+      - button "Documentation" [ref=e193] [cursor=pointer]:
+        - img [ref=e194]
+        - generic [ref=e196]: Documentation
+  - main [ref=e197]:
+    - generic [ref=e198]:
+      - button "Search operations... Ctrl K" [ref=e199] [cursor=pointer]:
+        - img [ref=e200]
+        - generic [ref=e203]: Search operations...
+        - generic [ref=e204]: Ctrl K
+      - generic [ref=e205]:
+        - button "Toggle theme" [ref=e206] [cursor=pointer]:
+          - img [ref=e207]
+        - button "Notifications" [ref=e209] [cursor=pointer]:
+          - img [ref=e210]
+          - generic [ref=e213]: "4"
+        - button "Help" [ref=e214] [cursor=pointer]:
+          - img [ref=e215]
+        - generic [ref=e219]:
+          - generic [ref=e220]:
+            - paragraph [ref=e221]: Admin User
+            - paragraph [ref=e222]: Admin
+          - img "User profile" [ref=e223]
+          - button "Logout" [ref=e224] [cursor=pointer]
+    - generic [ref=e226]:
+      - generic [ref=e227]:
+        - generic [ref=e228]:
+          - heading "Analytics" [level=2] [ref=e880]
+          - paragraph [ref=e230]: Monitor QA operations metrics from n8n analytics, with local fallback while endpoints come online.
+        - generic [ref=e231]:
+          - button "View Audit Log" [ref=e232] [cursor=pointer]:
+            - img [ref=e233]
+            - text: View Audit Log
+          - button "New Project" [ref=e237] [cursor=pointer]:
+            - img [ref=e238]
+            - text: New Project
+      - generic [ref=e881]:
+        - generic [ref=e882]:
+          - generic [ref=e883]:
+            - heading "QA Operations Analytics" [level=3] [ref=e884]
+            - paragraph [ref=e885]: Live n8n analytics generated May 11, 10:56 AM.
+          - generic [ref=e886]:
+            - combobox [ref=e887]:
+              - option "All pipelines" [selected]
+              - option "Generation"
+              - option "Ingestion"
+            - combobox [ref=e888]:
+              - option "Last 7 days"
+              - option "Last 30 days" [selected]
+              - option "Last 90 days"
+            - button "Refresh" [ref=e889] [cursor=pointer]
+        - generic [ref=e890]:
+          - generic [ref=e891]:
+            - paragraph [ref=e892]: Jobs completed
+            - paragraph [ref=e893]: "8"
+          - generic [ref=e894]:
+            - paragraph [ref=e895]: Documents generated
+            - paragraph [ref=e896]: "5"
+          - generic [ref=e897]:
+            - paragraph [ref=e898]: Success rate
+            - paragraph [ref=e899]: 47%
+          - generic [ref=e900]:
+            - paragraph [ref=e901]: Tokens
+            - paragraph [ref=e902]: "41750"
+          - generic [ref=e903]:
+            - paragraph [ref=e904]: Cost
+            - paragraph [ref=e905]: $0.05
+        - generic [ref=e906]:
+          - generic [ref=e907]:
+            - paragraph [ref=e908]: Ingestion completed
+            - paragraph [ref=e909]: "3"
+          - generic [ref=e910]:
+            - paragraph [ref=e911]: Chunks ingested
+            - paragraph [ref=e912]: "2699"
+          - generic [ref=e913]:
+            - paragraph [ref=e914]: Avg processing
+            - paragraph [ref=e915]: 0s
+          - generic [ref=e916]:
+            - paragraph [ref=e917]: Files processed
+            - paragraph [ref=e918]: "17"
+        - generic [ref=e919]:
+          - generic [ref=e920]:
+            - heading "Throughput" [level=3] [ref=e921]
+            - generic [ref=e922]:
+              - generic [ref=e924]: Epics & User Stories
+              - generic [ref=e926]: Test Plan
+              - generic [ref=e928]: Test Strategy
+          - generic [ref=e929]:
+            - heading "Reliability" [level=3] [ref=e930]
+            - generic [ref=e931]:
+              - generic [ref=e933]: Jobs
+              - generic [ref=e935]: Generation
+              - generic [ref=e937]: Ingestion
+              - generic [ref=e939]: Queue
+        - generic [ref=e940]:
+          - generic [ref=e941]:
+            - heading "Recent Failures By Pipeline" [level=3] [ref=e943]
+            - table [ref=e945]:
+              - rowgroup [ref=e946]:
+                - row "Pipeline Failures Latest" [ref=e947]:
+                  - columnheader "Pipeline" [ref=e948]
+                  - columnheader "Failures" [ref=e949]
+                  - columnheader "Latest" [ref=e950]
+              - rowgroup [ref=e951]:
+                - row "generation 9 May 8, 04:21 PM" [ref=e952]:
+                  - cell "generation" [ref=e953]
+                  - cell "9" [ref=e954]
+                  - cell "May 8, 04:21 PM" [ref=e955]
+          - generic [ref=e956]:
+            - heading "Cost By Pipeline" [level=3] [ref=e958]
+            - table [ref=e960]:
+              - rowgroup [ref=e961]:
+                - row "Pipeline Jobs Cost" [ref=e962]:
+                  - columnheader "Pipeline" [ref=e963]
+                  - columnheader "Jobs" [ref=e964]
+                  - columnheader "Cost" [ref=e965]
+              - rowgroup [ref=e966]:
+                - row "generation 5 $0.0493" [ref=e967]:
+                  - cell "generation" [ref=e968]
+                  - cell "5" [ref=e969]
+                  - cell "$0.0493" [ref=e970]
+                - row "ingestion 3 $0.0000" [ref=e971]:
+                  - cell "ingestion" [ref=e972]
+                  - cell "3" [ref=e973]
+                  - cell "$0.0000" [ref=e974]
+          - generic [ref=e975]:
+            - heading "Files Per Knowledge Base" [level=3] [ref=e977]
+            - table [ref=e979]:
+              - rowgroup [ref=e980]:
+                - row "Knowledge Base Files Chunks" [ref=e981]:
+                  - columnheader "Knowledge Base" [ref=e982]
+                  - columnheader "Files" [ref=e983]
+                  - columnheader "Chunks" [ref=e984]
+              - rowgroup [ref=e985]:
+                - row "FirstProject 9 1192" [ref=e986]:
+                  - cell "FirstProject" [ref=e987]
+                  - cell "9" [ref=e988]
+                  - cell "1192" [ref=e989]
+                - row "UISmoleTest 8 1507" [ref=e990]:
+                  - cell "UISmoleTest" [ref=e991]
+                  - cell "8" [ref=e992]
+                  - cell "1507" [ref=e993]
+        - generic [ref=e994]:
+          - heading "Cost By Project" [level=3] [ref=e996]
+          - table [ref=e998]:
+            - rowgroup [ref=e999]:
+              - row "Project Jobs Tokens Cost" [ref=e1000]:
+                - columnheader "Project" [ref=e1001]
+                - columnheader "Jobs" [ref=e1002]
+                - columnheader "Tokens" [ref=e1003]
+                - columnheader "Cost" [ref=e1004]
+            - rowgroup [ref=e1005]:
+              - row "UISmoleTest 5 41750 $0.0493" [ref=e1006]:
+                - cell "UISmoleTest" [ref=e1007]
+                - cell "5" [ref=e1008]
+                - cell "41750" [ref=e1009]
+                - cell "$0.0493" [ref=e1010]
+              - row "E2E-QOPS-20260509-171521 0 0 $0.0000" [ref=e1011]:
+                - cell "E2E-QOPS-20260509-171521" [ref=e1012]
+                - cell "0" [ref=e1013]
+                - cell "0" [ref=e1014]
+                - cell "$0.0000" [ref=e1015]
+              - row "FirstProject 2 0 $0.0000" [ref=e1016]:
+                - cell "FirstProject" [ref=e1017]
+                - cell "2" [ref=e1018]
+                - cell "0" [ref=e1019]
+                - cell "$0.0000" [ref=e1020]
+              - row "Codex Attribution Smoke 1 0 $0.0000" [ref=e1021]:
+                - cell "Codex Attribution Smoke" [ref=e1022]
+                - cell "1" [ref=e1023]
+                - cell "0" [ref=e1024]
+                - cell "$0.0000" [ref=e1025]
+        - generic [ref=e1026]:
+          - heading "Recent Backend Jobs" [level=3] [ref=e1028]
+          - table [ref=e1030]:
+            - rowgroup [ref=e1031]:
+              - row "Job Project Type Pipeline Chunks Files Tokens Cost Created" [ref=e1032]:
+                - columnheader "Job" [ref=e1033]
+                - columnheader "Project" [ref=e1034]
+                - columnheader "Type" [ref=e1035]
+                - columnheader "Pipeline" [ref=e1036]
+                - columnheader "Chunks" [ref=e1037]
+                - columnheader "Files" [ref=e1038]
+                - columnheader "Tokens" [ref=e1039]
+                - columnheader "Cost" [ref=e1040]
+                - columnheader "Created" [ref=e1041]
+            - rowgroup [ref=e1042]:
+              - row "GEN-260511-8EI6DL UISmoleTest Epics & User Stories generation 0 0 6747 $0.0089 May 11, 10:56 AM" [ref=e1043]:
+                - cell "GEN-260511-8EI6DL" [ref=e1044]
+                - cell "UISmoleTest" [ref=e1045]
+                - cell "Epics & User Stories" [ref=e1046]
+                - cell "generation" [ref=e1047]
+                - cell "0" [ref=e1048]
+                - cell "0" [ref=e1049]
+                - cell "6747" [ref=e1050]
+                - cell "$0.0089" [ref=e1051]
+                - cell "May 11, 10:56 AM" [ref=e1052]
+              - row "GEN-260508-P9DYWT UISmoleTest Test Plan generation 0 0 6191 $0.0085 May 8, 04:31 PM" [ref=e1053]:
+                - cell "GEN-260508-P9DYWT" [ref=e1054]
+                - cell "UISmoleTest" [ref=e1055]
+                - cell "Test Plan" [ref=e1056]
+                - cell "generation" [ref=e1057]
+                - cell "0" [ref=e1058]
+                - cell "0" [ref=e1059]
+                - cell "6191" [ref=e1060]
+                - cell "$0.0085" [ref=e1061]
+                - cell "May 8, 04:31 PM" [ref=e1062]
+              - row "GEN-260508-66KAMT UISmoleTest Epics & User Stories generation 0 0 0 $0.0000 May 8, 04:09 PM" [ref=e1063]:
+                - cell "GEN-260508-66KAMT" [ref=e1064]
+                - cell "UISmoleTest" [ref=e1065]
+                - cell "Epics & User Stories" [ref=e1066]
+                - cell "generation" [ref=e1067]
+                - cell "0" [ref=e1068]
+                - cell "0" [ref=e1069]
+                - cell "0" [ref=e1070]
+                - cell "$0.0000" [ref=e1071]
+                - cell "May 8, 04:09 PM" [ref=e1072]
+              - row "GEN-260508-TDBZ4L UISmoleTest Test Strategy generation 0 0 7937 $0.0073 May 8, 02:10 PM" [ref=e1073]:
+                - cell "GEN-260508-TDBZ4L" [ref=e1074]
+                - cell "UISmoleTest" [ref=e1075]
+                - cell "Test Strategy" [ref=e1076]
+                - cell "generation" [ref=e1077]
+                - cell "0" [ref=e1078]
+                - cell "0" [ref=e1079]
+                - cell "7937" [ref=e1080]
+                - cell "$0.0073" [ref=e1081]
+                - cell "May 8, 02:10 PM" [ref=e1082]
+              - row "ING-260508-NAPAY5 UISmoleTest Generated Output ingestion 1507 8 0 $0.0000 May 8, 11:30 AM" [ref=e1083]:
+                - cell "ING-260508-NAPAY5" [ref=e1084]
+                - cell "UISmoleTest" [ref=e1085]
+                - cell "Generated Output" [ref=e1086]
+                - cell "ingestion" [ref=e1087]
+                - cell "1507" [ref=e1088]
+                - cell "8" [ref=e1089]
+                - cell "0" [ref=e1090]
+                - cell "$0.0000" [ref=e1091]
+                - cell "May 8, 11:30 AM" [ref=e1092]
+              - row "GEN-260507-ERUGRZ Codex Attribution Smoke Test Plan generation 0 0 0 $0.0000 May 7, 09:36 PM" [ref=e1093]:
+                - cell "GEN-260507-ERUGRZ" [ref=e1094]
+                - cell "Codex Attribution Smoke" [ref=e1095]
+                - cell "Test Plan" [ref=e1096]
+                - cell "generation" [ref=e1097]
+                - cell "0" [ref=e1098]
+                - cell "0" [ref=e1099]
+                - cell "0" [ref=e1100]
+                - cell "$0.0000" [ref=e1101]
+                - cell "May 7, 09:36 PM" [ref=e1102]
+              - row "ING-260507-6J6YV2 FirstProject Generated Output ingestion 191 1 0 $0.0000 May 7, 04:46 PM" [ref=e1103]:
+                - cell "ING-260507-6J6YV2" [ref=e1104]
+                - cell "FirstProject" [ref=e1105]
+                - cell "Generated Output" [ref=e1106]
+                - cell "ingestion" [ref=e1107]
+                - cell "191" [ref=e1108]
+                - cell "1" [ref=e1109]
+                - cell "0" [ref=e1110]
+                - cell "$0.0000" [ref=e1111]
+                - cell "May 7, 04:46 PM" [ref=e1112]
+              - row "ING-260501-JTI1JX FirstProject Generated Output ingestion 1001 8 0 $0.0000 May 1, 11:14 PM" [ref=e1113]:
+                - cell "ING-260501-JTI1JX" [ref=e1114]
+                - cell "FirstProject" [ref=e1115]
+                - cell "Generated Output" [ref=e1116]
+                - cell "ingestion" [ref=e1117]
+                - cell "1001" [ref=e1118]
+                - cell "8" [ref=e1119]
+                - cell "0" [ref=e1120]
+                - cell "$0.0000" [ref=e1121]
+                - cell "May 1, 11:14 PM" [ref=e1122]

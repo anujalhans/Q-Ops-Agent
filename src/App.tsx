@@ -3,7 +3,11 @@ import { useEffect, useMemo, useState } from 'react'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import ExploreMorePage from './pages/ExploreMorePage'
+import AuthCallbackPage from './pages/AuthCallbackPage'
 import ToastList from './components/common/ToastList'
+import { clearSession, getAuthCallbackType, getUsableSession, signInWithPassword, signOut } from './lib/auth'
+import { fetchCurrentUser } from './lib/api'
+import type { CurrentUser } from './lib/api'
 
 type ToastType = 'success' | 'error' | 'info'
 
@@ -14,18 +18,45 @@ type Toast = {
   type: ToastType
 }
 
-const AUTH_KEY = 'qops-agent-auth'
-
 function App() {
   const navigate = useNavigate()
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem(AUTH_KEY) === 'true'
-  })
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => Boolean(localStorage.getItem('qops-agent-supabase-session')))
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
+  const [authReady, setAuthReady] = useState(false)
   const [toasts, setToasts] = useState<Toast[]>([])
+  const authCallbackType = getAuthCallbackType(window.location.hash)
+  const hasAuthCallbackHash = window.location.hash.includes('access_token=') && ['invite', 'recovery'].includes(authCallbackType)
 
   useEffect(() => {
-    localStorage.setItem(AUTH_KEY, String(isAuthenticated))
-  }, [isAuthenticated])
+    let cancelled = false
+    async function restoreSession() {
+      const session = await getUsableSession()
+      if (!session) {
+        if (!cancelled) {
+          setIsAuthenticated(false)
+          setCurrentUser(null)
+          setAuthReady(true)
+        }
+        return
+      }
+
+      const user = await fetchCurrentUser()
+      if (cancelled) return
+      if (user?.status === 'active') {
+        setCurrentUser(user)
+        setIsAuthenticated(true)
+      } else {
+        clearSession()
+        setCurrentUser(null)
+        setIsAuthenticated(false)
+      }
+      setAuthReady(true)
+    }
+    restoreSession()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const addToast = (toast: Omit<Toast, 'id'>) => {
     const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`
@@ -35,7 +66,9 @@ function App() {
     }, 4200)
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut()
+    setCurrentUser(null)
     setIsAuthenticated(false)
     navigate('/')
   }
@@ -43,7 +76,14 @@ function App() {
   const authRoutes = useMemo(
     () => ({
       login: {
-        onSuccess: () => {
+        onSuccess: async (email: string, password: string) => {
+          await signInWithPassword(email, password)
+          const user = await fetchCurrentUser()
+          if (!user?.id || user.status !== 'active') {
+            clearSession()
+            throw new Error('Your account is not active in Q-Ops Agent.')
+          }
+          setCurrentUser(user)
           setIsAuthenticated(true)
           navigate('/dashboard')
         },
@@ -63,17 +103,35 @@ function App() {
         <Route
           path="/"
           element={
-            isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage onSuccess={authRoutes.login.onSuccess} addToast={addToast} />
+            hasAuthCallbackHash ? (
+              <Navigate to={{ pathname: '/auth/callback', hash: window.location.hash }} replace />
+            ) : isAuthenticated ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <LoginPage onSuccess={authRoutes.login.onSuccess} addToast={addToast} authReady={authReady} />
+            )
           }
         />
         <Route
           path="/dashboard"
           element={
             isAuthenticated ? (
-              <DashboardPage onLogout={authRoutes.dashboard.onLogout} addToast={authRoutes.dashboard.addToast} />
+              <DashboardPage onLogout={authRoutes.dashboard.onLogout} addToast={authRoutes.dashboard.addToast} currentUser={currentUser} />
             ) : (
               <Navigate to="/" replace />
             )
+          }
+        />
+        <Route
+          path="/auth/callback"
+          element={
+            <AuthCallbackPage
+              addToast={addToast}
+              onAuthenticated={(user) => {
+                setCurrentUser(user)
+                setIsAuthenticated(true)
+              }}
+            />
           }
         />
         <Route path="/explore" element={<ExploreMorePage />} />

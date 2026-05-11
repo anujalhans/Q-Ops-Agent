@@ -47,14 +47,14 @@ const condensedRows = comparisonRows.filter(([capability]) =>
   ].includes(capability),
 )
 
-const AUTH_KEY = 'qops-agent-auth'
+const SESSION_KEY = 'qops-agent-supabase-session'
 
 export default function ExploreMorePage() {
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
   const [expanded, setExpanded] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
-  const isAuthenticated = localStorage.getItem(AUTH_KEY) === 'true'
+  const isAuthenticated = Boolean(localStorage.getItem(SESSION_KEY))
   const ctaLabel = isAuthenticated ? 'Open Dashboard' : 'Login'
   const ctaTarget = isAuthenticated ? '/dashboard' : '/'
 

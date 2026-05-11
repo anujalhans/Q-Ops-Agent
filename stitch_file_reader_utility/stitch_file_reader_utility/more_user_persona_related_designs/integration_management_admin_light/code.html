@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Q-Ops Agent | Admin Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#a44100",
+                    "primary-fixed": "#e2dfff",
+                    "background": "#fcf8ff",
+                    "secondary-container": "#d5e3fc",
+                    "inverse-primary": "#c3c0ff",
+                    "surface-container-high": "#eae6f4",
+                    "surface-container-highest": "#e4e1ee",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "on-primary-container": "#dad7ff",
+                    "surface": "#fcf8ff",
+                    "on-primary-fixed": "#0f0069",
+                    "surface-variant": "#e4e1ee",
+                    "secondary-fixed": "#d5e3fc",
+                    "secondary-fixed-dim": "#b9c7df",
+                    "on-secondary": "#ffffff",
+                    "secondary": "#515f74",
+                    "on-surface": "#1b1b24",
+                    "on-secondary-fixed-variant": "#3a485b",
+                    "inverse-on-surface": "#f3effc",
+                    "on-tertiary-fixed": "#351000",
+                    "primary-container": "#4f46e5",
+                    "on-secondary-fixed": "#0d1c2e",
+                    "tertiary-fixed": "#ffdbcc",
+                    "tertiary-fixed-dim": "#ffb695",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "outline-variant": "#c7c4d8",
+                    "error-container": "#ffdad6",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container": "#f0ecf9",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "surface-tint": "#4d44e3",
+                    "outline": "#777587",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-tertiary-container": "#ffd2be",
+                    "on-background": "#1b1b24",
+                    "on-surface-variant": "#464555",
+                    "on-secondary-container": "#57657a",
+                    "surface-bright": "#fcf8ff",
+                    "tertiary": "#7e3000",
+                    "inverse-surface": "#302f39",
+                    "primary": "#3525cd",
+                    "on-tertiary-fixed-variant": "#7b2f00",
+                    "surface-dim": "#dcd8e5",
+                    "surface-container-low": "#f5f2ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "lg": "24px",
+                    "container-max": "1440px",
+                    "unit": "4px",
+                    "sm": "8px",
+                    "xl": "48px",
+                    "md": "16px",
+                    "gutter": "24px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Inter"],
+                    "title-sm": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #F8FAFC;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface bg-surface-bright">
+<!-- TopAppBar -->
+<header class="bg-white dark:bg-slate-950 font-inter antialiased text-sm font-medium docked full-width top-0 z-40 border-b border-slate-200 dark:border-slate-800 flat no shadows flex justify-between items-center w-full px-6 py-3 sticky">
+<div class="flex items-center gap-md">
+<span class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Q-Ops Agent</span>
+</div>
+<div class="flex items-center gap-lg">
+<div class="flex items-center gap-md text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer p-1 rounded">notifications</span>
+<span class="material-symbols-outlined hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer p-1 rounded">help</span>
+<span class="material-symbols-outlined text-indigo-600 dark:text-indigo-400 font-semibold p-1 rounded bg-slate-50 dark:bg-slate-900">settings</span>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium active:opacity-80 transition-all">Create Project</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-slate-200">
+<img alt="User Profile" data-alt="A professional headshot of a software engineer in a well-lit modern office setting. The lighting is soft and natural, emphasizing a clean and corporate look that matches the minimalist UI. The image features high contrast and a cool-toned color palette dominated by whites and soft grays." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhkE1f8tB-t9acZEimWl1Q6vphpJ6kNNhGyCB7YqYlo5Ia_OVwrpO-s2DLIbQUQVM1l7K4q09oaIRKa9ySVWYTLkeXjy3J39uOOo9QwmT_G6rYiMdHHdWoAZQ5FFIh2-fXNOW617eo0E8l92a4zZeNk9ok12g8IjmMQ9fM1cqz50O6HB7zh-qZPTmvfOUSXLTVf3Smt_8YIn5YX1ISwe8VcbIPIifwxcDzGuR1f98rfEmYB3jf8TJtYJLkChyJpz4EXwKghH_GqnXF"/>
+</div>
+</div>
+</header>
+<div class="flex min-h-[calc(100vh-64px)]">
+<!-- SideNavBar -->
+<aside class="bg-slate-50 dark:bg-slate-900 font-inter text-sm tracking-wide fixed left-0 top-[60px] h-[calc(100vh-60px)] w-64 border-r border-slate-200 dark:border-slate-800 flat no shadows flex flex-col py-6">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center text-white font-black">E</div>
+<div>
+<div class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">Enterprise QA</div>
+<div class="text-[10px] text-slate-500 font-medium">V2.4.0-Stable</div>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out rounded-lg" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-medium">Artifacts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out rounded-lg" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-medium">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border-r-4 border-indigo-600 transition-all duration-200 ease-in-out rounded-l-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-medium">Settings</span>
+</a>
+</nav>
+<div class="px-4 mt-auto pt-6 border-t border-slate-200 dark:border-slate-800">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-medium">Documentation</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">support_agent</span>
+<span class="font-medium">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 p-lg bg-surface-container-lowest">
+<div class="max-w-6xl mx-auto">
+<header class="mb-xl">
+<h1 class="text-display-lg font-display-lg text-slate-900 mb-xs">Admin Settings</h1>
+<p class="text-body-md text-slate-500">Configure global platform integrations and enterprise resource connectivity.</p>
+</header>
+<!-- Navigation Tabs (Internal) -->
+<div class="flex gap-lg border-b border-slate-200 mb-lg">
+<button class="px-1 py-3 text-body-sm font-semibold border-b-2 border-primary text-primary">Integrations</button>
+<button class="px-1 py-3 text-body-sm font-medium text-slate-500 hover:text-slate-800">Workspace</button>
+<button class="px-1 py-3 text-body-sm font-medium text-slate-500 hover:text-slate-800">Permissions</button>
+<button class="px-1 py-3 text-body-sm font-medium text-slate-500 hover:text-slate-800">Audit Log</button>
+</div>
+<!-- Integration Grid / Bento Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg">
+<!-- Jira Card (High Emphasis / Expanded State) -->
+<div class="md:col-span-12 lg:col-span-8 bg-white border border-primary-container/30 rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="p-lg border-b border-slate-100 flex justify-between items-start bg-indigo-50/30">
+<div class="flex gap-md">
+<div class="w-12 h-12 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-3xl">task_alt</span>
+</div>
+<div>
+<h3 class="text-title-sm font-title-sm text-slate-900">Jira Software</h3>
+<div class="flex items-center gap-sm mt-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5"></span>
+                                            Operational
+                                        </span>
+<span class="text-xs text-slate-400">Last tested: 14 mins ago</span>
+</div>
+</div>
+</div>
+<div class="flex gap-sm">
+<button class="px-4 py-2 text-body-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50">Test Connection</button>
+<button class="px-4 py-2 text-body-sm font-semibold text-on-primary bg-primary rounded-lg shadow-sm">Save Changes</button>
+</div>
+</div>
+<div class="p-lg grid grid-cols-1 md:grid-cols-2 gap-lg bg-white">
+<div class="space-y-md">
+<div>
+<label class="block text-label-caps text-slate-500 mb-1">BASE URL</label>
+<input class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/10 focus:border-primary text-body-sm text-slate-800" type="text" value="https://qops-agent.atlassian.net"/>
+</div>
+<div>
+<label class="block text-label-caps text-slate-500 mb-1">PROJECT KEY</label>
+<input class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/10 focus:border-primary text-body-sm text-slate-800 uppercase" type="text" value="QA-AUTO"/>
+</div>
+</div>
+<div class="space-y-md">
+<div>
+<label class="block text-label-caps text-slate-500 mb-1">API TOKEN</label>
+<div class="relative">
+<input class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/10 focus:border-primary text-body-sm text-slate-800" type="password" value="••••••••••••••••"/>
+<button class="absolute right-3 top-2 text-slate-400"><span class="material-symbols-outlined text-sm">visibility</span></button>
+</div>
+</div>
+<div class="flex items-center gap-md pt-6">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+<span class="text-body-sm text-slate-600 font-medium">Auto-sync ticket status</span>
+</div>
+</div>
+</div>
+<div class="px-lg py-md bg-slate-50 border-t border-slate-100 flex items-center">
+<div class="w-full border-l-4 border-primary pl-3">
+<p class="text-body-sm text-slate-600 italic font-medium">"Jira integration is currently managing 43 active projects across 3 regions."</p>
+</div>
+</div>
+</div>
+<!-- Side Stat Card -->
+<div class="md:col-span-12 lg:col-span-4 space-y-lg">
+<div class="bg-white border border-slate-200 p-lg rounded-xl shadow-sm flex flex-col h-full justify-between">
+<div>
+<h4 class="text-label-caps text-slate-400 mb-md">HEALTH OVERVIEW</h4>
+<div class="flex items-end justify-between mb-sm">
+<span class="text-display-lg font-bold text-slate-900">98.4%</span>
+<span class="text-emerald-600 text-body-sm font-semibold mb-2">+1.2%</span>
+</div>
+<p class="text-body-sm text-slate-500">System-wide integration uptime over the last 30 days. No critical outages reported.</p>
+</div>
+<div class="mt-lg pt-lg border-t border-slate-100 grid grid-cols-2 gap-md">
+<div>
+<span class="block text-label-caps text-slate-400">SYNCED DATA</span>
+<span class="text-title-sm font-bold text-slate-800">1.2 TB</span>
+</div>
+<div>
+<span class="block text-label-caps text-slate-400">ACTIVE WEBHOOKS</span>
+<span class="text-title-sm font-bold text-slate-800">142</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Confluence Card -->
+<div class="md:col-span-6 lg:col-span-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow p-lg flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-md">
+<div class="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center text-white">
+<span class="material-symbols-outlined">menu_book</span>
+</div>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">Operational</span>
+</div>
+<h3 class="text-title-sm font-bold text-slate-900 mb-1">Confluence</h3>
+<p class="text-body-sm text-slate-500 line-clamp-2">Enterprise wiki sync for automated documentation and release notes generation.</p>
+</div>
+<div class="mt-lg pt-md border-t border-slate-50 flex items-center justify-between">
+<span class="text-[11px] text-slate-400">Last test: 2h ago</span>
+<button class="text-body-sm font-semibold text-primary hover:underline">Edit</button>
+</div>
+</div>
+<!-- Supabase Card -->
+<div class="md:col-span-6 lg:col-span-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow p-lg flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-md">
+<div class="w-10 h-10 rounded-lg bg-emerald-500 flex items-center justify-center text-white">
+<span class="material-symbols-outlined">database</span>
+</div>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">Degraded</span>
+</div>
+<h3 class="text-title-sm font-bold text-slate-900 mb-1">Supabase</h3>
+<p class="text-body-sm text-slate-500 line-clamp-2">Core database for test results, user preferences, and real-time event streaming.</p>
+</div>
+<div class="mt-lg pt-md border-t border-slate-50 flex items-center justify-between">
+<span class="text-[11px] text-slate-400">Last test: 4m ago</span>
+<button class="text-body-sm font-semibold text-primary hover:underline">Edit</button>
+</div>
+</div>
+<!-- Chroma Card -->
+<div class="md:col-span-6 lg:col-span-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow p-lg flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-md">
+<div class="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center text-white">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">Operational</span>
+</div>
+<h3 class="text-title-sm font-bold text-slate-900 mb-1">Chroma DB</h3>
+<p class="text-body-sm text-slate-500 line-clamp-2">Vector database for AI context, semantic search, and RAG operations.</p>
+</div>
+<div class="mt-lg pt-md border-t border-slate-50 flex items-center justify-between">
+<span class="text-[11px] text-slate-400">Last test: 1d ago</span>
+<button class="text-body-sm font-semibold text-primary hover:underline">Edit</button>
+</div>
+</div>
+<!-- AI Suggestion Box (Global Rule) -->
+<div class="md:col-span-12 p-lg border-l-4 border-l-indigo-600 bg-white rounded-xl shadow-sm relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-r from-indigo-50 to-transparent opacity-50"></div>
+<div class="relative z-10 flex gap-md items-start">
+<span class="material-symbols-outlined text-indigo-600 bg-indigo-50 p-2 rounded-lg">bolt</span>
+<div>
+<h4 class="text-body-sm font-bold text-slate-900">AI Integration Insight</h4>
+<p class="text-body-sm text-slate-600 mt-1">Based on recent latency spikes in the Frankfurt region, we recommend switching the Chroma DB endpoint to a dedicated VPC for increased throughput and lower jitter during heavy inference cycles.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

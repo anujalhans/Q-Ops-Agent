@@ -292,10 +292,10 @@ Default query behavior:
 
 Data sources:
 
-- Supabase RPC `get_analytics_overview`
-- Supabase RPC `get_analytics_by_document_type`
-- Supabase RPC `get_analytics_failure_rate`
-- Supabase table `qa_job_metrics` for recent completed jobs
+- Supabase Auth `/user` for bearer-token verification
+- Supabase table `qops_users` for role/profile resolution
+- Supabase table `qops_project_members` for registered-user project scoping
+- Supabase table `qa_job_metrics` for scoped metrics, recent jobs, failures, token/cost summaries, ingestion chunks, and files processed
 
 Response shape:
 
@@ -311,7 +311,9 @@ Response shape:
     "avgCostPerDocument": 0,
     "totalTokensConsumed": 0,
     "totalChunksIngested": 0,
-    "avgDurationMs": 0
+    "avgDurationMs": 0,
+    "avgIngestionDurationMs": 0,
+    "totalFilesProcessed": 0
   },
   "byDocumentType": [],
   "failureRate": {
@@ -327,16 +329,35 @@ Response shape:
       "status": "info | error",
       "durationMs": 0,
       "wordCount": 0,
+      "chunkCount": 0,
+      "totalFiles": 0,
       "tokensTotal": 0,
       "estimatedCostUsd": 0,
       "createdAt": "ISO timestamp"
     }
   ],
+  "ingestion": {
+    "jobsCompleted": 0,
+    "totalChunksIngested": 0,
+    "avgProcessingDurationMs": 0,
+    "totalFilesProcessed": 0,
+    "filesByKnowledgeBase": []
+  },
+  "failures": {
+    "recent": [],
+    "byPipeline": []
+  },
+  "costs": {
+    "byPipeline": [],
+    "byProject": []
+  },
   "meta": {
     "generatedAt": "ISO timestamp",
     "dateFrom": "ISO timestamp",
     "pipeline": "all",
-    "daysRequested": "30"
+    "daysRequested": "30",
+    "scope": "workspace | self | admin_user_filter",
+    "userRole": "admin | registered_user"
   }
 }
 ```
@@ -359,6 +380,10 @@ UI implications:
 - Use `byDocumentType` for charts/tables by deliverable type.
 - Use `failureRate` for operational reliability widgets.
 - Use `recentJobs` for an activity table with links to job detail/output.
+- Use `ingestion` for ingestion jobs completed, chunks ingested, average processing duration, and files processed per knowledge base.
+- Use `failures.byPipeline` and `failures.recent` for pipeline failure summaries.
+- Use `costs.byPipeline` and `costs.byProject` for cost allocation.
+- For registered users, all analytics including `costs.byProject` are scoped to their assigned projects. Admin users remain workspace-wide by default.
 
 ## Queue And Worker Behavior
 
@@ -565,8 +590,8 @@ Applies to:
 Implemented behavior:
 
 - Cleans generated markdown.
-- Converts markdown to both DOCX/Confluence format using local service `POST http://127.0.0.1:5050/convert`.
-- Converts markdown to Confluence storage HTML inside n8n.
+- The exported workflow now routes Confluence publishing directly to the in-n8n markdown-to-Confluence HTML conversion step.
+- The local DOCX converter service `POST http://127.0.0.1:5050/convert` is still documented as the DOCX conversion service, but it should not sit on the Confluence publishing critical path unless DOCX output is explicitly required.
 - Checks if a Confluence page already exists.
 - Creates a new Confluence page or updates the existing page.
 - Uses Confluence space key `TD`.
@@ -684,8 +709,8 @@ Metric fields used across workflows:
 
 UI implications:
 
-- Audit log can be backed by `qa_job_metrics`.
-- Notifications can be created from terminal events and error events.
+- Audit log can be backed by `qops_audit_events` and `qa_job_metrics`; the active UI call sends the Supabase bearer token so admins see workspace scope and registered users see only assigned-project/self scope.
+- Notifications can be created from terminal events and error events, then scoped in the UI by assigned project or current user.
 - Recent activity can show both ingestion and generation events.
 - Cost and token dashboards are already supported for generation quality pass events.
 
@@ -700,15 +725,17 @@ UI implications:
 | Document generation | `/generate-qa-doc` | Submit project name, document type, optional product owner, poll status |
 | Generation job result rendering | `/job-status-retrieve` | Render Confluence links or Jira epics/stories based on output shape |
 | Analytics dashboard | `/analytics-summary` | Replace static metrics with overview, failure rate, recent jobs, and document-type breakdown |
+| Infrastructure load | `/infrastructure-load` | Show live queue pressure, workflow failures/duration, service health, and today's tokens/cost in the Dashboard Platform Load card |
 
 ### P1: Operational Product UI
 
 | UI feature | Backend support | Required UI behavior |
 |---|---|---|
 | Job history | `qa_job_metrics`, `qa_jobs`, `doc_ingestion_jobs` | Show jobs by project, pipeline, status, date, and output link |
-| Audit log | `qa_job_metrics` | Timeline of queued, started, quality gate, completed, and failed events |
-| Notification center | `qa_job_metrics` and polling | Alert on completed/failed jobs and quality gate failures |
+| Audit log | `qops_audit_events`, `qa_job_metrics`, `qops_project_members` | Timeline of queued, started, quality gate, completed, and failed events; registered-user rows must be scoped to assigned projects/current actor |
+| Notification center | `qops_audit_events`, `qa_job_metrics`, and polling | Alert on completed/failed jobs and quality gate failures; registered users should only see assigned-project/current-user notifications |
 | Artifact repository | `doc_ingestion_jobs.input.files`, storage URLs, ingestion output | List uploaded artifacts by project and ingestion run |
+| Artifact reprocess | `doc_ingestion_jobs`, `qa_job_metrics`, `qops_project_members` | Queue reprocess only for failed artifacts; registered users must have assigned project access; metrics should preserve `project_id`, `requested_by`, and `settings_version` |
 | Project workspace | `projectName` used across all workflows | Project selector/recent projects derived from jobs and metrics |
 
 ### P2: Workflow-Aware Enhancements
@@ -718,6 +745,7 @@ UI implications:
 | Quality gate detail | `qa_job_metrics`, failed output | Show failed sections, word-count thresholds, traceability warnings if exposed |
 | Cost dashboard | `estimated_cost_usd`, token fields | Show cost per job, average cost, token trends |
 | Chroma ingestion health | `totalChunksStored`, `chunk_count` | Show chunk counts and ingestion completion summaries |
+| Infrastructure telemetry | `qa_jobs`, `doc_ingestion_jobs`, `qa_job_metrics`, `qops_connection_test_results` | Platform load score, queue backlog, service degradation, average workflow duration, and daily usage pressure |
 | Confluence document history | `qa_jobs.output.url`, metrics metadata | List generated page URLs by project and document type |
 | Jira creation summary | `qa_jobs.output.stories`, `qa_jobs.output.epics` | Show created/existing Jira keys and open links |
 

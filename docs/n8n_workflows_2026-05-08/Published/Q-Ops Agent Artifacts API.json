@@ -1,0 +1,182 @@
+[
+  {
+    "updatedAt": "2026-05-07T05:53:42.864Z",
+    "createdAt": "2026-05-07T05:53:42.864Z",
+    "id": "YFsr2hRD7BZlPCEK",
+    "name": "Q-Ops Agent Artifacts API",
+    "description": "Draft additive UI API for GET /webhook/artifacts backed by doc_ingestion_jobs. Assign supabase-service-role-key before activation.",
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "id": "af529232-24b1-4e87-8f8b-8c94b0ba7091",
+        "name": "GET /artifacts",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "path": "artifacts",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "webhookId": "83bcc929-f092-4b87-853d-3d6f7c62ecb6"
+      },
+      {
+        "id": "8ccdbdb3-c970-4567-9611-e872061f5c3e",
+        "name": "Fetch Ingestion Jobs",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "select",
+                "value": "job_id,status,input,created_at,updated_at,error"
+              },
+              {
+                "name": "order",
+                "value": "created_at.desc"
+              },
+              {
+                "name": "limit",
+                "value": "200"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+          "options": {}
+        },
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "DpZbhUxkEbKeXIiJ",
+            "name": "supabase-service-role-key"
+          }
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "3acae756-92d2-4dbe-8b59-a969fd4f4240",
+        "name": "Map Artifacts Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "jsCode": "const artifacts = []; const statusMap = { completed: 'processed', failed: 'failed', pending: 'processing', processing: 'processing' }; for (const item of $input.all()) { const job = item.json; if (!job || !job.job_id) continue; const input = job.input || {}; const files = input.files || {}; for (const [type, url] of Object.entries(files)) { const rawName = String(url).split('/').pop() || type; artifacts.push({ id: `${job.job_id}:${type}`, projectName: input.projectName || 'Unknown project', type, fileName: decodeURIComponent(rawName), uploadedAt: job.created_at, status: statusMap[job.status] || 'processing', url, jobId: job.job_id }); } } return [{ json: { artifacts } }];"
+        }
+      },
+      {
+        "id": "83c06237-a348-4faa-93be-77b86fda6aaa",
+        "name": "Respond Artifacts",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "connections": {
+      "GET /artifacts": {
+        "main": [
+          [
+            {
+              "node": "Fetch Ingestion Jobs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Ingestion Jobs": {
+        "main": [
+          [
+            {
+              "node": "Map Artifacts Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Map Artifacts Response": {
+        "main": [
+          [
+            {
+              "node": "Respond Artifacts",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "availableInMCP": true
+    },
+    "staticData": null,
+    "meta": {
+      "aiBuilderAssisted": true,
+      "builderVariant": "mcp"
+    },
+    "pinData": null,
+    "versionId": "095c0b3f-edd8-4179-bd69-5673b44c9391",
+    "activeVersionId": "095c0b3f-edd8-4179-bd69-5673b44c9391",
+    "versionCounter": 5,
+    "triggerCount": 1,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-05-07T05:53:42.866Z",
+        "createdAt": "2026-05-07T05:53:42.866Z",
+        "role": "workflow:owner",
+        "workflowId": "YFsr2hRD7BZlPCEK",
+        "projectId": "yL9RuH1JDK0PNYdi",
+        "project": {
+          "updatedAt": "2025-09-23T18:14:55.316Z",
+          "createdAt": "2025-09-23T18:14:01.272Z",
+          "id": "yL9RuH1JDK0PNYdi",
+          "name": "Anuj Alhans <aonu123@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

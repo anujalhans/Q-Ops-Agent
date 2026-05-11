@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#a44100",
+                        "primary-fixed": "#e2dfff",
+                        "background": "#fcf8ff",
+                        "secondary-container": "#d5e3fc",
+                        "inverse-primary": "#c3c0ff",
+                        "surface-container-high": "#eae6f4",
+                        "surface-container-highest": "#e4e1ee",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-primary-container": "#dad7ff",
+                        "surface": "#fcf8ff",
+                        "on-primary-fixed": "#0f0069",
+                        "surface-variant": "#e4e1ee",
+                        "secondary-fixed": "#d5e3fc",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "on-secondary": "#ffffff",
+                        "secondary": "#515f74",
+                        "on-surface": "#1b1b24",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "inverse-on-surface": "#f3effc",
+                        "on-tertiary-fixed": "#351000",
+                        "primary-container": "#4f46e5",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "tertiary-fixed": "#ffdbcc",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#c7c4d8",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#f0ecf9",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "surface-tint": "#4d44e3",
+                        "outline": "#777587",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-tertiary-container": "#ffd2be",
+                        "on-background": "#1b1b24",
+                        "on-surface-variant": "#464555",
+                        "on-secondary-container": "#57657a",
+                        "surface-bright": "#fcf8ff",
+                        "tertiary": "#7e3000",
+                        "inverse-surface": "#302f39",
+                        "primary": "#3525cd",
+                        "on-tertiary-fixed-variant": "#7b2f00",
+                        "surface-dim": "#dcd8e5",
+                        "surface-container-low": "#f5f2ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "container-max": "1440px",
+                        "unit": "4px",
+                        "sm": "8px",
+                        "xl": "48px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "xs": "4px"
+                    },
+                    "fontSize": {
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased">
+<!-- TopAppBar Component -->
+<header class="bg-white dark:bg-slate-950 docked full-width top-0 z-40 border-b border-slate-200 dark:border-slate-800 flat no shadows fixed w-full">
+<div class="flex justify-between items-center w-full px-6 py-3">
+<div class="flex items-center gap-md">
+<span class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Q-Ops Agent</span>
+<div class="ml-xl flex gap-md">
+<span class="text-indigo-600 dark:text-indigo-400 font-semibold cursor-pointer">Projects</span>
+<span class="text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors px-2 py-1 rounded-lg cursor-pointer">Artifacts</span>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-2 text-slate-600 hover:bg-slate-50 transition-colors rounded-full">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<button class="p-2 text-slate-600 hover:bg-slate-50 transition-colors rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-slate-200 overflow-hidden ml-sm border border-slate-200">
+<img alt="User Profile" data-alt="A professional headshot of a software engineer in a clean, high-key office environment. The lighting is soft and neutral, emphasizing a corporate but approachable aesthetic. The background consists of blurred technological elements in shades of slate and cool white, aligning with the precision-led enterprise brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQErRoZlt37YMqB4T3D1VGvr_4naFyjUgocfsbVcPKMhRbIIkuQ3tNEdmPvxxzeayImftvQ8YcP2Ellglrz0dxPoXNZERj2oSFpmYdOb0ymwp8YXonYxsfhrH8QixxOvtemw01XXKKmy6e_uMeXdAU-5LkU3bhVdWSJDdIcQHSKsC_WGZqhZ753bMNCVmeAPa-x5OoWVqDOFv7QYryD2eftLwNKXdY2GpvlwdIPRyqMmJOfLmJm9k0-BltnlkrLYsAc8blG7NbrMJf"/>
+</div>
+</div>
+</div>
+</header>
+<!-- SideNavBar Component -->
+<aside class="fixed left-0 top-0 h-full w-64 border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex flex-col pt-20 pb-6 z-30">
+<div class="px-6 mb-lg">
+<h2 class="text-lg font-black text-indigo-600 dark:text-indigo-400">Enterprise QA</h2>
+<p class="text-[10px] text-slate-400 font-medium tracking-widest uppercase">V2.4.0-Stable</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-md px-6 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-inter text-sm tracking-wide">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-6 py-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border-r-4 border-indigo-600 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-inter text-sm tracking-wide">Artifacts</span>
+</a>
+<a class="flex items-center gap-md px-6 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-inter text-sm tracking-wide">Analytics</span>
+</a>
+<a class="flex items-center gap-md px-6 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-inter text-sm tracking-wide">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-6 space-y-1 pt-6 border-t border-slate-200">
+<a class="flex items-center gap-md py-2 text-slate-500 hover:text-slate-900 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="text-sm">Documentation</span>
+</a>
+<a class="flex items-center gap-md py-2 text-slate-500 hover:text-slate-900 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="support_agent">support_agent</span>
+<span class="text-sm">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-20 p-lg min-h-screen">
+<div class="max-w-7xl mx-auto">
+<!-- Header Section -->
+<div class="flex items-end justify-between mb-lg">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface">My Projects</h1>
+<p class="text-on-surface-variant font-body-md mt-1">View and manage your assigned quality engineering projects.</p>
+</div>
+<div class="flex gap-md">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-2 border border-outline-variant rounded-lg text-sm focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none bg-surface-container-lowest w-64 transition-all" placeholder="Search projects..." type="text"/>
+</div>
+<button class="flex items-center gap-sm bg-primary hover:bg-primary-container text-white px-md py-2 rounded-lg transition-all font-medium text-sm">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                        New Project
+                    </button>
+</div>
+</div>
+<!-- Dashboard Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-xl">
+<div class="bg-surface-container-lowest p-lg rounded-xl border border-slate-200">
+<p class="text-label-caps text-on-surface-variant mb-2">ACTIVE PROJECTS</p>
+<p class="text-headline-md text-on-surface">12</p>
+</div>
+<div class="bg-surface-container-lowest p-lg rounded-xl border border-slate-200">
+<p class="text-label-caps text-on-surface-variant mb-2">PENDING REVIEWS</p>
+<p class="text-headline-md text-on-surface">04</p>
+</div>
+<div class="bg-surface-container-lowest p-lg rounded-xl border border-slate-200">
+<p class="text-label-caps text-on-surface-variant mb-2">UPCOMING DEADLINES</p>
+<p class="text-headline-md text-on-surface">02</p>
+</div>
+<div class="bg-surface-container-lowest p-lg rounded-xl border border-slate-200">
+<p class="text-label-caps text-on-surface-variant mb-2">AVG COMPLETION</p>
+<p class="text-headline-md text-on-surface">88%</p>
+</div>
+</div>
+<!-- Bento Grid Project List -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Main Project Card -->
+<div class="col-span-12 lg:col-span-8 bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
+<div class="p-lg flex items-start justify-between border-b border-slate-100">
+<div class="flex gap-md">
+<div class="w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+</div>
+<div>
+<h3 class="font-title-sm text-on-surface">Project Aurora: Core Migration</h3>
+<p class="text-body-sm text-on-surface-variant">Infrastructure validation and performance benchmarking for v3.0.</p>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full text-[10px] font-bold tracking-widest bg-emerald-50 text-emerald-700 uppercase border border-emerald-100">In Progress</span>
+</div>
+<div class="p-lg grid grid-cols-3 gap-lg bg-slate-50/50">
+<div>
+<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Your Role</p>
+<p class="text-body-md font-semibold text-slate-700">Senior QA Lead</p>
+</div>
+<div>
+<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Last Activity</p>
+<p class="text-body-md font-medium text-slate-700">2 hours ago</p>
+</div>
+<div>
+<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Health Score</p>
+<div class="flex items-center gap-sm">
+<div class="w-full bg-slate-200 h-1.5 rounded-full">
+<div class="bg-emerald-500 h-1.5 rounded-full" style="width: 92%"></div>
+</div>
+<span class="text-xs font-bold text-emerald-600">92%</span>
+</div>
+</div>
+</div>
+<div class="px-lg py-md flex items-center justify-between">
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-white" data-alt="Close up portrait of a professional female project manager in a bright, modern studio. Soft natural light illuminates her focused expression, wearing a neutral grey business casual outfit. The aesthetic is clean, minimalist, and high-quality, fitting into an enterprise software context with a slate and indigo theme." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDE1_-yL0r_5nMGIdE4B0fyJpCdU6cmxjiydnCSViHC07LXaWYBm2W1kpa906OdHmiCSkNHygyZ7rLcIdPgPlJnFunXuQa4hguFvL8XusGY6azCmmsgCBGys-Oa7jJwyRh7KuE-zlcrata57oamXHwaE82qk3Ap9NTJE3EsdXV0obbxrEi9217Qgmr3mRpeppSTH0DrFyF3GGGBLEUAkIPRcLTpNFr8tOegempBd069A3biJcDemMRCxN7bdr4vlxdiTb35Xih3r6Uz"/>
+<img class="w-8 h-8 rounded-full border-2 border-white" data-alt="Portrait of a male software developer looking directly at the camera with a confident smile. He is set against a subtle, high-tech background with faint digital light patterns. The image uses a cool color palette of whites and slates to maintain a professional and technical atmosphere suitable for an enterprise QA dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCi3KC3sxsKR2Z8hvL9c0C7jafKnOL6Yc_rjpBz2SkJ12kzgyx9iv2mBIG3ZPGQJLO1wDRkP1zdKVWZS6zmjvZw_qzcQUsKhwMoLpcA2ftzLCTo_FIfZYBuTwj91MN9Vrw7Y6B60_Pnpr71eedgLI1Y69adhUA8US4SJFPCo7h_pWlBD8c0a9pYSUzuWEiMUwJ7Vb65iv14qPoJsS2MJew-i02AaJJfJLp_oMYhBiz0LVALqmjxNoDl5SjZ3C8qoeZ3M5t-7gHJsWC"/>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500">+4</div>
+</div>
+<button class="text-indigo-600 font-semibold text-sm hover:underline">View Artifacts →</button>
+</div>
+</div>
+<!-- Secondary Cards Column -->
+<div class="col-span-12 lg:col-span-4 space-y-gutter">
+<div class="bg-white border border-slate-200 rounded-xl p-lg hover:shadow-md transition-shadow relative overflow-hidden">
+<!-- AI Suggestion Box effect -->
+<div class="absolute inset-0 bg-gradient-to-r from-indigo-50/50 to-transparent pointer-events-none"></div>
+<div class="relative z-10">
+<div class="flex justify-between mb-sm">
+<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100 uppercase">Review Required</span>
+<span class="material-symbols-outlined text-slate-400" data-icon="more_horiz">more_horiz</span>
+</div>
+<h4 class="font-semibold text-on-surface text-sm mb-1">Payment Gateway API</h4>
+<p class="text-xs text-on-surface-variant mb-md">Last activity by Marcus J. 14m ago</p>
+<div class="flex items-center gap-md pt-sm border-t border-slate-100">
+<span class="text-[10px] font-bold text-slate-400">ROLE</span>
+<span class="text-xs font-medium text-slate-700">Contributor</span>
+</div>
+</div>
+</div>
+<div class="bg-white border border-slate-200 rounded-xl p-lg hover:shadow-md transition-shadow">
+<div class="flex justify-between mb-sm">
+<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase">Archived</span>
+<span class="material-symbols-outlined text-slate-400" data-icon="more_horiz">more_horiz</span>
+</div>
+<h4 class="font-semibold text-on-surface text-sm mb-1">Mobile App Refactor</h4>
+<p class="text-xs text-on-surface-variant mb-md">Completed on Oct 12, 2023</p>
+<div class="flex items-center gap-md pt-sm border-t border-slate-100">
+<span class="text-[10px] font-bold text-slate-400">ROLE</span>
+<span class="text-xs font-medium text-slate-700">Lead QA</span>
+</div>
+</div>
+</div>
+<!-- Table View for Small Projects -->
+<div class="col-span-12 bg-white border border-slate-200 rounded-xl overflow-hidden">
+<div class="p-lg border-b border-slate-200 flex justify-between items-center">
+<h3 class="font-semibold text-on-surface">Recent Project Runs</h3>
+<button class="text-sm text-slate-500 hover:text-indigo-600 transition-colors">View All History</button>
+</div>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50">
+<th class="px-lg py-md text-[11px] font-bold text-slate-500 uppercase tracking-wider">Project Name</th>
+<th class="px-lg py-md text-[11px] font-bold text-slate-500 uppercase tracking-wider">Status</th>
+<th class="px-lg py-md text-[11px] font-bold text-slate-500 uppercase tracking-wider">Run Duration</th>
+<th class="px-lg py-md text-[11px] font-bold text-slate-500 uppercase tracking-wider">Success Rate</th>
+<th class="px-lg py-md text-[11px] font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-lg py-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-indigo-500 text-lg" data-icon="description">description</span>
+<span class="text-sm font-medium text-slate-900">E-Commerce Checkout Flow</span>
+</div>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-sm">
+<div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+<span class="text-xs text-slate-600">Healthy</span>
+</div>
+</td>
+<td class="px-lg py-md text-xs text-slate-600">4m 32s</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-sm">
+<span class="text-xs font-semibold text-slate-900">99.8%</span>
+</div>
+</td>
+<td class="px-lg py-md text-right">
+<button class="p-1 text-slate-400 hover:text-indigo-600 transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="open_in_new">open_in_new</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-lg py-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-indigo-500 text-lg" data-icon="description">description</span>
+<span class="text-sm font-medium text-slate-900">Auth Service Integration</span>
+</div>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-sm">
+<div class="w-2 h-2 rounded-full bg-amber-500"></div>
+<span class="text-xs text-slate-600">Degraded</span>
+</div>
+</td>
+<td class="px-lg py-md text-xs text-slate-600">12m 10s</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-sm">
+<span class="text-xs font-semibold text-slate-900">84.2%</span>
+</div>
+</td>
+<td class="px-lg py-md text-right">
+<button class="p-1 text-slate-400 hover:text-indigo-600 transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="open_in_new">open_in_new</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB for Contextual Action (Only on Dashboard/Home) -->
+<div class="fixed bottom-lg right-lg z-50">
+<button class="bg-primary hover:bg-primary-container text-white h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 group">
+<span class="material-symbols-outlined text-2xl group-hover:rotate-90 transition-transform duration-300" data-icon="bolt">bolt</span>
+</button>
+</div>
+</body></html>

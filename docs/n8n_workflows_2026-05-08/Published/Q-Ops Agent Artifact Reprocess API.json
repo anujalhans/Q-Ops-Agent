@@ -1,0 +1,503 @@
+[
+  {
+    "updatedAt": "2026-05-08T06:58:31.282Z",
+    "createdAt": "2026-05-07T05:54:43.132Z",
+    "id": "zHsg1Zr7oGOvhPFg",
+    "name": "Q-Ops Agent Artifact Reprocess API",
+    "description": "Auth-aware POST /webhook/artifacts/reprocess endpoint. Body uses artifactId formatted as jobId:fileKey; only failed artifacts can be reprocessed, registered users must have assigned project access, and queued metrics preserve attribution.",
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "artifacts/reprocess",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "d3ad5c77-6204-4f6e-89f3-065265835f79",
+        "name": "POST /artifacts/reprocess",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          96
+        ],
+        "webhookId": "4c8d70b0-7845-4cfb-aabf-6bf1c871b9d3"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = $json.body || {};\nconst headers = $json.headers || {};\nconst artifactId = String(body.artifactId || body.id || '').trim();\nconst parts = artifactId.split(':');\nconst jobId = parts.shift() || '';\nconst fileKey = parts.join(':');\nconst authHeader = headers.authorization || headers.Authorization || '';\nconst accessToken = String(authHeader).replace(/^Bearer\\s+/i, '').trim();\nreturn [{ json: { artifactId, jobId, fileKey, accessToken } }];"
+        },
+        "id": "f795d7c3-b6ae-47a7-a5ef-3e788b262e19",
+        "name": "Prepare Reprocess Request",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          96
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "={ \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"Bearer {{ $json.accessToken }}\", \"Content-Type\": \"application/json\" }",
+          "options": {}
+        },
+        "id": "63a771f3-5ba6-4ee3-bc9c-e5daf6cb3a4f",
+        "name": "Verify Supabase Auth User",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          448,
+          96
+        ],
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "select",
+                "value": "id,auth_user_id,email,name,role,status"
+              },
+              {
+                "name": "or",
+                "value": "=(auth_user_id.eq.{{ $(\"Verify Supabase Auth User\").item.json.id }},email.eq.{{ encodeURIComponent($(\"Verify Supabase Auth User\").item.json.email || \"\") }})"
+              },
+              {
+                "name": "status",
+                "value": "eq.active"
+              },
+              {
+                "name": "limit",
+                "value": "1"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+          "options": {}
+        },
+        "id": "633a7a4b-54f7-4b2a-aeaa-7ae7a62ad45f",
+        "name": "Fetch Q-Ops User Profile",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          672,
+          96
+        ],
+        "alwaysOutputData": true,
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "DpZbhUxkEbKeXIiJ",
+            "name": "supabase-service-role-key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "select",
+                "value": "project_id,role,qops_projects(name)"
+              },
+              {
+                "name": "qops_user_id",
+                "value": "=eq.{{ $(\"Fetch Q-Ops User Profile\").first().json.id || \"00000000-0000-0000-0000-000000000000\" }}"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+          "options": {}
+        },
+        "id": "3bd4aed0-365f-4b6a-8b1d-940eeac8f32e",
+        "name": "Fetch Current User Project Memberships",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          896,
+          96
+        ],
+        "executeOnce": true,
+        "alwaysOutputData": true,
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "DpZbhUxkEbKeXIiJ",
+            "name": "supabase-service-role-key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "job_id",
+                "value": "=eq.{{ $(\"Prepare Reprocess Request\").item.json.jobId }}"
+              },
+              {
+                "name": "select",
+                "value": "job_id,status,input,project_id,requested_by,settings_version,config_snapshot"
+              },
+              {
+                "name": "limit",
+                "value": "1"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+          "options": {}
+        },
+        "id": "2c0173cc-94d2-41e5-884a-1d7f5d778e3b",
+        "name": "Fetch Reprocess Source Job",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          1120,
+          96
+        ],
+        "alwaysOutputData": true,
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "DpZbhUxkEbKeXIiJ",
+            "name": "supabase-service-role-key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const request = $('Prepare Reprocess Request').first().json || {};\nconst authUser = $('Verify Supabase Auth User').first().json || {};\nconst profile = $('Fetch Q-Ops User Profile').first().json || {};\nconst memberships = $items('Fetch Current User Project Memberships').map(i => i.json).filter(m => m && m.project_id);\nconst source = $('Fetch Reprocess Source Job').first().json || {};\nfunction fail(code, message, statusCode = 400) { return [{ json: { ok: false, error: code, message, statusCode } }]; }\nif (!request.accessToken || !authUser.id || !profile.id || profile.status !== 'active') return fail('unauthorized', 'Missing or invalid Supabase Auth token.', 401);\nif (!request.jobId || !request.fileKey) return fail('bad_request', 'artifactId must be formatted as jobId:fileKey.', 400);\nif (!source.job_id) return fail('not_found', 'Source artifact was not found.', 404);\nif (source.status !== 'failed') return fail('not_reprocessable', 'Only failed artifacts can be reprocessed.', 409);\nconst isAdmin = profile.role === 'admin';\nconst allowedProjectIds = new Set(memberships.map(m => String(m.project_id)));\nconst sourceProjectId = source.project_id ? String(source.project_id) : '';\nconst sourceRequestedBy = source.requested_by ? String(source.requested_by) : '';\nconst hasProjectAccess = Boolean(sourceProjectId && allowedProjectIds.has(sourceProjectId));\nif (!isAdmin && !hasProjectAccess) return fail('forbidden', 'You do not have access to reprocess this artifact.', 403);\nconst input = source.input || {};\nconst files = input.files || {};\nconst url = files[request.fileKey];\nif (!url) return fail('not_found', 'Source artifact file was not found on the source job.', 404);\nconst now = new Date();\nconst datePart = now.toISOString().slice(2,10).replace(/-/g, '');\nconst randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();\nconst jobId = `ING-${datePart}-${randomPart}`;\nconst requestedBy = sourceRequestedBy || profile.id;\nconst settingsVersion = source.settings_version || null;\nconst projectName = input.projectName || 'Unknown project';\nconst payload = { job_id: jobId, status: 'pending', input: { projectName, files: { [request.fileKey]: url }, reprocessOf: request.artifactId, reprocessRequestedBy: profile.id }, project_id: source.project_id || null, requested_by: requestedBy, settings_version: settingsVersion, config_snapshot: source.config_snapshot || null };\nconst metric = { job_id: jobId, project_id: source.project_id || null, requested_by: requestedBy, settings_version: settingsVersion, project_name: projectName, pipeline: 'ingestion', event: 'JOB_REPROCESS_QUEUED', status: 'info', total_files: 1, metadata: { reprocessOf: request.artifactId, sourceJobId: source.job_id, fileKey: request.fileKey, requestedBy: profile.id, projectId: source.project_id || null, settingsVersion } };\nreturn [{ json: { ok: true, jobId, payload, metric } }];"
+        },
+        "id": "b1808383-29ca-4b92-bf09-786ede80c8af",
+        "name": "Prepare Reprocess Insert",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1344,
+          96
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.ok }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "0512b948-5c7b-4bf2-b537-b284c5c3cbf1",
+        "name": "Can Queue Reprocess?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1568,
+          96
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.payload }}",
+          "options": {}
+        },
+        "id": "088257ae-665c-4d07-b510-43965478e266",
+        "name": "Insert Reprocess Ingestion Job",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          1792,
+          0
+        ],
+        "executeOnce": true,
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "DpZbhUxkEbKeXIiJ",
+            "name": "supabase-service-role-key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $(\"Prepare Reprocess Insert\").item.json.metric }}",
+          "options": {}
+        },
+        "id": "f47ef671-797e-4c58-8b20-4559cb22d0ef",
+        "name": "Insert Reprocess Metric",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          2016,
+          0
+        ],
+        "executeOnce": true,
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "DpZbhUxkEbKeXIiJ",
+            "name": "supabase-service-role-key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { jobId: $(\"Prepare Reprocess Insert\").item.json.jobId, status: \"queued\" } }}",
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ]
+            }
+          }
+        },
+        "id": "96118847-1847-4b1a-9e3d-b9b984f4b82a",
+        "name": "Respond Reprocess Queued",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          2240,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ]
+            }
+          }
+        },
+        "id": "3142ba4c-b4d7-4e19-a71d-0072203ef15e",
+        "name": "Respond Reprocess Rejected",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1792,
+          192
+        ]
+      }
+    ],
+    "connections": {
+      "POST /artifacts/reprocess": {
+        "main": [
+          [
+            {
+              "node": "Prepare Reprocess Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Reprocess Request": {
+        "main": [
+          [
+            {
+              "node": "Verify Supabase Auth User",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify Supabase Auth User": {
+        "main": [
+          [
+            {
+              "node": "Fetch Q-Ops User Profile",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Q-Ops User Profile": {
+        "main": [
+          [
+            {
+              "node": "Fetch Current User Project Memberships",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Current User Project Memberships": {
+        "main": [
+          [
+            {
+              "node": "Fetch Reprocess Source Job",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Reprocess Source Job": {
+        "main": [
+          [
+            {
+              "node": "Prepare Reprocess Insert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Reprocess Insert": {
+        "main": [
+          [
+            {
+              "node": "Can Queue Reprocess?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Can Queue Reprocess?": {
+        "main": [
+          [
+            {
+              "node": "Insert Reprocess Ingestion Job",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Reprocess Rejected",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Insert Reprocess Ingestion Job": {
+        "main": [
+          [
+            {
+              "node": "Insert Reprocess Metric",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Insert Reprocess Metric": {
+        "main": [
+          [
+            {
+              "node": "Respond Reprocess Queued",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "availableInMCP": true,
+      "binaryMode": "separate"
+    },
+    "staticData": null,
+    "meta": {
+      "aiBuilderAssisted": true,
+      "builderVariant": "mcp"
+    },
+    "pinData": {},
+    "versionId": "6a88d8fc-856f-4766-b6ea-7c78c63e86bc",
+    "activeVersionId": "6a88d8fc-856f-4766-b6ea-7c78c63e86bc",
+    "versionCounter": 15,
+    "triggerCount": 1,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-05-07T05:54:43.134Z",
+        "createdAt": "2026-05-07T05:54:43.134Z",
+        "role": "workflow:owner",
+        "workflowId": "zHsg1Zr7oGOvhPFg",
+        "projectId": "yL9RuH1JDK0PNYdi",
+        "project": {
+          "updatedAt": "2025-09-23T18:14:55.316Z",
+          "createdAt": "2025-09-23T18:14:01.272Z",
+          "id": "yL9RuH1JDK0PNYdi",
+          "name": "Anuj Alhans <aonu123@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version 6a88d8fc",
+      "description": ""
+    }
+  }
+]

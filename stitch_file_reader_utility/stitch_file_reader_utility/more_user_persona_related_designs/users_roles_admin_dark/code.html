@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#222a3d",
+                        "surface-container-highest": "#2d3449",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-primary-container": "#00285d",
+                        "inverse-primary": "#005ac2",
+                        "surface": "#0b1326",
+                        "on-primary-fixed": "#001a42",
+                        "surface-variant": "#2d3449",
+                        "secondary-fixed": "#f0dbff",
+                        "tertiary-container": "#00a572",
+                        "primary-fixed": "#d8e2ff",
+                        "secondary-container": "#6f00be",
+                        "background": "#0b1326",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-primary": "#002e6a",
+                        "tertiary-fixed": "#6ffbbe",
+                        "error": "#ffb4ab",
+                        "secondary": "#ddb7ff",
+                        "on-surface": "#dae2fd",
+                        "on-secondary-fixed-variant": "#6900b3",
+                        "secondary-fixed-dim": "#ddb7ff",
+                        "on-secondary": "#490080",
+                        "primary-container": "#4d8eff",
+                        "on-secondary-fixed": "#2c0051",
+                        "inverse-on-surface": "#283044",
+                        "on-tertiary-fixed": "#002113",
+                        "on-error": "#690005",
+                        "on-error-container": "#ffdad6",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-tertiary-container": "#00311f",
+                        "on-background": "#dae2fd",
+                        "surface-tint": "#adc6ff",
+                        "outline": "#8c909f",
+                        "on-tertiary": "#003824",
+                        "outline-variant": "#424754",
+                        "surface-container": "#171f33",
+                        "error-container": "#93000a",
+                        "surface-container-lowest": "#060e20",
+                        "primary": "#adc6ff",
+                        "surface-dim": "#0b1326",
+                        "surface-container-low": "#131b2e",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-secondary-container": "#d6a9ff",
+                        "on-surface-variant": "#c2c6d6",
+                        "tertiary": "#4edea3",
+                        "inverse-surface": "#dae2fd",
+                        "surface-bright": "#31394d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xl": "40px",
+                        "unit": "4px",
+                        "lg": "24px",
+                        "grid_gutter": "16px",
+                        "md": "16px",
+                        "xs": "4px",
+                        "grid_columns": "12",
+                        "sm": "8px",
+                        "container_margin": "24px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "h3": ["Space Grotesk"],
+                        "h2": ["Space Grotesk"],
+                        "label-caps": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "h1": ["Space Grotesk"],
+                        "data-mono": ["Space Grotesk"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "h3": ["18px", {"lineHeight": "1.4", "letterSpacing": "0em", "fontWeight": "500"}],
+                        "h2": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-caps": ["11px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "data-mono": ["13px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .ai-glow {
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.15);
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-lg overflow-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-slate-50 tracking-tighter font-h3">Q-Ops Agent</span>
+<nav class="hidden md:flex gap-6 items-center h-full">
+<a class="text-slate-400 hover:text-slate-200 font-['Space_Grotesk'] tracking-tight text-sm transition-colors" href="#">Overview</a>
+<a class="text-slate-400 hover:text-slate-200 font-['Space_Grotesk'] tracking-tight text-sm transition-colors" href="#">Projects</a>
+<a class="text-[#3b82f6] border-b-2 border-[#3b82f6] pb-1 font-['Space_Grotesk'] tracking-tight text-sm" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<input class="bg-surface-container-low border border-outline-variant px-4 py-1.5 rounded-full text-sm focus:outline-none focus:border-primary transition-all w-64" placeholder="Global Search" type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-1.5 text-slate-400 text-sm">search</span>
+</div>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-white/5 transition-colors rounded-lg"><span class="material-symbols-outlined text-slate-400">notifications</span></button>
+<button class="p-2 hover:bg-white/5 transition-colors rounded-lg"><span class="material-symbols-outlined text-slate-400">history</span></button>
+<button class="p-2 hover:bg-white/5 transition-colors rounded-lg"><span class="material-symbols-outlined text-slate-400">help_outline</span></button>
+</div>
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg font-['Space_Grotesk'] text-sm font-bold active:opacity-80 duration-150">New Project</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-white/20">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A high-resolution close-up portrait of a professional system administrator avatar in a digital interface setting. The lighting is dramatic with cool cyan and warm purple highlights reflecting off clean surfaces. The aesthetic is futuristic and sharp, consistent with a high-stakes enterprise QA software environment. Soft focus background shows hints of data streaming." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEZhAa0vt4dL6Qs9h9wiEnKAfXLkttpsYZZhzwwBZI0SrQDVQ9vLGhDlEvBZn1sHKGhJsxrThkAtG6gOiw8-sEP1w78b5F3mC2DA1be3w2xEPNDR5o9LF-j1zwzHpr4XUIwGTJpXZVrtbcGnB5J0CGIWXLzWkbO1mWwLOLvIY9Zf31p702FgYfZPu7K7yx_r_lQJJgEsBkc7JyvUbeid7iSbBR0mIN1c0TFSTCVK416dLsOyMD5lEgZuGIHwiXh7V6-klkJjibj0Z9"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 bottom-0 w-64 bg-[#1e293b] border-r border-white/5 flex flex-col pt-8 z-40">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center border border-primary/20">
+<span class="material-symbols-outlined text-[#3b82f6]">bolt</span>
+</div>
+<div>
+<h2 class="text-lg font-black text-[#3b82f6] font-h2">Q-Ops Node</h2>
+<p class="font-['Space_Grotesk'] uppercase text-[10px] font-semibold tracking-widest text-slate-500">AI Enterprise QA</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-white/5 hover:text-slate-200 transition-all font-['Space_Grotesk'] uppercase text-xs font-semibold tracking-widest rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span> Analytics
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-white/5 hover:text-slate-200 transition-all font-['Space_Grotesk'] uppercase text-xs font-semibold tracking-widest rounded-lg" href="#">
+<span class="material-symbols-outlined">inventory_2</span> Artifacts
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-white/5 hover:text-slate-200 transition-all font-['Space_Grotesk'] uppercase text-xs font-semibold tracking-widest rounded-lg" href="#">
+<span class="material-symbols-outlined">hub</span> Integrations
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-blue-500/10 text-[#3b82f6] border-r-4 border-[#3b82f6] font-['Space_Grotesk'] uppercase text-xs font-semibold tracking-widest" href="#">
+<span class="material-symbols-outlined">settings_suggest</span> Settings
+            </a>
+</nav>
+<div class="px-4 mb-4">
+<button class="w-full bg-[#3b82f6] text-white py-3 rounded font-['Space_Grotesk'] uppercase text-xs font-black tracking-widest hover:brightness-110 transition-all">Launch Scan</button>
+</div>
+<div class="mt-auto border-t border-white/5 px-4 py-6 space-y-2">
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-slate-200 text-xs font-['Space_Grotesk'] uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined text-sm">contact_support</span> Support
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-slate-200 text-xs font-['Space_Grotesk'] uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined text-sm">menu_book</span> Documentation
+            </a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-64 mt-16 p-8 h-[calc(100vh-64px)] overflow-y-auto">
+<div class="max-w-7xl mx-auto">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h1 class="font-h1 text-on-surface mb-2">Users &amp; Permissions</h1>
+<p class="text-on-surface-variant font-body-sm max-w-2xl">Manage enterprise access levels, define granular roles, and monitor user activity across the QA intelligence pipeline.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 border border-outline-variant hover:bg-white/5 text-on-surface text-sm rounded flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-sm">download</span> Export CSV
+                    </button>
+<button class="px-4 py-2 bg-secondary-container text-white text-sm rounded-lg flex items-center gap-2 ai-glow hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-sm">person_add</span> Add New User
+                    </button>
+</div>
+</div>
+<!-- Dashboard Stats Grid -->
+<div class="grid grid-cols-4 gap-grid_gutter mb-8">
+<div class="glass-panel p-5 rounded-xl">
+<p class="text-xs font-label-caps text-slate-400 mb-2">TOTAL USERS</p>
+<div class="flex justify-between items-end">
+<span class="font-h2 text-primary">1,248</span>
+<span class="text-emerald-400 text-xs font-data-mono flex items-center">+12% <span class="material-symbols-outlined text-xs">trending_up</span></span>
+</div>
+</div>
+<div class="glass-panel p-5 rounded-xl">
+<p class="text-xs font-label-caps text-slate-400 mb-2">ACTIVE SESSIONS</p>
+<div class="flex justify-between items-end">
+<span class="font-h2 text-on-surface">342</span>
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full border border-surface bg-slate-700"></div>
+<div class="w-6 h-6 rounded-full border border-surface bg-slate-600"></div>
+<div class="w-6 h-6 rounded-full border border-surface bg-slate-500"></div>
+</div>
+</div>
+</div>
+<div class="glass-panel p-5 rounded-xl border-secondary/20 ai-glow">
+<p class="text-xs font-label-caps text-secondary mb-2">AI AGENTS</p>
+<div class="flex justify-between items-end">
+<span class="font-h2 text-secondary">24</span>
+<span class="text-secondary/60 text-xs font-data-mono">Active Nodes</span>
+</div>
+</div>
+<div class="glass-panel p-5 rounded-xl">
+<p class="text-xs font-label-caps text-slate-400 mb-2">AVG RESPONSE</p>
+<div class="flex justify-between items-end">
+<span class="font-h2 text-on-surface">14ms</span>
+<span class="text-slate-500 text-xs font-data-mono">Global Edge</span>
+</div>
+</div>
+</div>
+<!-- Main Table Section -->
+<div class="glass-panel rounded-xl overflow-hidden border-white/5">
+<!-- Table Filters -->
+<div class="px-6 py-4 border-b border-white/5 flex justify-between items-center bg-surface-container-low">
+<div class="flex gap-4 items-center">
+<div class="flex gap-1 bg-surface-container-lowest p-1 rounded">
+<button class="px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded">All Users</button>
+<button class="px-3 py-1 hover:bg-white/5 text-slate-400 text-xs font-medium rounded">Admins</button>
+<button class="px-3 py-1 hover:bg-white/5 text-slate-400 text-xs font-medium rounded">Operators</button>
+<button class="px-3 py-1 hover:bg-white/5 text-slate-400 text-xs font-medium rounded">Viewers</button>
+</div>
+<div class="h-4 w-px bg-white/10 mx-2"></div>
+<button class="text-xs text-slate-400 flex items-center gap-1 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-sm">filter_list</span> Advanced Filters
+                        </button>
+</div>
+<div class="flex gap-2">
+<span class="text-xs text-slate-500 font-data-mono">Showing 1-10 of 1,248</span>
+</div>
+</div>
+<!-- Table Content -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-highest/50 border-b border-white/5">
+<th class="px-6 py-3 font-label-caps text-slate-400">User Profile</th>
+<th class="px-6 py-3 font-label-caps text-slate-400">Primary Role</th>
+<th class="px-6 py-3 font-label-caps text-slate-400">Assigned Projects</th>
+<th class="px-6 py-3 font-label-caps text-slate-400">Last Activity</th>
+<th class="px-6 py-3 font-label-caps text-slate-400">Status</th>
+<th class="px-6 py-3 font-label-caps text-slate-400 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-sm">
+<!-- Row 1 -->
+<tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors h-16">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-gradient-to-br from-[#3b82f6] to-[#a855f7] flex items-center justify-center font-bold text-xs">SK</div>
+<div>
+<div class="text-on-surface font-medium">Sasha Kowalski</div>
+<div class="text-xs text-slate-500 font-data-mono">s.kowalski@qops.ai</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-full uppercase tracking-widest border border-primary/20">System Admin</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 bg-slate-800 text-slate-300 text-[10px] rounded border border-white/5">Core-X Node</span>
+<span class="px-2 py-0.5 bg-slate-800 text-slate-300 text-[10px] rounded border border-white/5">+4 more</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-400 font-data-mono text-xs">2 mins ago</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+<span class="text-xs text-emerald-400">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:bg-white/10 rounded transition-colors"><span class="material-symbols-outlined text-slate-400">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors h-16 bg-white/[0.01]">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-slate-700 flex items-center justify-center font-bold text-xs">JM</div>
+<div>
+<div class="text-on-surface font-medium">Julian Marcus</div>
+<div class="text-xs text-slate-500 font-data-mono">j.marcus@qops.ai</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-secondary/10 text-secondary text-[10px] font-bold rounded-full uppercase tracking-widest border border-secondary/20">QA Architect</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 bg-slate-800 text-slate-300 text-[10px] rounded border border-white/5">Nexus Shield</span>
+<span class="px-2 py-0.5 bg-slate-800 text-slate-300 text-[10px] rounded border border-white/5">Orbital-7</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-400 font-data-mono text-xs">45 mins ago</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+<span class="text-xs text-emerald-400">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:bg-white/10 rounded transition-colors"><span class="material-symbols-outlined text-slate-400">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors h-16">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-slate-700 flex items-center justify-center font-bold text-xs">EL</div>
+<div>
+<div class="text-on-surface font-medium">Elena Lund</div>
+<div class="text-xs text-slate-500 font-data-mono">e.lund@qops.ai</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-surface-variant text-slate-400 text-[10px] font-bold rounded-full uppercase tracking-widest border border-white/10">Junior Auditor</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 bg-slate-800 text-slate-300 text-[10px] rounded border border-white/5">Legacy-V3</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-400 font-data-mono text-xs">3 hours ago</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+<span class="text-xs text-amber-400">Idle</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:bg-white/10 rounded transition-colors"><span class="material-symbols-outlined text-slate-400">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors h-16 bg-white/[0.01]">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-[#a855f7]/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-[#a855f7] text-sm">smart_toy</span>
+</div>
+<div>
+<div class="text-on-surface font-medium">Auto-Scan Agent-04</div>
+<div class="text-xs text-slate-500 font-data-mono">system.internal.bot</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-purple-500/10 text-purple-400 text-[10px] font-bold rounded-full uppercase tracking-widest border border-purple-500/20">System Bot</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 bg-slate-800 text-slate-300 text-[10px] rounded border border-white/5">GLOBAL_ROOT</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-400 font-data-mono text-xs">Synchronizing...</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
+<span class="text-xs text-emerald-400">Running</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:bg-white/10 rounded transition-colors"><span class="material-symbols-outlined text-slate-400">settings</span></button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors h-16">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-slate-700 flex items-center justify-center font-bold text-xs">DB</div>
+<div>
+<div class="text-on-surface font-medium">David Byrne</div>
+<div class="text-xs text-slate-500 font-data-mono">d.byrne@qops.ai</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-surface-variant text-slate-400 text-[10px] font-bold rounded-full uppercase tracking-widest border border-white/10">View Only</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 bg-slate-800 text-slate-300 text-[10px] rounded border border-white/5">Marketing Cloud</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-400 font-data-mono text-xs">12 days ago</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-red-400"></div>
+<span class="text-xs text-red-400">Inactive</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:bg-white/10 rounded transition-colors"><span class="material-symbols-outlined text-slate-400">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 flex justify-between items-center bg-surface-container-low border-t border-white/5">
+<div class="flex gap-2">
+<button class="p-2 text-slate-500 hover:text-white transition-colors border border-white/5 rounded"><span class="material-symbols-outlined">chevron_left</span></button>
+<button class="p-2 text-white bg-primary/10 border border-primary/40 rounded text-xs px-3">1</button>
+<button class="p-2 text-slate-500 hover:text-white transition-colors border border-white/5 rounded text-xs px-3">2</button>
+<button class="p-2 text-slate-500 hover:text-white transition-colors border border-white/5 rounded text-xs px-3">3</button>
+<button class="p-2 text-slate-500 hover:text-white transition-colors border border-white/5 rounded"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+<div class="text-xs text-slate-500">Rows per page: 10</div>
+</div>
+</div>
+</div>
+</main>
+<!-- NavigationDrawer (Intelligence Feed) -->
+<aside class="fixed right-0 top-0 bottom-0 z-[60] p-6 w-96 bg-[#1e293b]/95 backdrop-blur-2xl border-l border-purple-500/20 shadow-[-10px_0_30px_rgba(0,0,0,0.5)] transform translate-x-full lg:translate-x-0 transition-transform duration-300">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-purple-500/30 p-1">
+<img alt="Notification Center Icon" class="w-full h-full object-contain" data-alt="A futuristic intelligence feed icon, featuring an glowing amethyst lightning bolt contained within a sleek, metallic circle. The design uses high-contrast gradients of deep purple and bright magenta against a pitch-black background, emphasizing advanced AI activity and real-time system monitoring." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAy9Q9ZlYbozYjm4-dU_ag7lYdmiSRYtRviwzheZp2qS3A0ox8v__PzZE7J91mMfBHGXS-4bWD03oRJKpHVdw2y-DLjPzHWBnewIp8RvMHexYROxRc4Kr8ypFzWMTbONAvdmZ-TNGg0L_8c9mpeF5kVflsVb6P9N4TpR5rRdMsGYe8IfO5dE20U_m88vU-GAf9mXiHpdmFVZBlUAmjERQ6ELjH6pAtm0-RWvUO5ktXpNgzVq0K6fYEQPQ5_Ngc7bHqDdTK7pfsLpFw8"/>
+</div>
+<div>
+<h3 class="font-h3 text-slate-100 font-bold">Intelligence Feed</h3>
+<p class="font-['Space_Grotesk'] text-xs leading-relaxed text-slate-400">Real-time QA insights</p>
+</div>
+</div>
+<button class="p-2 hover:bg-white/5 rounded-full"><span class="material-symbols-outlined text-slate-400">close</span></button>
+</div>
+<div class="space-y-4 overflow-y-auto h-[calc(100vh-180px)] pr-2">
+<!-- Alert Card -->
+<div class="p-4 rounded-lg bg-purple-500/5 border border-purple-500/20 ai-glow">
+<div class="flex items-start gap-3 mb-2">
+<span class="material-symbols-outlined text-[#a855f7] text-sm mt-1">report</span>
+<div>
+<p class="text-sm font-semibold text-slate-100">Critical Alert: Core-X</p>
+<p class="text-xs text-slate-400 font-data-mono">Latency spike detected (+240ms)</p>
+</div>
+</div>
+<div class="text-[10px] text-purple-400 font-medium">ACTION REQUIRED</div>
+</div>
+<!-- Activity Card -->
+<div class="p-4 rounded-lg border border-transparent hover:border-purple-500/40 transition-all">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-slate-400 text-sm mt-1">history_edu</span>
+<div>
+<p class="text-sm text-slate-200">User <span class="text-primary font-medium">Sasha K.</span> updated role for User <span class="text-primary font-medium">Elena L.</span></p>
+<p class="text-[10px] text-slate-500 font-data-mono">14:22:10 UTC</p>
+</div>
+</div>
+</div>
+<!-- Health Card -->
+<div class="p-4 rounded-lg border border-transparent hover:border-purple-500/40 transition-all">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-slate-400 text-sm mt-1">dns</span>
+<div>
+<p class="text-sm text-slate-200">System Health: Optimal</p>
+<div class="mt-2 w-full bg-slate-800 h-1 rounded-full overflow-hidden">
+<div class="bg-emerald-400 h-full w-[98%]"></div>
+</div>
+<p class="text-[10px] text-slate-500 mt-1 font-data-mono">Nodes: 124/124 UP</p>
+</div>
+</div>
+</div>
+</div>
+<div class="absolute bottom-6 left-6 right-6">
+<button class="w-full py-3 bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-bold uppercase tracking-widest border border-white/10 rounded transition-all">View All Logs</button>
+</div>
+</aside>
+</body></html>

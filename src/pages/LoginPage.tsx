@@ -14,10 +14,12 @@ import {
   X,
 } from 'lucide-react'
 import { useTheme } from '../theme/ThemeProvider'
+import { requestPasswordReset } from '../lib/auth'
 
 type Props = {
-  onSuccess: () => void
+  onSuccess: (email: string, password: string) => Promise<void>
   addToast: (toast: { title: string; message: string; type: 'success' | 'error' | 'info' }) => void
+  authReady?: boolean
 }
 
 const heroImage =
@@ -42,14 +44,15 @@ function LoginModal({
 }: {
   open: boolean
   onClose: () => void
-  onSubmit: (username: string, password: string) => boolean
+  onSubmit: (email: string, password: string) => Promise<boolean>
   onForgot: () => void
   onStatus: () => void
 }) {
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [helper, setHelper] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -62,24 +65,26 @@ function LoginModal({
 
   if (!open) return null
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const ok = onSubmit(username, password)
+    setSubmitting(true)
+    const ok = await onSubmit(email, password)
+    setSubmitting(false)
     if (ok) {
-      setUsername('')
+      setEmail('')
       setPassword('')
       setError('')
       setHelper('')
     } else {
-      setError('Invalid username or password.')
+      setError('Unable to sign in with those credentials.')
     }
   }
 
   const fillDemoAccess = () => {
-    setUsername('admin')
-    setPassword('admin')
+    setEmail('admin@qops.local')
+    setPassword('')
     setError('')
-    setHelper('Demo credentials filled. Click Login to continue.')
+    setHelper('Use the Supabase Auth password for this admin account.')
   }
 
   return (
@@ -96,24 +101,27 @@ function LoginModal({
         </div>
         <form className="space-y-5" onSubmit={submit}>
           <div className="space-y-1">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Username</label>
-            <input
-              className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-              placeholder="admin"
-              autoComplete="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
+              <label htmlFor="login-email" className="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Email</label>
+              <input
+                id="login-email"
+                className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                placeholder="admin@qops.local"
+                autoComplete="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
           </div>
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Password</label>
+              <label htmlFor="login-password" className="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Password</label>
               <button type="button" onClick={onForgot} className="text-xs font-semibold text-primary hover:underline">
                 Forgot your password?
               </button>
             </div>
             <input
+              id="login-password"
               className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
               placeholder="********"
               autoComplete="current-password"
@@ -128,7 +136,7 @@ function LoginModal({
             <p className="text-on-surface-variant">
               Having trouble?{' '}
               <button type="button" onClick={fillDemoAccess} className="font-semibold text-primary hover:underline">
-                Try demo access
+                Fill admin email
               </button>
             </p>
             {helper ? <p className="mt-1 font-medium text-primary">{helper}</p> : null}
@@ -136,8 +144,8 @@ function LoginModal({
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" /> All systems operational
             </button>
           </div>
-          <button className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-on-primary transition-opacity hover:opacity-90">
-            Login
+          <button disabled={submitting} className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">
+            {submitting ? 'Signing in...' : 'Login'}
           </button>
         </form>
       </div>
@@ -153,10 +161,11 @@ function ForgotModal({
 }: {
   open: boolean
   onClose: () => void
-  onSubmit: (email: string) => void
+  onSubmit: (email: string) => Promise<void>
   onBack: () => void
 }) {
   const [email, setEmail] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -169,11 +178,16 @@ function ForgotModal({
 
   if (!open) return null
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!email.trim()) return
-    onSubmit(email.trim())
-    setEmail('')
+    setSubmitting(true)
+    try {
+      await onSubmit(email.trim())
+      setEmail('')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -191,8 +205,9 @@ function ForgotModal({
         <p className="mb-6 text-sm leading-5 text-on-surface-variant">Enter your email address and we'll send you instructions to reset your password.</p>
         <form className="space-y-5" onSubmit={submit}>
           <div className="space-y-1">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Email Address</label>
+            <label htmlFor="forgot-email" className="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Email Address</label>
             <input
+              id="forgot-email"
               className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
               placeholder="your.email@example.com"
               type="email"
@@ -201,7 +216,9 @@ function ForgotModal({
               required
             />
           </div>
-          <button className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-on-primary">Send Reset Link</button>
+          <button disabled={submitting} className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-on-primary disabled:cursor-not-allowed disabled:opacity-60">
+            {submitting ? 'Sending...' : 'Send Reset Link'}
+          </button>
           <button type="button" onClick={onBack} className="w-full text-center text-sm text-on-surface-variant hover:text-primary">
             Back to Login
           </button>
@@ -211,22 +228,24 @@ function ForgotModal({
   )
 }
 
-export default function LoginPage({ onSuccess, addToast }: Props) {
+export default function LoginPage({ onSuccess, addToast, authReady = true }: Props) {
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
   const [showLogin, setShowLogin] = useState(false)
   const [showForgot, setShowForgot] = useState(false)
   const [infoModal, setInfoModal] = useState<'docs' | 'privacy' | 'terms' | 'status' | null>(null)
 
-  const handleLogin = (username: string, password: string) => {
-    if (username.trim() === 'admin' && password === 'admin') {
-      onSuccess()
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      await onSuccess(email.trim(), password)
       addToast({ title: 'Welcome back', message: 'You have successfully logged in.', type: 'success' })
       setShowLogin(false)
       return true
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Please check your Supabase Auth credentials.'
+      addToast({ title: 'Authentication failed', message, type: 'error' })
+      return false
     }
-    addToast({ title: 'Authentication failed', message: 'Please use admin/admin to continue.', type: 'error' })
-    return false
   }
 
   return (
@@ -240,8 +259,8 @@ export default function LoginPage({ onSuccess, addToast }: Props) {
           <button type="button" onClick={toggle} className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="Toggle theme">
             {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
           </button>
-          <button onClick={() => setShowLogin(true)} className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-on-primary transition-opacity hover:opacity-90">
-            Login
+          <button onClick={() => setShowLogin(true)} disabled={!authReady} className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">
+            {authReady ? 'Login' : 'Checking session'}
           </button>
         </div>
       </header>
@@ -414,9 +433,15 @@ export default function LoginPage({ onSuccess, addToast }: Props) {
       <ForgotModal
         open={showForgot}
         onClose={() => setShowForgot(false)}
-        onSubmit={(email) => {
-          addToast({ title: 'Password reset email sent', message: `Check your email at ${email} for password reset instructions.`, type: 'success' })
-          setShowForgot(false)
+        onSubmit={async (email) => {
+          try {
+            await requestPasswordReset(email, `${window.location.origin}/auth/callback`)
+            addToast({ title: 'Password reset email sent', message: `Check your email at ${email} for password reset instructions.`, type: 'success' })
+            setShowForgot(false)
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unable to send password reset email.'
+            addToast({ title: 'Password reset failed', message, type: 'error' })
+          }
         }}
         onBack={() => {
           setShowForgot(false)
@@ -462,7 +487,7 @@ function InfoModal({ kind, onClose }: { kind: 'docs' | 'privacy' | 'terms' | 'st
     terms: {
       title: 'Terms of Service',
       rows: [
-        ['Demo credentials', 'The static admin/admin login is intended for local demonstration only.'],
+        ['Authentication', 'Dashboard access uses Supabase Auth and Q-Ops role records.'],
         ['Backend dependency', 'Knowledge ingestion and document generation require the configured n8n backend.'],
         ['Acceptable use', 'Use the tool for authorized QA planning and project documentation workflows.'],
         ['Review required', 'Legal terms should be reviewed before production or customer use.'],

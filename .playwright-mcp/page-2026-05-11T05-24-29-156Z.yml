@@ -1,0 +1,203 @@
+- generic [ref=e3]:
+  - generic [ref=e149]:
+    - complementary [ref=e150]:
+      - generic [ref=e151]:
+        - img [ref=e153]
+        - generic [ref=e158]:
+          - heading "Q-Ops Agent" [level=1] [ref=e159]
+          - paragraph [ref=e160]: A Purpose-Built AI System for QA Engineering
+      - navigation [ref=e161]:
+        - button "Dashboard" [ref=e162] [cursor=pointer]:
+          - img [ref=e163]
+          - generic [ref=e168]: Dashboard
+        - button "Artifacts" [ref=e169] [cursor=pointer]:
+          - img [ref=e170]
+          - generic [ref=e173]: Artifacts
+        - button "Doc Gen" [ref=e174] [cursor=pointer]:
+          - img [ref=e175]
+          - generic [ref=e178]: Doc Gen
+        - button "Knowledge Base" [ref=e179] [cursor=pointer]:
+          - img [ref=e180]
+          - generic [ref=e182]: Knowledge Base
+        - button "Analytics" [ref=e183] [cursor=pointer]:
+          - img [ref=e184]
+          - generic [ref=e186]: Analytics
+      - generic [ref=e187]:
+        - button "Settings" [ref=e188] [cursor=pointer]:
+          - img [ref=e189]
+          - generic [ref=e192]: Settings
+        - button "Documentation" [ref=e193] [cursor=pointer]:
+          - img [ref=e194]
+          - generic [ref=e196]: Documentation
+    - main [ref=e197]:
+      - generic [ref=e198]:
+        - button "Search operations... Ctrl K" [ref=e199] [cursor=pointer]:
+          - img [ref=e200]
+          - generic [ref=e203]: Search operations...
+          - generic [ref=e204]: Ctrl K
+        - generic [ref=e205]:
+          - button "Toggle theme" [ref=e206] [cursor=pointer]:
+            - img [ref=e207]
+          - button "Notifications" [ref=e209] [cursor=pointer]:
+            - img [ref=e210]
+            - generic [ref=e213]: "2"
+          - button "Help" [ref=e214] [cursor=pointer]:
+            - img [ref=e215]
+          - generic [ref=e219]:
+            - generic [ref=e220]:
+              - paragraph [ref=e221]: Admin User
+              - paragraph [ref=e222]: Admin
+            - img "User profile" [ref=e223]
+            - button "Logout" [ref=e224] [cursor=pointer]
+      - generic [ref=e226]:
+        - generic [ref=e227]:
+          - generic [ref=e228]:
+            - heading "Document Generation" [level=2] [ref=e726]
+            - paragraph [ref=e230]: Generate QA deliverables and review recent generated outputs.
+          - generic [ref=e231]:
+            - button "View Audit Log" [ref=e232] [cursor=pointer]:
+              - img [ref=e233]
+              - text: View Audit Log
+            - button "New Project" [ref=e237] [cursor=pointer]:
+              - img [ref=e238]
+              - text: New Project
+        - generic [ref=e727]:
+          - generic [ref=e729]:
+            - generic [ref=e730]:
+              - button "1. Knowledge Base" [ref=e731] [cursor=pointer]
+              - button "2. Generate Documents" [pressed] [ref=e732] [cursor=pointer]
+              - generic [ref=e733]: Workspace
+            - generic [ref=e734]:
+              - generic [ref=e735]:
+                - generic [ref=e736]:
+                  - heading "Generate Documents" [level=3] [ref=e737]
+                  - paragraph [ref=e738]: Choose outputs and generate QA deliverables from your knowledge base.
+                - generic [ref=e739]:
+                  - text: Project name
+                  - combobox "Project name" [ref=e740]:
+                    - option "Select a project"
+                    - option "E2E-QOPS-20260509-171521"
+                    - option "UISmoleTest" [selected]
+                    - option "Codex Smoke Project 20260507-163940"
+                - generic [ref=e741]:
+                  - paragraph [ref=e742]: Select artifacts
+                  - generic [ref=e743]:
+                    - generic [ref=e744] [cursor=pointer]:
+                      - radio "Test Strategy Generate Test Strategy from your knowledge base." [ref=e745]
+                      - text: Test Strategy
+                      - generic [ref=e746]: Generate Test Strategy from your knowledge base.
+                    - generic [ref=e747] [cursor=pointer]:
+                      - radio "Test Plan Generate Test Plan from your knowledge base." [ref=e748]
+                      - text: Test Plan
+                      - generic [ref=e749]: Generate Test Plan from your knowledge base.
+                    - generic [ref=e750] [cursor=pointer]:
+                      - radio "Risk Matrix Generate Risk Matrix from your knowledge base." [ref=e751]
+                      - text: Risk Matrix
+                      - generic [ref=e752]: Generate Risk Matrix from your knowledge base.
+                    - generic [ref=e753] [cursor=pointer]:
+                      - radio "Test Cases Generate Test Cases from your knowledge base." [ref=e754]
+                      - text: Test Cases
+                      - generic [ref=e755]: Generate Test Cases from your knowledge base.
+                    - generic [ref=e756] [cursor=pointer]:
+                      - radio "Epics & User Stories Generate Epics & User Stories from your knowledge base." [checked] [ref=e757]
+                      - text: Epics & User Stories
+                      - generic [ref=e758]: Generate Epics & User Stories from your knowledge base.
+                    - generic [ref=e759] [cursor=pointer]:
+                      - radio "Traceability Matrix Generate Traceability Matrix from your knowledge base." [ref=e760]
+                      - text: Traceability Matrix
+                      - generic [ref=e761]: Generate Traceability Matrix from your knowledge base.
+                - generic [ref=e762]:
+                  - button "Reset" [ref=e763] [cursor=pointer]
+                  - button "Generate Documents" [ref=e764] [cursor=pointer]
+              - generic [ref=e765]:
+                - heading "Recent Generated Outputs" [level=3] [ref=e766]
+                - generic [ref=e767]:
+                  - generic [ref=e849]:
+                    - generic [ref=e850]:
+                      - paragraph [ref=e851]: Epics & User Stories
+                      - paragraph [ref=e852]: UISmoleTest | May 11, 10:54 AM
+                    - generic [ref=e853]: queued
+                  - generic [ref=e768]:
+                    - generic [ref=e769]:
+                      - paragraph [ref=e770]: test_plan
+                      - paragraph [ref=e771]: UISmoleTest | May 8, 11:00 AM
+                    - link "Open" [ref=e772] [cursor=pointer]:
+                      - /url: https://anujalhans1.atlassian.net/wiki/spaces/TD/pages/17891330/Test+Plan+-+UISmoleTest
+                      - text: Open
+                      - img [ref=e773]
+                  - generic [ref=e777]:
+                    - generic [ref=e778]:
+                      - paragraph [ref=e779]: user_stories
+                      - paragraph [ref=e780]: UISmoleTest | May 8, 10:37 AM
+                    - generic [ref=e781]: completed
+                  - generic [ref=e782]:
+                    - generic [ref=e783]:
+                      - paragraph [ref=e784]: user_stories
+                      - paragraph [ref=e785]: UISmoleTest | May 8, 10:22 AM
+                    - generic [ref=e786]: failed
+                  - generic [ref=e787]:
+                    - generic [ref=e788]:
+                      - paragraph [ref=e789]: user_stories
+                      - paragraph [ref=e790]: UISmoleTest | May 8, 09:58 AM
+                    - generic [ref=e791]: failed
+          - generic [ref=e797]:
+            - generic [ref=e798]:
+              - generic [ref=e799]:
+                - heading "Job Status" [level=3] [ref=e800]
+                - img [ref=e801]
+              - generic [ref=e806]:
+                - generic [ref=e854]:
+                  - paragraph [ref=e855]: pending
+                  - paragraph [ref=e856]: 25%
+                - paragraph [ref=e859]: "Job ID: GEN-260511-8EI6DL"
+                - paragraph [ref=e860]: Waiting in the backend queue. The worker will pick this up shortly.
+            - generic [ref=e807]:
+              - generic [ref=e808]:
+                - img [ref=e809]
+                - heading "QUICK TIPS" [level=3] [ref=e811]
+              - generic [ref=e812]:
+                - generic [ref=e813]:
+                  - paragraph [ref=e814]: "Tip #1"
+                  - paragraph [ref=e815]: Select a document type to generate QA artifacts.
+                - generic [ref=e816]:
+                  - paragraph [ref=e817]: "Tip #2"
+                  - paragraph [ref=e818]: Reference an existing knowledge base project.
+                - generic [ref=e819]:
+                  - paragraph [ref=e820]: "Tip #3"
+                  - paragraph [ref=e821]: Generated documents will appear as Jira or Confluence links.
+              - button "View Help Center" [ref=e822] [cursor=pointer]
+            - 'button "100% Platform Load 15 active, 0 pending Workspace Processing: 15 Failures 24h: 0 Avg duration: 0s Services: healthy Tokens today: 0 Cost today: $0.00" [ref=e823] [cursor=pointer]':
+              - generic [ref=e824]:
+                - generic [ref=e825]:
+                  - img [ref=e826]
+                  - generic [ref=e829]: 100%
+                - generic [ref=e830]:
+                  - generic [ref=e831]:
+                    - generic [ref=e832]:
+                      - paragraph [ref=e833]: Platform Load
+                      - paragraph [ref=e834]: 15 active, 0 pending
+                    - generic [ref=e835]: Workspace
+                  - generic [ref=e836]:
+                    - generic [ref=e837]:
+                      - text: "Processing:"
+                      - strong [ref=e838]: "15"
+                    - generic [ref=e839]:
+                      - text: "Failures 24h:"
+                      - strong [ref=e840]: "0"
+                    - generic [ref=e841]:
+                      - text: "Avg duration:"
+                      - strong [ref=e842]: 0s
+                    - generic [ref=e843]:
+                      - text: "Services:"
+                      - strong [ref=e844]: healthy
+                    - generic [ref=e845]:
+                      - text: "Tokens today:"
+                      - strong [ref=e846]: "0"
+                    - generic [ref=e847]:
+                      - text: "Cost today:"
+                      - strong [ref=e848]: $0.00
+  - status [ref=e861]:
+    - img [ref=e862]
+    - generic [ref=e864]:
+      - paragraph [ref=e865]: Generation started
+      - paragraph [ref=e866]: Document generation queued.

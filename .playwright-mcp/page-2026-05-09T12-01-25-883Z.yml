@@ -1,0 +1,250 @@
+- generic [ref=e149]:
+  - complementary [ref=e150]:
+    - generic [ref=e151]:
+      - img [ref=e153]
+      - generic [ref=e158]:
+        - heading "Q-Ops Agent" [level=1] [ref=e159]
+        - paragraph [ref=e160]: A Purpose-Built AI System for QA Engineering
+    - navigation [ref=e161]:
+      - button "Dashboard" [ref=e162] [cursor=pointer]:
+        - img [ref=e163]
+        - generic [ref=e168]: Dashboard
+      - button "Artifacts" [ref=e169] [cursor=pointer]:
+        - img [ref=e170]
+        - generic [ref=e173]: Artifacts
+      - button "Doc Gen" [ref=e174] [cursor=pointer]:
+        - img [ref=e175]
+        - generic [ref=e178]: Doc Gen
+      - button "Knowledge Base" [ref=e179] [cursor=pointer]:
+        - img [ref=e180]
+        - generic [ref=e182]: Knowledge Base
+      - button "Analytics" [ref=e183] [cursor=pointer]:
+        - img [ref=e184]
+        - generic [ref=e186]: Analytics
+    - generic [ref=e187]:
+      - button "Settings" [ref=e188] [cursor=pointer]:
+        - img [ref=e189]
+        - generic [ref=e192]: Settings
+      - button "Documentation" [ref=e193] [cursor=pointer]:
+        - img [ref=e194]
+        - generic [ref=e196]: Documentation
+  - main [ref=e197]:
+    - generic [ref=e198]:
+      - button "Search operations... Ctrl K" [ref=e199] [cursor=pointer]:
+        - img [ref=e200]
+        - generic [ref=e203]: Search operations...
+        - generic [ref=e204]: Ctrl K
+      - generic [ref=e205]:
+        - button "Toggle theme" [ref=e206] [cursor=pointer]:
+          - img [ref=e207]
+        - button "Notifications" [ref=e209] [cursor=pointer]:
+          - img [ref=e210]
+          - generic [ref=e213]: "4"
+        - button "Help" [ref=e214] [cursor=pointer]:
+          - img [ref=e215]
+        - generic [ref=e219]:
+          - generic [ref=e220]:
+            - paragraph [ref=e221]: Admin User
+            - paragraph [ref=e222]: Admin
+          - img "User profile" [ref=e223]
+          - button "Logout" [ref=e224] [cursor=pointer]
+    - generic [ref=e226]:
+      - generic [ref=e227]:
+        - generic [ref=e228]:
+          - heading "Knowledge Base" [level=2] [ref=e506]
+          - paragraph [ref=e230]: Create, update, and review knowledge bases for QA intelligence.
+        - generic [ref=e231]:
+          - button "View Audit Log" [ref=e232] [cursor=pointer]:
+            - img [ref=e233]
+            - text: View Audit Log
+          - button "New Project" [ref=e237] [cursor=pointer]:
+            - img [ref=e238]
+            - text: New Project
+      - generic [ref=e277]:
+        - generic [ref=e279]:
+          - generic [ref=e280]:
+            - button "1. Knowledge Base" [pressed] [ref=e281] [cursor=pointer]
+            - button "2. Generate Documents" [ref=e282] [cursor=pointer]
+            - generic [ref=e283]: Workspace
+          - generic [ref=e284]:
+            - generic [ref=e285]:
+              - generic [ref=e286]:
+                - generic [ref=e287]:
+                  - heading "Existing Knowledge Bases" [level=3] [ref=e288]
+                  - paragraph [ref=e289]: Draft and ready projects appear here after project creation or ingestion.
+                - generic [ref=e290]: 3 projects
+              - generic [ref=e422]:
+                - generic [ref=e507]:
+                  - generic [ref=e508]:
+                    - paragraph [ref=e509]: E2E-QOPS-20260509-171521
+                    - generic [ref=e510]: ingesting
+                  - paragraph [ref=e511]: E2E Module | E2E Sprint
+                - generic [ref=e423]:
+                  - generic [ref=e424]:
+                    - paragraph [ref=e425]: UISmoleTest
+                    - generic [ref=e426]: ready
+                  - paragraph [ref=e427]: UISmoke
+                - generic [ref=e428]:
+                  - generic [ref=e429]:
+                    - paragraph [ref=e430]: Codex Smoke Project 20260507-163940
+                    - generic [ref=e431]: draft
+                  - paragraph [ref=e432]: Smoke | test
+            - generic [ref=e292]:
+              - generic [ref=e293]:
+                - heading "Knowledge Ingestion" [level=3] [ref=e294]
+                - paragraph [ref=e295]: Upload your project artifacts to build a knowledge base.
+              - generic [ref=e296]:
+                - text: Project name
+                - combobox "Project name Give a clear, descriptive project name for traceability." [ref=e297]:
+                  - option "Select a project"
+                  - option "E2E-QOPS-20260509-171521" [selected]
+                  - option "UISmoleTest"
+                  - option "Codex Smoke Project 20260507-163940"
+                - generic [ref=e298]: Give a clear, descriptive project name for traceability.
+              - generic [ref=e299]:
+                - heading "Business Documents" [level=4] [ref=e300]
+                - generic [ref=e301]:
+                  - generic [ref=e302] [cursor=pointer]:
+                    - button "BRD document brd.pdf" [ref=e519]
+                    - generic [ref=e304]:
+                      - generic [ref=e305]: BRD document
+                      - img [ref=e306]
+                    - paragraph [ref=e309]: brd.pdf
+                  - generic [ref=e310] [cursor=pointer]:
+                    - button "FRD document frd.pdf" [ref=e520]
+                    - generic [ref=e312]:
+                      - generic [ref=e313]: FRD document
+                      - img [ref=e314]
+                    - paragraph [ref=e317]: frd.pdf
+              - generic [ref=e318]:
+                - heading "Technical Documents" [level=4] [ref=e319]
+                - generic [ref=e320]:
+                  - generic [ref=e321] [cursor=pointer]:
+                    - button "HLD document brd.pdf" [ref=e521]
+                    - generic [ref=e323]:
+                      - generic [ref=e324]: HLD document
+                      - img [ref=e325]
+                    - paragraph [ref=e328]: brd.pdf
+                  - generic [ref=e329] [cursor=pointer]:
+                    - button "LLD document frd.pdf" [ref=e522]
+                    - generic [ref=e331]:
+                      - generic [ref=e332]: LLD document
+                      - img [ref=e333]
+                    - paragraph [ref=e336]: frd.pdf
+              - generic [ref=e337]:
+                - heading "Supporting Assets" [level=4] [ref=e338]
+                - generic [ref=e339]:
+                  - generic [ref=e340] [cursor=pointer]:
+                    - button "Transcript file meeting-notes.txt" [ref=e523]
+                    - generic [ref=e342]:
+                      - generic [ref=e343]: Transcript file
+                      - img [ref=e344]
+                    - paragraph [ref=e347]: meeting-notes.txt
+                  - generic [ref=e348] [cursor=pointer]:
+                    - button "UI designs 1 files selected Upload one or more design images for your UI assets." [ref=e524]
+                    - generic [ref=e350]:
+                      - generic [ref=e351]: UI designs
+                      - img [ref=e352]
+                    - paragraph [ref=e355]: 1 files selected
+                    - paragraph [ref=e356]: Upload one or more design images for your UI assets.
+              - generic [ref=e357]:
+                - button "Reset" [ref=e358] [cursor=pointer]
+                - button "Create Knowledge Base" [ref=e359] [cursor=pointer]
+        - generic [ref=e360]:
+          - generic [ref=e361]:
+            - generic [ref=e362]:
+              - heading "Job Status" [level=3] [ref=e363]
+              - img [ref=e364]
+            - generic [ref=e369]:
+              - generic [ref=e525]:
+                - paragraph [ref=e526]: processing
+                - paragraph [ref=e527]: 50%
+              - paragraph [ref=e530]: "Job ID: ING-260509-RH02VR"
+              - paragraph [ref=e531]: Processing continues. Polling until completion.
+          - generic [ref=e370]:
+            - generic [ref=e371]:
+              - img [ref=e372]
+              - heading "QUICK TIPS" [level=3] [ref=e374]
+            - generic [ref=e375]:
+              - generic [ref=e376]:
+                - paragraph [ref=e377]: "Tip #1"
+                - paragraph [ref=e378]: Use clear knowledge project names for traceable AI assets.
+              - generic [ref=e379]:
+                - paragraph [ref=e380]: "Tip #2"
+                - paragraph [ref=e381]: Upload source documents to build the knowledge base.
+              - generic [ref=e382]:
+                - paragraph [ref=e383]: "Tip #3"
+                - paragraph [ref=e384]: Verify the API at localhost:5678 if requests fail.
+            - button "View Help Center" [ref=e385] [cursor=pointer]
+          - 'button "100% Platform Load 15 active, 1 pending Workspace Processing: 14 Failures 24h: 0 Avg duration: 0s Services: healthy Tokens today: 0 Cost today: $0.00 Oldest pending: 5h 30m" [active] [ref=e538] [cursor=pointer]':
+            - generic [ref=e387]:
+              - generic [ref=e388]:
+                - img [ref=e389]
+                - generic [ref=e392]: 100%
+              - generic [ref=e393]:
+                - generic [ref=e394]:
+                  - generic [ref=e395]:
+                    - paragraph [ref=e396]: Platform Load
+                    - paragraph [ref=e397]: 15 active, 1 pending
+                  - generic [ref=e434]: Workspace
+                - generic [ref=e398]:
+                  - generic [ref=e399]:
+                    - text: "Processing:"
+                    - strong [ref=e400]: "14"
+                  - generic [ref=e401]:
+                    - text: "Failures 24h:"
+                    - strong [ref=e402]: "0"
+                  - generic [ref=e403]:
+                    - text: "Avg duration:"
+                    - strong [ref=e404]: 0s
+                  - generic [ref=e405]:
+                    - text: "Services:"
+                    - strong [ref=e406]: healthy
+                  - generic [ref=e407]:
+                    - text: "Tokens today:"
+                    - strong [ref=e408]: "0"
+                  - generic [ref=e409]:
+                    - text: "Cost today:"
+                    - strong [ref=e410]: $0.00
+                - paragraph [ref=e539]: "Oldest pending: 5h 30m"
+  - generic [ref=e541]:
+    - generic [ref=e542]:
+      - heading "System Diagnostics" [level=2] [ref=e543]
+      - button "Close" [ref=e544] [cursor=pointer]:
+        - img [ref=e545]
+    - generic [ref=e548]:
+      - generic [ref=e549]:
+        - paragraph [ref=e550]: Platform load
+        - paragraph [ref=e551]: 100%
+      - generic [ref=e552]:
+        - paragraph [ref=e553]: Active jobs
+        - paragraph [ref=e554]: "15"
+      - generic [ref=e555]:
+        - paragraph [ref=e556]: Failures 24h
+        - paragraph [ref=e557]: "0"
+      - generic [ref=e558]:
+        - paragraph [ref=e559]: Tracked artifacts
+        - paragraph [ref=e560]: "272"
+      - generic [ref=e561]:
+        - paragraph [ref=e562]: Avg duration
+        - paragraph [ref=e563]: 0s
+      - generic [ref=e564]:
+        - paragraph [ref=e565]: Cost today
+        - paragraph [ref=e566]: $0.00
+    - paragraph [ref=e567]: "Live infrastructure telemetry generated May 9, 05:20 PM for the workspace. Backend URL: http://localhost:5678."
+    - generic [ref=e568]:
+      - generic [ref=e569]:
+        - generic [ref=e570]: Confluence
+        - generic [ref=e571]: not_configured
+      - generic [ref=e572]:
+        - generic [ref=e573]: Jira
+        - generic [ref=e574]: not_configured
+      - generic [ref=e575]:
+        - generic [ref=e576]: OpenAI
+        - generic [ref=e577]: not_configured
+      - generic [ref=e578]:
+        - generic [ref=e579]: Local Microservices
+        - generic [ref=e580]: ok
+      - generic [ref=e581]:
+        - generic [ref=e582]: n8n
+        - generic [ref=e583]: ok

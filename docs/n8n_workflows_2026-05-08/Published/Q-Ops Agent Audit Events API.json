@@ -1,0 +1,401 @@
+[
+  {
+    "updatedAt": "2026-05-08T06:45:10.685Z",
+    "createdAt": "2026-05-07T05:54:19.525Z",
+    "id": "lyyrP14iTYacuEFv",
+    "name": "Q-Ops Agent Audit Events API",
+    "description": "Auth-aware audit API for GET /webhook/audit-events. Verifies Supabase bearer tokens; admins receive workspace audit events and registered users receive only their own assigned-project/user events.",
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "path": "audit-events",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "e8e0dff3-53ab-4b6e-b70c-4c5c38e90720",
+        "name": "GET /audit-events",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "webhookId": "8aab8e9e-bbb9-4480-aa25-d16d3e79a4a2"
+      },
+      {
+        "parameters": {
+          "jsCode": "const headers = $json.headers || {};\nconst authHeader = headers.authorization || headers.Authorization || '';\nconst accessToken = String(authHeader).replace(/^Bearer\\s+/i, '').trim();\nreturn [{ json: { accessToken, hasBearer: Boolean(accessToken) } }];"
+        },
+        "id": "893155ee-ac71-49db-b439-5bb97290c3e0",
+        "name": "Prepare Audit Request",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "={ \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"Bearer {{ $json.accessToken }}\", \"Content-Type\": \"application/json\" }",
+          "options": {}
+        },
+        "id": "6f413709-b149-4675-918d-1b52a63c3625",
+        "name": "Verify Supabase Auth User",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          448,
+          0
+        ],
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "select",
+                "value": "id,auth_user_id,email,name,role,status"
+              },
+              {
+                "name": "or",
+                "value": "=(auth_user_id.eq.{{ $(\"Verify Supabase Auth User\").item.json.id }},email.eq.{{ encodeURIComponent($(\"Verify Supabase Auth User\").item.json.email || \"\") }})"
+              },
+              {
+                "name": "status",
+                "value": "eq.active"
+              },
+              {
+                "name": "limit",
+                "value": "1"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+          "options": {}
+        },
+        "id": "ffba812d-d670-48c4-bb9f-a2aceffd52fa",
+        "name": "Fetch Q-Ops User Profile",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          672,
+          0
+        ],
+        "alwaysOutputData": true,
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "DpZbhUxkEbKeXIiJ",
+            "name": "supabase-service-role-key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "select",
+                "value": "project_id,role,qops_projects(name)"
+              },
+              {
+                "name": "qops_user_id",
+                "value": "=eq.{{ $(\"Fetch Q-Ops User Profile\").first().json.id || \"00000000-0000-0000-0000-000000000000\" }}"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+          "options": {}
+        },
+        "id": "d5c81480-b90f-4f71-b0c1-9279f37acf93",
+        "name": "Fetch Current User Project Memberships",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          896,
+          0
+        ],
+        "executeOnce": true,
+        "alwaysOutputData": true,
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "DpZbhUxkEbKeXIiJ",
+            "name": "supabase-service-role-key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "select",
+                "value": "id,actor_name,action,entity_type,entity_id,project_id,status,details,metadata,created_at"
+              },
+              {
+                "name": "order",
+                "value": "created_at.desc"
+              },
+              {
+                "name": "limit",
+                "value": "200"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+          "options": {}
+        },
+        "id": "61789f4b-7799-4954-87d9-bc8b71fb3cc6",
+        "name": "Fetch Q-Ops Audit Events",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          1120,
+          0
+        ],
+        "executeOnce": true,
+        "alwaysOutputData": true,
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "DpZbhUxkEbKeXIiJ",
+            "name": "supabase-service-role-key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "select",
+                "value": "id,job_id,project_id,requested_by,project_name,document_type,pipeline,event,status,error_message,created_at"
+              },
+              {
+                "name": "order",
+                "value": "created_at.desc"
+              },
+              {
+                "name": "limit",
+                "value": "200"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+          "options": {}
+        },
+        "id": "cd68e0e8-e1cb-4611-a731-1bace23644e4",
+        "name": "Fetch QA Job Metrics For Audit",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          1344,
+          0
+        ],
+        "executeOnce": true,
+        "alwaysOutputData": true,
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "DpZbhUxkEbKeXIiJ",
+            "name": "supabase-service-role-key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const authUser = $('Verify Supabase Auth User').first().json || {};\nconst profile = $('Fetch Q-Ops User Profile').first().json || {};\nconst memberships = $items('Fetch Current User Project Memberships').map(i => i.json).filter(m => m && m.project_id);\n\nif (!authUser.id || !profile.id || profile.status !== 'active') {\n  return [{ json: { ok: false, error: 'unauthorized', message: 'Missing or invalid Supabase Auth token.' } }];\n}\n\nconst isAdmin = profile.role === 'admin';\nconst allowedProjectIds = new Set(memberships.map(m => String(m.project_id)));\nconst allowedProjectNames = new Set(memberships.map(m => m.qops_projects?.name).filter(Boolean).map(String));\nconst projectNameById = new Map(memberships.map(m => [String(m.project_id), m.qops_projects?.name || String(m.project_id)]));\nconst currentUserId = String(profile.id);\nconst actorKeys = new Set([profile.email, profile.name, authUser.email].filter(Boolean).map(v => String(v).toLowerCase()));\n\nfunction isOwnAuditEvent(e) {\n  if (isAdmin) return true;\n  const meta = e.metadata || {};\n  const projectId = e.project_id ? String(e.project_id) : '';\n  const projectName = meta.projectName || meta.project_name || '';\n  const actor = String(e.actor_name || '').toLowerCase();\n  const requestedBy = meta.requested_by || meta.requestedBy || meta.userId || meta.qopsUserId;\n  return Boolean(\n    (projectId && allowedProjectIds.has(projectId)) ||\n    (projectName && allowedProjectNames.has(String(projectName))) ||\n    (requestedBy && String(requestedBy) === currentUserId) ||\n    (actor && actorKeys.has(actor))\n  );\n}\n\nfunction isOwnMetric(m) {\n  if (isAdmin) return true;\n  const requestedByMatches = m.requested_by && String(m.requested_by) === currentUserId;\n  const projectId = m.project_id ? String(m.project_id) : '';\n  const projectName = m.project_name || '';\n  const assignedProjectMatches = !projectId || allowedProjectIds.has(projectId) || allowedProjectNames.has(String(projectName));\n  return Boolean(requestedByMatches && assignedProjectMatches);\n}\n\nconst explicitEvents = $items('Fetch Q-Ops Audit Events')\n  .map(i => i.json)\n  .filter(e => e && e.id && isOwnAuditEvent(e))\n  .map(e => ({\n    id: e.id,\n    actor: e.actor_name || 'n8n',\n    action: e.action,\n    project: e.metadata?.projectName || e.metadata?.project_name || (e.project_id ? projectNameById.get(String(e.project_id)) || e.project_id : ''),\n    entity: e.entity_id || e.entity_type || '',\n    status: e.status || 'info',\n    timestamp: e.created_at,\n    details: e.details || '',\n    event: e.action\n  }));\n\nconst metricEvents = $items('Fetch QA Job Metrics For Audit')\n  .map(i => i.json)\n  .filter(m => m && m.id && isOwnMetric(m))\n  .map(m => ({\n    id: `metric-${m.id}`,\n    actor: 'n8n',\n    action: m.event || 'JOB_EVENT',\n    project: m.project_name || (m.project_id ? projectNameById.get(String(m.project_id)) || m.project_id : ''),\n    entity: m.job_id || '',\n    status: m.status === 'error' || m.status === 'failed' ? 'error' : m.event === 'JOB_COMPLETED' ? 'success' : 'info',\n    timestamp: m.created_at,\n    details: [m.pipeline, m.document_type, m.error_message].filter(Boolean).join(' | '),\n    event: m.event,\n    pipeline: m.pipeline,\n    jobId: m.job_id\n  }));\n\nconst events = explicitEvents.concat(metricEvents).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)).slice(0, 150);\nreturn [{ json: { events, meta: { scope: isAdmin ? 'workspace' : 'self', userId: profile.id, projectIds: isAdmin ? [] : Array.from(allowedProjectIds), generatedAt: new Date().toISOString() } } }];"
+        },
+        "id": "ac7ef8f8-f085-4b5a-acc7-3de01b77974d",
+        "name": "Map Audit Events Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1568,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ]
+            }
+          }
+        },
+        "id": "c4d50530-82f0-4ebb-a17e-7cf995d09ade",
+        "name": "Respond Audit Events",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1792,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "GET /audit-events": {
+        "main": [
+          [
+            {
+              "node": "Prepare Audit Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Audit Request": {
+        "main": [
+          [
+            {
+              "node": "Verify Supabase Auth User",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify Supabase Auth User": {
+        "main": [
+          [
+            {
+              "node": "Fetch Q-Ops User Profile",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Q-Ops User Profile": {
+        "main": [
+          [
+            {
+              "node": "Fetch Current User Project Memberships",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Current User Project Memberships": {
+        "main": [
+          [
+            {
+              "node": "Fetch Q-Ops Audit Events",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Q-Ops Audit Events": {
+        "main": [
+          [
+            {
+              "node": "Fetch QA Job Metrics For Audit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch QA Job Metrics For Audit": {
+        "main": [
+          [
+            {
+              "node": "Map Audit Events Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Map Audit Events Response": {
+        "main": [
+          [
+            {
+              "node": "Respond Audit Events",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "availableInMCP": true,
+      "binaryMode": "separate"
+    },
+    "staticData": null,
+    "meta": {
+      "aiBuilderAssisted": true,
+      "builderVariant": "mcp"
+    },
+    "pinData": {},
+    "versionId": "7dd4dde9-cd7c-45a7-89a9-6c3c35ac8108",
+    "activeVersionId": "7dd4dde9-cd7c-45a7-89a9-6c3c35ac8108",
+    "versionCounter": 12,
+    "triggerCount": 1,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-05-07T05:54:19.527Z",
+        "createdAt": "2026-05-07T05:54:19.527Z",
+        "role": "workflow:owner",
+        "workflowId": "lyyrP14iTYacuEFv",
+        "projectId": "yL9RuH1JDK0PNYdi",
+        "project": {
+          "updatedAt": "2025-09-23T18:14:55.316Z",
+          "createdAt": "2025-09-23T18:14:01.272Z",
+          "id": "yL9RuH1JDK0PNYdi",
+          "name": "Anuj Alhans <aonu123@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version 7dd4dde9",
+      "description": ""
+    }
+  }
+]

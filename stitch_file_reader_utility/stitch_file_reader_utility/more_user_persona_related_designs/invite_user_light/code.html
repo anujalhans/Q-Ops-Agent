@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#351000",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#f0ecf9",
+                        "on-background": "#1b1b24",
+                        "on-primary-fixed": "#0f0069",
+                        "on-primary-container": "#dad7ff",
+                        "primary-fixed": "#e2dfff",
+                        "on-surface": "#1b1b24",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#7e3000",
+                        "surface-container-low": "#f5f2ff",
+                        "tertiary-container": "#a44100",
+                        "surface-tint": "#4d44e3",
+                        "outline-variant": "#c7c4d8",
+                        "surface-container-highest": "#e4e1ee",
+                        "on-tertiary-container": "#ffd2be",
+                        "surface-container-high": "#eae6f4",
+                        "surface-dim": "#dcd8e5",
+                        "surface-bright": "#fcf8ff",
+                        "secondary-container": "#d5e3fc",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "inverse-on-surface": "#f3effc",
+                        "surface-variant": "#e4e1ee",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-primary": "#ffffff",
+                        "secondary": "#515f74",
+                        "background": "#fcf8ff",
+                        "surface": "#fcf8ff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#57657a",
+                        "inverse-primary": "#c3c0ff",
+                        "outline": "#777587",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "primary-container": "#4f46e5",
+                        "inverse-surface": "#302f39",
+                        "primary": "#3525cd",
+                        "on-tertiary-fixed-variant": "#7b2f00",
+                        "on-surface-variant": "#464555",
+                        "tertiary-fixed": "#ffdbcc",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#3323cc"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "md": "16px",
+                        "xs": "4px",
+                        "container-max": "1440px",
+                        "lg": "24px",
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "xl": "48px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background font-body-md text-on-background min-h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-64 border-r border-slate-200 bg-slate-50 flex flex-col py-6 z-30">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-lg">enterprise</span>
+</div>
+<div>
+<h2 class="text-lg font-black text-indigo-600 leading-none">Enterprise QA</h2>
+<p class="text-[10px] font-medium text-slate-500 tracking-widest mt-1">V2.4.0-Stable</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-inter text-sm tracking-wide">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span class="font-inter text-sm tracking-wide">Artifacts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+<span class="font-inter text-sm tracking-wide">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-indigo-50 text-indigo-700 border-r-4 border-indigo-600 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-inter text-sm tracking-wide font-semibold">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+<span class="font-inter text-sm tracking-wide">Documentation</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">support_agent</span>
+<span class="font-inter text-sm tracking-wide">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-1 flex flex-col min-h-screen relative">
+<!-- TopAppBar -->
+<header class="bg-white border-b border-slate-200 flex justify-between items-center w-full px-6 py-3 sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<h1 class="text-xl font-bold tracking-tight text-slate-900 font-inter antialiased">Q-Ops Agent</h1>
+<div class="h-6 w-px bg-slate-200 mx-2"></div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="pl-9 pr-4 py-1.5 bg-slate-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-indigo-500/20 w-64" placeholder="Search resources..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="px-4 py-1.5 bg-indigo-600 text-white font-inter text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                    Create Project
+                </button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-slate-200 ml-2 cursor-pointer">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a software engineering manager in a brightly lit, modern office environment. He is wearing a minimalist dark shirt, and the background features soft bokeh with hints of lush green office plants and sleek glass partitions. The lighting is crisp and clear, reflecting a high-end light-mode corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6CCceusl0xFFymIjZgKvNUiePBSy0G2veiuAvPwHNrr9wT6Y8bGoFJSPfHlgTEUXnt_43UoZlGTBmAZhn4e_Z1c74zTuI-T3ucfrL_q06XhOLTf6Kj9rY-ZaeP65GyN7TqBh-R62DcRsoEHoimBnvuw4clHwDlP_JDMx6etN_FoeAChmDpSfMINDfH_M300gk0RbGNJ50D9qJ0YotWxZILxF6e0QaD9MqExwo_nWcXbRrG0VcPFU-TyV0s6dygHGDfFkQ_iGbYfRc"/>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="p-lg flex-1">
+<div class="mb-lg">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-xs">Users &amp; Permissions</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manage team members, roles, and access control across your automation projects.</p>
+</div>
+<!-- Table Container -->
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50/50">
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">User</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Role</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Projects</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xs text-indigo-600">SM</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-semibold">Sarah Miller</p>
+<p class="text-xs text-on-surface-variant">sarah.m@enterprise.qa</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">Admin</span>
+</td>
+<td class="px-6 py-4">
+<p class="font-body-sm text-body-sm text-on-surface-variant">12 Projects</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-slate-600 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xs text-indigo-600">JK</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-semibold">James Knight</p>
+<p class="text-xs text-on-surface-variant">j.knight@enterprise.qa</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">Registered User</span>
+</td>
+<td class="px-6 py-4">
+<p class="font-body-sm text-body-sm text-on-surface-variant">4 Projects</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-slate-600 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- DIM OVERLAY -->
+<div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50">
+<!-- DRAWER SLIDING FROM RIGHT -->
+<div class="absolute right-0 top-0 h-full w-[480px] bg-white shadow-2xl flex flex-col animate-drawer-in">
+<!-- Drawer Header -->
+<div class="px-lg py-lg border-b border-slate-100 flex items-center justify-between">
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface">Invite Team Member</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Grant access and assign roles to your workspace.</p>
+</div>
+<button class="w-10 h-10 rounded-lg hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Drawer Body -->
+<div class="flex-1 overflow-y-auto px-lg py-lg space-y-8">
+<!-- Email Input -->
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant block">Email Address</label>
+<div class="relative">
+<input class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all outline-none text-body-md font-body-md" placeholder="e.g. name@company.com" type="email"/>
+</div>
+</div>
+<!-- Role Selector -->
+<div class="space-y-4">
+<label class="font-label-caps text-label-caps text-on-surface-variant block">Select Access Role</label>
+<!-- Role Option: Admin -->
+<div class="p-md border-2 border-indigo-600 bg-indigo-50/30 rounded-xl relative cursor-pointer group">
+<div class="flex gap-4">
+<div class="w-6 h-6 rounded-full border-4 border-indigo-600 bg-white flex-shrink-0 mt-0.5"></div>
+<div>
+<p class="font-title-sm text-[16px] text-indigo-700 font-semibold mb-1">Admin</p>
+<p class="font-body-sm text-body-sm text-on-secondary-fixed-variant leading-relaxed">Full access to billing, user management, and workspace settings. Can create and delete any project.</p>
+</div>
+</div>
+</div>
+<!-- Role Option: Registered User -->
+<div class="p-md border border-slate-200 hover:border-indigo-200 hover:bg-slate-50 transition-all rounded-xl relative cursor-pointer group">
+<div class="flex gap-4">
+<div class="w-6 h-6 rounded-full border-2 border-slate-200 bg-white flex-shrink-0 mt-0.5 group-hover:border-indigo-300"></div>
+<div>
+<p class="font-title-sm text-[16px] text-on-surface font-semibold mb-1">Registered User</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">Can view, edit, and run tests in assigned projects. Restricted from sensitive workspace configurations.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Project Multi-select -->
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant block">Assign Projects</label>
+<div class="min-h-[100px] border border-slate-200 rounded-xl p-3 bg-slate-50/50 flex flex-wrap gap-2 content-start">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-semibold text-slate-700 shadow-sm">
+                                Core API V3
+                                <button class="material-symbols-outlined text-sm text-slate-400 hover:text-indigo-600 transition-colors">close</button>
+</div>
+<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-semibold text-slate-700 shadow-sm">
+                                Mobile App iOS
+                                <button class="material-symbols-outlined text-sm text-slate-400 hover:text-indigo-600 transition-colors">close</button>
+</div>
+<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-semibold text-slate-700 shadow-sm">
+                                Checkout Service
+                                <button class="material-symbols-outlined text-sm text-slate-400 hover:text-indigo-600 transition-colors">close</button>
+</div>
+<button class="inline-flex items-center gap-1 px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors">
+<span class="material-symbols-outlined text-sm">add</span>
+                                Add Project
+                            </button>
+</div>
+</div>
+<!-- AI Suggestion Box -->
+<div class="p-md rounded-xl bg-surface-container-low border-l-4 border-indigo-600 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/5 to-transparent -mr-16 -mt-16 rounded-full"></div>
+<div class="flex gap-3 relative z-10">
+<span class="material-symbols-outlined text-indigo-600" data-weight="fill">auto_awesome</span>
+<div>
+<p class="text-xs font-bold text-indigo-900 mb-1">Smart Permission Suggestion</p>
+<p class="text-xs text-on-surface-variant leading-tight">Based on this user's department, they typically require access to the <span class="font-bold text-indigo-700">Automation-Alpha</span> cluster.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Drawer Footer -->
+<div class="px-lg py-lg bg-slate-50 border-t border-slate-100 flex items-center gap-3">
+<button class="flex-1 px-6 py-2.5 bg-white border border-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-100 transition-all active:scale-95">
+                        Cancel
+                    </button>
+<button class="flex-[2] px-6 py-2.5 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all active:scale-95">
+                        Send Invite
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<style>
+        @keyframes drawer-in {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        .animate-drawer-in {
+            animation: drawer-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+    </style>
+</body></html>

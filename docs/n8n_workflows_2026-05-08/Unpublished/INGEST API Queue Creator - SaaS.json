@@ -1,0 +1,457 @@
+[
+  {
+    "updatedAt": "2026-05-07T05:15:28.892Z",
+    "createdAt": "2026-04-14T07:44:15.022Z",
+    "id": "pjz9L77szB9DDsN1",
+    "name": "INGEST API Queue Creator - SaaS",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "jsCode": "const now = new Date();\nconst datePart = now.toISOString().slice(2,10).replace(/-/g, ''); // YYMMDD\n\nconst randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();\n\nconst jobId = `ING-${datePart}-${randomPart}`;\n\nreturn [{\n  json: {\n    jobId,\n    projectName: $json.body?.projectName || \"unknown\"\n  },\n  binary: $binary\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -192,
+          16
+        ],
+        "id": "220d83f4-4d4b-46c9-acfe-69b37ff3ff17",
+        "name": "Generate Job ID"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{\n  \"Content-Type\": \"application/json\"\n}",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "job_id",
+                "value": "={{ $json.jobId }}"
+              },
+              {
+                "name": "status",
+                "value": "pending"
+              },
+              {
+                "name": "input",
+                "value": "={{ { projectName: $json.projectName, files: $json.files } }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          1264,
+          16
+        ],
+        "id": "51fb33ac-a288-4bd8-8881-10c06e2bdc74",
+        "name": "Insert JobID into Supabase DB",
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "W6PsBv4SlXFSR6Kk",
+            "name": "supabase-anon-key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={\n  \"jobId\": \"{{ $('Generate Job ID').item.json.jobId }}\",\n  \"status\": \"queued\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1648,
+          16
+        ],
+        "id": "2aa4a855-387f-4d81-b65f-6d561c535e0e",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "/upload-test-artifacts",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -432,
+          16
+        ],
+        "id": "b54d7626-73d3-4ac5-b9d8-2d43cdcf55fd",
+        "name": "Upload Test Documents",
+        "webhookId": "ffc3f9cd-499d-4388-a218-1ff22375e09a"
+      },
+      {
+        "parameters": {
+          "jsCode": "const binaries = $binary || {};\nconst output = [];\n\nfor (const key of Object.keys(binaries)) {\n  output.push({\n    json: {\n      jobId: $json.jobId,\n      projectName: $json.projectName,\n      fileKey: key,\n      fileName: binaries[key].fileName\n    },\n    binary: {\n      file: binaries[key]\n    }\n  });\n}\n\nreturn output;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          16,
+          16
+        ],
+        "id": "8e40f479-05f6-47f9-8044-79a7bd720200",
+        "name": "Split Binary Files for Supabase Upload"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://ifnznfspkjayhnooncrv.supabase.co/storage/v1/object/uploaded-project-docs/{{ $json.projectName }}/{{ $json.jobId }}/{{ encodeURIComponent($json.fileName) }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{\n  \"x-upsert\": \"true\", \n  \"Content-Type\": \"application/octet-stream\"  \n}",
+          "sendBody": true,
+          "contentType": "multipart-form-data",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "parameterType": "formBinaryData",
+                "name": "file",
+                "inputDataFieldName": "file"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          576,
+          16
+        ],
+        "id": "f7066913-18c9-4a9b-8de2-18f08b236509",
+        "name": "Upload Files to Supabase Storage",
+        "alwaysOutputData": true,
+        "retryOnFail": true,
+        "waitBetweenTries": 2000,
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "DpZbhUxkEbKeXIiJ",
+            "name": "supabase-service-role-key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\nif (items.length === 0) {\n  throw new Error(\"No files uploaded successfully\");\n}\n\nconst fileMap = {};\nconst first = items[0];\n\nfor (const item of items) {\n  const { fileKey, fileName, projectName, jobId } = item.json;\n\n  const encodedFileName = encodeURIComponent(fileName);\n\n  const publicUrl = `https://ifnznfspkjayhnooncrv.supabase.co/storage/v1/object/public/uploaded-project-docs/${projectName}/${jobId}/${encodedFileName}`;\n\n  fileMap[fileKey] = publicUrl;\n}\n\nreturn [{\n  json: {\n    jobId: first.json.jobId,\n    projectName: first.json.projectName,\n    files: fileMap\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1056,
+          16
+        ],
+        "id": "454b53b8-4eec-4603-885f-54e95dfbcb63",
+        "name": "Build File URL Map"
+      },
+      {
+        "parameters": {
+          "mode": "combine",
+          "combineBy": "combineByPosition",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          800,
+          -224
+        ],
+        "id": "c1c5cc07-1fe8-450c-a44d-165ca3d5d1e5",
+        "name": "Merge"
+      },
+      {
+        "parameters": {
+          "jsCode": "const data = $json;\n\nconsole.log(\"🚀 JOB CREATED:\", data);\n\nreturn [\n  {\n    json: {\n      ...data,\n      logType: \"JOB_CREATED\",\n      timestamp: new Date().toISOString()\n    }\n  }\n];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          496,
+          240
+        ],
+        "id": "76dcedb6-6f44-44a5-9004-3d8382caccd0",
+        "name": "LOG"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_queuecreator_logs",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \n  \"Content-Type\": \"application/json\",\n  \"Prefer\": \"return=minimal\" \n}",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "job_id",
+                "value": "={{ $json.jobId }}"
+              },
+              {
+                "name": "project_name",
+                "value": "={{ $json.projectName }}"
+              },
+              {
+                "name": "total_files",
+                "value": "={{ $json.totalFiles }}"
+              },
+              {
+                "name": "file_keys",
+                "value": "={{ $json.fileKeys }}"
+              },
+              {
+                "name": "log_type",
+                "value": "={{ $json.logType }}"
+              },
+              {
+                "name": "created_at",
+                "value": "={{ $json.timestamp }}"
+              }
+            ]
+          },
+          "options": {
+            "batching": {
+              "batch": {
+                "batchSize": 1
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          736,
+          240
+        ],
+        "id": "e99bf64c-437d-4436-aa51-c996f2b16e13",
+        "name": "Store LOGS in Supabase",
+        "retryOnFail": true,
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "W6PsBv4SlXFSR6Kk",
+            "name": "supabase-anon-key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\n\nif (!items.length) return [];\n\nconst first = items[0];\n\nreturn [\n  {\n    json: {\n      jobId: first.json.jobId,\n      projectName: first.json.projectName,\n      totalFiles: items.length,\n      fileKeys: items.map(i => i.json.fileKey)\n    }\n  }\n];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          288,
+          240
+        ],
+        "id": "f5aaf388-3641-4ac9-beb9-9c9d1c670948",
+        "name": "Aggregate Job Data"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{\n  \"Prefer\": \"return=minimal\"\n}",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"job_id\":       \"{{ $('Generate Job ID').item.json.jobId }}\",\n  \"project_name\": \"{{ $('Generate Job ID').item.json.projectName }}\",\n  \"pipeline\":     \"ingestion\",\n  \"event\":        \"JOB_QUEUED\",\n  \"status\":       \"info\",\n  \"total_files\":  \"{{ Object.keys($('Generate Job ID').item.json.files || {}).length }}\",\n  \"metadata\": {\n    \"file_keys\": \"{{ Object.keys($('Generate Job ID').item.json.files || {}) }}\"\n  }\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          1472,
+          16
+        ],
+        "id": "951d65d7-0f8b-49b3-8395-ac9e97783707",
+        "name": "LOG: Job Queued",
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "W6PsBv4SlXFSR6Kk",
+            "name": "supabase-anon-key"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Generate Job ID": {
+        "main": [
+          [
+            {
+              "node": "Split Binary Files for Supabase Upload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Insert JobID into Supabase DB": {
+        "main": [
+          [
+            {
+              "node": "LOG: Job Queued",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload Test Documents": {
+        "main": [
+          [
+            {
+              "node": "Generate Job ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split Binary Files for Supabase Upload": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Aggregate Job Data",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Upload Files to Supabase Storage",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload Files to Supabase Storage": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Build File URL Map": {
+        "main": [
+          [
+            {
+              "node": "Insert JobID into Supabase DB",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge": {
+        "main": [
+          [
+            {
+              "node": "Build File URL Map",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LOG": {
+        "main": [
+          [
+            {
+              "node": "Store LOGS in Supabase",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Aggregate Job Data": {
+        "main": [
+          [
+            {
+              "node": "LOG",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LOG: Job Queued": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true
+    },
+    "staticData": null,
+    "meta": null,
+    "pinData": {},
+    "versionId": "1b4a8f2d-4eb2-419f-817a-cd502fddf8a2",
+    "activeVersionId": null,
+    "versionCounter": 250,
+    "triggerCount": 1,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-04-14T07:44:15.027Z",
+        "createdAt": "2026-04-14T07:44:15.027Z",
+        "role": "workflow:owner",
+        "workflowId": "pjz9L77szB9DDsN1",
+        "projectId": "yL9RuH1JDK0PNYdi",
+        "project": {
+          "updatedAt": "2025-09-23T18:14:55.316Z",
+          "createdAt": "2025-09-23T18:14:01.272Z",
+          "id": "yL9RuH1JDK0PNYdi",
+          "name": "Anuj Alhans <aonu123@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version 1b4a8f2d",
+      "description": ""
+    }
+  }
+]

@@ -1,0 +1,358 @@
+[
+  {
+    "updatedAt": "2026-05-07T06:17:14.536Z",
+    "createdAt": "2026-05-04T10:19:08.462Z",
+    "id": "zdx8YtZJOMWtbv1L",
+    "name": "Q-Ops-Agent-Health-Status",
+    "description": "Health/status endpoint with repository and settings webhook registry entries advertised for the Q-Ops Agent UI.",
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "id": "26ab2f5a-e65c-46ba-a0f7-cf5c1db78960",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          0,
+          384
+        ],
+        "parameters": {
+          "path": "health",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "webhookId": "c736b02e-a182-45af-b7ca-51306513638b"
+      },
+      {
+        "id": "130f3556-3786-46d5-8910-420d87018b8c",
+        "name": "Check: Supabase DB",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "order",
+                "value": "created_at.desc"
+              },
+              {
+                "name": "limit",
+                "value": "1"
+              },
+              {
+                "name": "select",
+                "value": "id,created_at,event,pipeline"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+          "options": {}
+        },
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "W6PsBv4SlXFSR6Kk",
+            "name": "supabase-anon-key"
+          }
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "id": "0d500825-754d-4246-8905-b21f5f002deb",
+        "name": "Wait for All Checks",
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          448,
+          336
+        ],
+        "parameters": {
+          "mode": "combine",
+          "combineBy": "combineByPosition",
+          "numberInputs": 5,
+          "options": {
+            "includeUnpaired": true
+          }
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "id": "f0daae44-1018-4224-bf58-c81bb903a91e",
+        "name": "Check: Supabase Storage",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          224,
+          192
+        ],
+        "parameters": {
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/storage/v1/bucket/uploaded-project-docs",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+          "options": {}
+        },
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "DpZbhUxkEbKeXIiJ",
+            "name": "supabase-service-role-key"
+          }
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "id": "e7ca8866-f8bc-425e-a709-e3e46c6bebb8",
+        "name": "Check: ChromaDB",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          224,
+          384
+        ],
+        "parameters": {
+          "url": "https://api.trychroma.com/api/v2/tenants/14e8907a-74b1-4590-b394-2b32e9e0b03f/databases/QA-Documents-Chunk/collections/qa-chunks-batches",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+          "options": {}
+        },
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "DpZbhUxkEbKeXIiJ",
+            "name": "supabase-service-role-key"
+          },
+          "httpHeaderAuth": {
+            "id": "VEfALxz8xI4oVcRR",
+            "name": "chromadb-cloud-key"
+          }
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "id": "a6f95819-1ab6-41eb-803e-2b066b02b3b1",
+        "name": "Check: FastAPI Image Extractor",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          224,
+          576
+        ],
+        "parameters": {
+          "url": "http://127.0.0.1:8000/health",
+          "options": {}
+        },
+        "retryOnFail": true,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "id": "e19d4645-2f8a-472a-81a0-0f64f95ceebe",
+        "name": "Check: MD->DOCX Converter Service",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          224,
+          768
+        ],
+        "parameters": {
+          "url": "http://127.0.0.1:5050/health",
+          "options": {}
+        },
+        "retryOnFail": true,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "id": "122b4b93-859e-469b-9b38-310c25b507b1",
+        "name": "Build Health Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          384
+        ],
+        "parameters": {
+          "jsCode": "const now = new Date().toISOString();\nfunction checkResult(nodeName, options = {}) {\n  const successDetailBuilder = options.successDetailBuilder;\n  const defaultOkDetail = options.defaultOkDetail || null;\n  const downMessage = options.downMessage;\n  try {\n    const items = $items(nodeName);\n    if (!items || items.length === 0) return { status: 'unreachable', detail: 'No response received' };\n    const json = items[0].json || {};\n    if (json.error || json.statusCode >= 400 || (typeof json.message === 'string' && json.message.toLowerCase().includes('error'))) {\n      return { status: downMessage ? 'down' : 'error', detail: json.message || json.error?.message || JSON.stringify(json.error) || downMessage || 'Unknown error' };\n    }\n    if (successDetailBuilder) return { status: 'ok', detail: successDetailBuilder(json) };\n    return { status: 'ok', detail: defaultOkDetail };\n  } catch (e) {\n    return { status: downMessage ? 'down' : 'unreachable', detail: e.message };\n  }\n}\nconst supabaseDb = checkResult('Check: Supabase DB', { successDetailBuilder: (json) => { const record = Array.isArray(json) ? json[0] : json; return record?.created_at ? `Last event: ${record.event} at ${record.created_at}` : 'Reachable, no records yet'; } });\nconst supabaseStorage = checkResult('Check: Supabase Storage', { successDetailBuilder: (json) => `Bucket \"${json?.name || 'uploaded-project-docs'}\" reachable` });\nconst chromaDb = checkResult('Check: ChromaDB', { successDetailBuilder: (json) => { const vectorCount = json?.count_documents ?? 'unknown'; const collectionName = json?.name || 'qa-chunks-batches'; const database = json?.database || 'QA-Documents-Chunk'; return `Collection \"${collectionName}\" in database \"${database}\" reachable. Vectors: ${vectorCount}`; } });\nconst fastapiStatus = checkResult('Check: FastAPI Image Extractor', { downMessage: 'FastAPI extractor unreachable at :8000. Run: pm2 start doc-extractor', successDetailBuilder: (json) => json?.status || 'Reachable at http://127.0.0.1:8000' });\nconst converterStatus = checkResult('Check: MD->DOCX Converter Service', { downMessage: 'Converter service unreachable at :5050. Run: pm2 start format-converter', successDetailBuilder: (json) => json?.status || 'Reachable at http://127.0.0.1:5050' });\nconst allServices = [supabaseDb, supabaseStorage, chromaDb, fastapiStatus, converterStatus];\nlet overallStatus = 'ok';\nif (allServices.some(s => s.status === 'down' || s.status === 'unreachable')) overallStatus = 'degraded';\nif (allServices.some(s => s.status === 'error')) overallStatus = 'error';\nconst webhooks = {\n  upload: '/webhook/upload-test-artifacts',\n  ingestionStatus: '/webhook/job-status?jobId=...',\n  generate: '/webhook/generate-qa-doc',\n  generationStatus: '/webhook/job-status-retrieve?jobId=...',\n  analytics: '/webhook/analytics-summary?pipeline=all&days=30',\n  health: '/webhook/health',\n  projects: '/webhook/projects',\n  artifacts: '/webhook/artifacts',\n  generatedDocuments: '/webhook/generated-documents',\n  auditEvents: '/webhook/audit-events',\n  settings: '/webhook/settings',\n  integrationsStatus: '/webhook/integrations/status',\n  integrationTest: '/webhook/integrations/{integrationKey}/test',\n  integrationsTestAll: '/webhook/integrations/test-all'\n};\nreturn [{ json: { status: overallStatus, generatedAt: now, environment: 'n8n', services: [ { name: 'n8n backend', status: 'ok', detail: 'Health workflow executed successfully' }, { name: 'Supabase DB', status: supabaseDb.status, detail: supabaseDb.detail }, { name: 'Supabase Storage', status: supabaseStorage.status, detail: supabaseStorage.detail }, { name: 'ChromaDB', status: chromaDb.status, detail: chromaDb.detail }, { name: 'FastAPI Extractor', status: fastapiStatus.status, detail: fastapiStatus.detail }, { name: 'Converter Service', status: converterStatus.status, detail: converterStatus.detail }, { name: 'OpenAI', status: 'backend-managed', detail: 'Used by vision extraction, embeddings, and generation; not pinged to avoid costs' }, { name: 'Confluence', status: 'backend-managed', detail: 'Used inside generation workflow for document pages' }, { name: 'Jira', status: 'backend-managed', detail: 'Used inside generation workflow for user stories' } ], webhooks, integrations: { supabaseDb: supabaseDb.status, supabaseStorage: supabaseStorage.status, chromaDb: chromaDb.status, fastapiExtractor: fastapiStatus.status, converterService: converterStatus.status, openai: 'backend-managed', jira: 'backend-managed', confluence: 'backend-managed' } } }];"
+        }
+      },
+      {
+        "id": "6bd7f317-8c6d-4a0e-a23e-1af90b92c27d",
+        "name": "Respond to Webhook",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          896,
+          384
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {
+            "responseCode": 200
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Check: Supabase DB",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Check: Supabase Storage",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Check: ChromaDB",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Check: FastAPI Image Extractor",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Check: MD->DOCX Converter Service",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check: Supabase DB": {
+        "main": [
+          [
+            {
+              "node": "Wait for All Checks",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait for All Checks": {
+        "main": [
+          [
+            {
+              "node": "Build Health Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check: Supabase Storage": {
+        "main": [
+          [
+            {
+              "node": "Wait for All Checks",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Check: ChromaDB": {
+        "main": [
+          [
+            {
+              "node": "Wait for All Checks",
+              "type": "main",
+              "index": 2
+            }
+          ]
+        ]
+      },
+      "Check: FastAPI Image Extractor": {
+        "main": [
+          [
+            {
+              "node": "Wait for All Checks",
+              "type": "main",
+              "index": 3
+            }
+          ]
+        ]
+      },
+      "Check: MD->DOCX Converter Service": {
+        "main": [
+          [
+            {
+              "node": "Wait for All Checks",
+              "type": "main",
+              "index": 4
+            }
+          ]
+        ]
+      },
+      "Build Health Response": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true
+    },
+    "staticData": null,
+    "meta": {
+      "aiBuilderAssisted": true,
+      "builderVariant": "mcp"
+    },
+    "pinData": {},
+    "versionId": "784ec209-5d5e-494e-bb19-e069d1c11641",
+    "activeVersionId": "784ec209-5d5e-494e-bb19-e069d1c11641",
+    "versionCounter": 118,
+    "triggerCount": 1,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-05-04T10:19:08.466Z",
+        "createdAt": "2026-05-04T10:19:08.466Z",
+        "role": "workflow:owner",
+        "workflowId": "zdx8YtZJOMWtbv1L",
+        "projectId": "yL9RuH1JDK0PNYdi",
+        "project": {
+          "updatedAt": "2025-09-23T18:14:55.316Z",
+          "createdAt": "2025-09-23T18:14:01.272Z",
+          "id": "yL9RuH1JDK0PNYdi",
+          "name": "Anuj Alhans <aonu123@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version 784ec209",
+      "description": ""
+    }
+  }
+]
