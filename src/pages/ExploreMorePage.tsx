@@ -97,7 +97,7 @@ export default function ExploreMorePage() {
           <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-5">
               <span className="text-xs font-semibold uppercase tracking-widest text-primary">AI-Powered QA Platform</span>
-              <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-on-surface sm:text-[44px] sm:leading-[52px]">
+              <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-on-surface sm:text-5xl">
                 From Requirements to <br className="hidden sm:block" />
                 <span className="text-primary">QA Intelligence</span>
               </h1>
@@ -262,7 +262,7 @@ export default function ExploreMorePage() {
 
       {modalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/50 p-4 backdrop-blur-sm sm:p-6" onClick={() => setModalOpen(false)}>
-          <div className="max-h-[86vh] w-full max-w-5xl overflow-auto rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+          <div className="max-h-dvh w-full max-w-5xl overflow-auto rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-xl font-bold text-on-surface">Full Comparison</h2>
               <button onClick={() => setModalOpen(false)} aria-label="Close" className="rounded-full p-2 text-on-surface-variant hover:bg-surface-container-high">
@@ -290,7 +290,7 @@ function SectionIntro({ eyebrow, title, intro }: { eyebrow: string; title: strin
 function ComparisonTable({ rows }: { rows: ComparisonRow[] }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-outline-variant bg-surface-container-lowest">
-      <table className="w-full min-w-[640px] border-collapse text-left text-sm">
+      <table className="w-full min-w-full border-collapse text-left text-sm">
         <thead>
           <tr className="border-b border-outline-variant bg-surface-container-low">
             <th className="p-4 text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Capability</th>

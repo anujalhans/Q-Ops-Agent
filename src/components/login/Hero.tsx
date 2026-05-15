@@ -12,7 +12,7 @@ export default function Hero({ onExplore }: Props) {
   return (
     <section className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-16 lg:grid-cols-2">
       <div className="space-y-6">
-        <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
+        <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
           <Sparkles className="h-3 w-3" /> AI-Powered
         </span>
         <h2 className="font-display text-4xl font-bold leading-tight text-on-surface sm:text-5xl">

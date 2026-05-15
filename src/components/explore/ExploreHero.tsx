@@ -12,7 +12,7 @@ export default function ExploreHero() {
     <section className="bg-surface py-16">
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 lg:grid-cols-2">
         <div className="space-y-6">
-          <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
+          <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
             <Sparkles className="h-3 w-3" /> AI-Powered QA Platform
           </span>
           <h2 className="font-display text-4xl font-bold leading-tight text-on-surface sm:text-5xl">
@@ -29,7 +29,7 @@ export default function ExploreHero() {
           <img
             src={heroImage}
             alt="Dashboard visualization"
-            className="h-[400px] w-full rounded-lg border border-outline-variant object-cover shadow-ambient"
+            className="aspect-video w-full rounded-lg border border-outline-variant object-cover shadow-ambient"
           />
         </div>
       </div>

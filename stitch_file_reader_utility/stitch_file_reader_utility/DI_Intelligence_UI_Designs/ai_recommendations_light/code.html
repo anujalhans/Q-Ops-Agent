@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Recommendations | Q-Ops Agent</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#b9c7df",
+                        "on-surface": "#1b1b24",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "outline-variant": "#c7c4d8",
+                        "on-tertiary-container": "#ffd2be",
+                        "on-secondary-container": "#57657a",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-primary-container": "#dad7ff",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "error-container": "#ffdad6",
+                        "background": "#fcf8ff",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#7b2f00",
+                        "tertiary": "#7e3000",
+                        "surface": "#fcf8ff",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e4e1ee",
+                        "on-background": "#1b1b24",
+                        "on-primary-fixed": "#0f0069",
+                        "inverse-on-surface": "#f3effc",
+                        "tertiary-container": "#a44100",
+                        "secondary-container": "#d5e3fc",
+                        "surface-dim": "#dcd8e5",
+                        "primary-container": "#4f46e5",
+                        "inverse-surface": "#302f39",
+                        "tertiary-fixed": "#ffdbcc",
+                        "surface-container": "#f0ecf9",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f5f2ff",
+                        "surface-bright": "#fcf8ff",
+                        "outline": "#777587",
+                        "inverse-primary": "#c3c0ff",
+                        "secondary-fixed": "#d5e3fc",
+                        "secondary": "#515f74",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "primary-fixed": "#e2dfff",
+                        "primary": "#3525cd",
+                        "surface-container-high": "#eae6f4",
+                        "surface-container-highest": "#e4e1ee",
+                        "on-tertiary-fixed": "#351000",
+                        "on-surface-variant": "#464555",
+                        "surface-tint": "#4d44e3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "lg": "24px",
+                        "gutter": "24px",
+                        "xl": "48px",
+                        "md": "16px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "container-max": "1440px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ai-gradient-border {
+            border-left: 3px solid transparent;
+            border-image: linear-gradient(to bottom, #4f46e5, transparent) 1;
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-background">
+<!-- TopAppBar -->
+<header class="bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 docked full-width top-0 z-40 flex justify-between items-center w-full px-6 py-3 fixed">
+<div class="flex items-center gap-md">
+<span class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-display-lg">Q-Ops Agent</span>
+<div class="hidden md:flex items-center gap-sm ml-xl">
+<span class="text-slate-400 font-inter text-sm">/</span>
+<span class="text-slate-600 dark:text-slate-400 font-inter text-sm">Delivery Intelligence</span>
+<span class="text-slate-400 font-inter text-sm">/</span>
+<span class="text-indigo-600 dark:text-indigo-400 font-semibold font-inter text-sm">Recommendations</span>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500" placeholder="Search recommendations..." type="text"/>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-2 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg"><span class="material-symbols-outlined" data-icon="notifications">notifications</span></button>
+<button class="p-2 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg"><span class="material-symbols-outlined" data-icon="help">help</span></button>
+<button class="p-2 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg"><span class="material-symbols-outlined" data-icon="settings">settings</span></button>
+</div>
+<button class="bg-primary-container text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all">Create Project</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-slate-200 ml-sm">
+<img alt="User Profile" data-alt="Close-up professional portrait of a tech professional in a bright, modern office setting. High-key natural lighting, soft focus background, clean and professional corporate aesthetic with a neutral color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPcTPxf8Zn8ci9MNNJpcTbNt7U-S2MwMIc8KfOEGGuESsCrOyAIKAT8CKbmmBYGYCzafJrhRUrCtG1nqa84N3ZeLP4sP7VPpHZgw0BGzuGEFSAH6hIvLQKRuVw2Uf3F_7uY4PmkfIpgpO_o_pyrcqvuSG1HaOSL4umlpUxRQgiDpKRJ4e3cqeE5ZKR356262ChdYoDqLgZatm6AiT3gxwl2q-qYR50tKHetb8um195sg_gUAkec72OZE3zsV7xA-W8EO7uKBQtedHp"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<nav class="bg-slate-50 dark:bg-slate-900 fixed left-0 top-0 h-full w-64 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full py-6 z-30 pt-20">
+<div class="px-6 mb-lg">
+<div class="flex items-center gap-sm">
+<div class="h-8 w-8 bg-indigo-600 rounded flex items-center justify-center text-white font-black">E</div>
+<div>
+<h2 class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">Enterprise QA</h2>
+<p class="text-xs text-slate-500 mt-1">V2.4.0-Stable</p>
+</div>
+</div>
+</div>
+<div class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-inter text-sm tracking-wide">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border-r-4 border-indigo-600 rounded-sm font-semibold transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="font-inter text-sm tracking-wide">Artifacts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-inter text-sm tracking-wide">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-inter text-sm tracking-wide">Settings</span>
+</a>
+</div>
+<div class="px-4 mt-auto space-y-1">
+<button class="w-full bg-white border border-indigo-200 text-indigo-600 font-semibold py-2 rounded-lg mb-lg hover:bg-indigo-50 transition-colors text-sm">New Run</button>
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-slate-900 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-inter text-sm">Documentation</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-slate-900 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="support_agent">support_agent</span>
+<span class="font-inter text-sm">Support</span>
+</a>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="ml-64 pt-20 p-lg">
+<div class="max-w-container-max mx-auto">
+<!-- Page Header & Filters -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-lg gap-md">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface">AI Recommendations</h1>
+<p class="text-on-surface-variant mt-1">Intelligence-driven improvements for your delivery pipeline.</p>
+</div>
+<div class="flex items-center bg-surface-container-low p-1 rounded-xl border border-outline-variant">
+<button class="px-6 py-2 bg-white text-primary font-semibold rounded-lg shadow-sm text-sm">Pending</button>
+<button class="px-6 py-2 text-on-surface-variant font-medium hover:text-on-surface transition-colors text-sm">Accepted</button>
+</div>
+</div>
+<!-- Bento Grid of Recommendations -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Summary Card (Featured) -->
+<div class="lg:col-span-12 xl:col-span-4 bg-primary-container p-lg rounded-full flex flex-col justify-between text-white relative overflow-hidden">
+<div class="relative z-10">
+<div class="flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined text-indigo-200">auto_awesome</span>
+<span class="font-label-caps text-label-caps tracking-widest opacity-80">INTELLIGENCE SUMMARY</span>
+</div>
+<h2 class="text-headline-md font-headline-md mb-md">12 Critical QA Optimizations Identified</h2>
+<p class="text-on-primary-container opacity-90 body-sm mb-lg">Our models analyzed 140+ recent delivery runs. Implementing these suggestions could reduce total CI/CD runtime by 22% while maintaining current coverage levels.</p>
+<div class="flex gap-lg">
+<div>
+<p class="text-display-lg font-display-lg leading-none">92%</p>
+<p class="text-xs uppercase tracking-tighter mt-1 opacity-70">Avg. Confidence</p>
+</div>
+<div>
+<p class="text-display-lg font-display-lg leading-none">8.4h</p>
+<p class="text-xs uppercase tracking-tighter mt-1 opacity-70">Weekly Saved</p>
+</div>
+</div>
+</div>
+<div class="absolute -right-12 -bottom-12 opacity-10">
+<span class="material-symbols-outlined text-[200px]" data-icon="psychology">psychology</span>
+</div>
+</div>
+<!-- Recommendation Cards Feed -->
+<div class="lg:col-span-12 xl:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Recommendation Card 1: Risk -->
+<div class="bg-white border border-outline-variant rounded-xl p-lg hover:border-indigo-300 transition-all group ai-gradient-border shadow-sm flex flex-col">
+<div class="flex justify-between items-start mb-md">
+<div class="px-3 py-1 bg-error-container text-on-error-container text-[11px] font-bold uppercase rounded-full tracking-wide">Risk Detected</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-semibold text-sm">
+<span class="material-symbols-outlined text-sm text-indigo-500">analytics</span>
+                                98% Confidence
+                            </div>
+</div>
+<h3 class="text-title-sm font-title-sm text-on-surface mb-sm">Flaky test pattern in Checkout flow</h3>
+<p class="text-body-sm text-on-surface-variant mb-md flex-grow">AI detected a non-deterministic failure pattern in <code>test_auth_redirect_payment</code> across different browser agents.</p>
+<div class="mb-lg p-sm bg-surface-container-low rounded-lg">
+<p class="text-[12px] font-bold text-on-secondary-container uppercase mb-1">Why this matters</p>
+<p class="text-xs text-on-secondary-container leading-relaxed">This test has caused 4 false-negative build failures in the last 48 hours, blocking 2 critical production deployments.</p>
+</div>
+<div class="flex items-center gap-sm mt-auto pt-md border-t border-slate-100">
+<button class="flex-1 bg-indigo-600 text-white text-xs font-bold py-2.5 rounded-lg hover:bg-indigo-700 transition-colors">Accept</button>
+<button class="flex-1 border border-outline-variant text-on-surface text-xs font-bold py-2.5 rounded-lg hover:bg-slate-50 transition-colors">View Evidence</button>
+<button class="p-2 text-slate-400 hover:text-error transition-colors rounded-lg"><span class="material-symbols-outlined text-sm" data-icon="delete">delete</span></button>
+</div>
+</div>
+<!-- Recommendation Card 2: Optimization -->
+<div class="bg-white border border-outline-variant rounded-xl p-lg hover:border-indigo-300 transition-all group ai-gradient-border shadow-sm flex flex-col">
+<div class="flex justify-between items-start mb-md">
+<div class="px-3 py-1 bg-secondary-container text-on-secondary-container text-[11px] font-bold uppercase rounded-full tracking-wide">Optimization</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-semibold text-sm">
+<span class="material-symbols-outlined text-sm text-indigo-500">analytics</span>
+                                89% Confidence
+                            </div>
+</div>
+<h3 class="text-title-sm font-title-sm text-on-surface mb-sm">Parallelize API Mocking Layer</h3>
+<p class="text-body-sm text-on-surface-variant mb-md flex-grow">Currently, 42 tests share a sequential mocking initialization. Shifting to containerized parallel mocking could shave 3m 40s off runtimes.</p>
+<div class="mb-lg p-sm bg-surface-container-low rounded-lg">
+<p class="text-[12px] font-bold text-on-secondary-container uppercase mb-1">Why this matters</p>
+<p class="text-xs text-on-secondary-container leading-relaxed">Infrastructure costs for current runners are scaling linearly with test volume. Parallelization reduces idle compute time.</p>
+</div>
+<div class="flex items-center gap-sm mt-auto pt-md border-t border-slate-100">
+<button class="flex-1 bg-indigo-600 text-white text-xs font-bold py-2.5 rounded-lg hover:bg-indigo-700 transition-colors">Accept</button>
+<button class="flex-1 border border-outline-variant text-on-surface text-xs font-bold py-2.5 rounded-lg hover:bg-slate-50 transition-colors">View Evidence</button>
+<button class="p-2 text-slate-400 hover:text-error transition-colors rounded-lg"><span class="material-symbols-outlined text-sm" data-icon="delete">delete</span></button>
+</div>
+</div>
+<!-- Recommendation Card 3: Reuse -->
+<div class="bg-white border border-outline-variant rounded-xl p-lg hover:border-indigo-300 transition-all group ai-gradient-border shadow-sm flex flex-col">
+<div class="flex justify-between items-start mb-md">
+<div class="px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed text-[11px] font-bold uppercase rounded-full tracking-wide">Code Reuse</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-semibold text-sm">
+<span class="material-symbols-outlined text-sm text-indigo-500">analytics</span>
+                                94% Confidence
+                            </div>
+</div>
+<h3 class="text-title-sm font-title-sm text-on-surface mb-sm">Consolidate redundant Auth helpers</h3>
+<p class="text-body-sm text-on-surface-variant mb-md flex-grow">Detected 3 identical custom authentication utilities across separate feature repos. Suggesting a shared artifact.</p>
+<div class="mb-lg p-sm bg-surface-container-low rounded-lg">
+<p class="text-[12px] font-bold text-on-secondary-container uppercase mb-1">Why this matters</p>
+<p class="text-xs text-on-secondary-container leading-relaxed">Maintenance overhead is tripled. A change in the OIDC flow would currently require manual updates in three places.</p>
+</div>
+<div class="flex items-center gap-sm mt-auto pt-md border-t border-slate-100">
+<button class="flex-1 bg-indigo-600 text-white text-xs font-bold py-2.5 rounded-lg hover:bg-indigo-700 transition-colors">Accept</button>
+<button class="flex-1 border border-outline-variant text-on-surface text-xs font-bold py-2.5 rounded-lg hover:bg-slate-50 transition-colors">View Evidence</button>
+<button class="p-2 text-slate-400 hover:text-error transition-colors rounded-lg"><span class="material-symbols-outlined text-sm" data-icon="delete">delete</span></button>
+</div>
+</div>
+<!-- Recommendation Card 4: Risk -->
+<div class="bg-white border border-outline-variant rounded-xl p-lg hover:border-indigo-300 transition-all group ai-gradient-border shadow-sm flex flex-col">
+<div class="flex justify-between items-start mb-md">
+<div class="px-3 py-1 bg-error-container text-on-error-container text-[11px] font-bold uppercase rounded-full tracking-wide">Risk Detected</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-semibold text-sm">
+<span class="material-symbols-outlined text-sm text-indigo-500">analytics</span>
+                                96% Confidence
+                            </div>
+</div>
+<h3 class="text-title-sm font-title-sm text-on-surface mb-sm">Exposed Credentials in Log Buffer</h3>
+<p class="text-body-sm text-on-surface-variant mb-md flex-grow">Potential API key leakage detected in debug logs for the <code>integration-legacy-connector</code> module during failure state.</p>
+<div class="mb-lg p-sm bg-surface-container-low rounded-lg">
+<p class="text-[12px] font-bold text-on-secondary-container uppercase mb-1">Why this matters</p>
+<p class="text-xs text-on-secondary-container leading-relaxed">Severe security risk. Development logs are accessible to all QA engineers and potentially archived in plaintext storage.</p>
+</div>
+<div class="flex items-center gap-sm mt-auto pt-md border-t border-slate-100">
+<button class="flex-1 bg-indigo-600 text-white text-xs font-bold py-2.5 rounded-lg hover:bg-indigo-700 transition-colors">Accept</button>
+<button class="flex-1 border border-outline-variant text-on-surface text-xs font-bold py-2.5 rounded-lg hover:bg-slate-50 transition-colors">View Evidence</button>
+<button class="p-2 text-slate-400 hover:text-error transition-colors rounded-lg"><span class="material-symbols-outlined text-sm" data-icon="delete">delete</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Contextual Insight Footer -->
+<div class="mt-xl p-xl rounded-xl bg-surface-container border border-outline-variant flex flex-col md:flex-row items-center gap-lg">
+<div class="h-24 w-24 flex-shrink-0 rounded-xl overflow-hidden grayscale opacity-80">
+<img alt="Neural Network Visualization" data-alt="Abstract neural network visualization with delicate glowing nodes and thin connecting lines in a pristine light-mode environment. The aesthetic is clean, scientific, and high-tech, using a soft palette of whites, light grays, and indigo highlights. The image conveys sophisticated artificial intelligence and data connectivity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBzhtwdLxfq3YYtMUcl3w4YtwmzZt8UFzMFjGJYuMZuceEZyV2cq_X8xysbkE74Ek_0QwnHPm-nUrkC1LlRcBSGWbiGblr_5F7r5sFD7I7Xc-T7mamQki5e9dQ_gli50tEXZ-0ZsU_yyUThFpi2-js3V1qzzu0GEkziszhLf3U6AEtsTyNbRnkDY_NtCGR0oT9bMXaNzc1LwDRXXjUo-4giBAwdX0oQWAm_fwvPTApi5MIKP2L9f9g_PafozhQ0CUEElByYiLMLPes"/>
+</div>
+<div>
+<h4 class="text-title-sm font-title-sm text-on-surface mb-1">How these recommendations are generated</h4>
+<p class="text-body-sm text-on-surface-variant max-w-3xl">Q-Ops uses a fine-tuned Transformer model to monitor build artifacts, log streams, and git history in real-time. By comparing your patterns against 2,000+ benchmarked enterprise delivery pipelines, we identify anomalies and optimization opportunities specific to your tech stack.</p>
+</div>
+<div class="md:ml-auto">
+<button class="flex items-center gap-sm px-6 py-3 border border-indigo-600 text-indigo-600 font-bold rounded-lg hover:bg-indigo-50 transition-all text-sm whitespace-nowrap">
+                        Configure AI Model
+                        <span class="material-symbols-outlined text-sm">settings_input_component</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

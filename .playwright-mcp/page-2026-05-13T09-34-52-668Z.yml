@@ -1,0 +1,32 @@
+- generic [ref=e3]:
+  - main [ref=e4]:
+    - main [ref=e7]:
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - img [ref=e12]
+          - img [ref=e14]
+        - generic [ref=e18]:
+          - generic [ref=e20]: Sign in
+          - generic [ref=e23]:
+            - generic [ref=e25]:
+              - generic [ref=e30]: Email
+              - textbox "Email" [ref=e34]:
+                - /placeholder: ""
+                - text: alhansanuj@gmail.com
+            - generic [ref=e36]:
+              - generic [ref=e41]: Password
+              - textbox "Password" [ref=e45]:
+                - /placeholder: ""
+                - text: royal@123
+          - button "Sign in" [ref=e47] [cursor=pointer]:
+            - generic [ref=e49]: Sign in
+          - link "Forgot my password" [ref=e51] [cursor=pointer]:
+            - /url: /forgot-password
+            - generic [ref=e53]: Forgot my password
+  - complementary
+  - alert [ref=e54]:
+    - img [ref=e56]
+    - generic [ref=e58]:
+      - heading "Problem logging in" [level=2] [ref=e59]
+      - paragraph [ref=e61]: Wrong username or password. Do you have caps lock on?
+      - img [ref=e63] [cursor=pointer]

@@ -1,0 +1,3 @@
+Grooming transcript extract
+Participants: Product Owner, QA Lead, Architect
+Decision: support partial capture, refunds, and 3DS fallback validation.

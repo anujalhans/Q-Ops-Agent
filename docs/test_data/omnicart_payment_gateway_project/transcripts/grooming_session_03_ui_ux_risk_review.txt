@@ -1,0 +1,13 @@
+OmniCart Grooming Session 03 - UI/UX and Risk Review
+Date: 2026-05-13
+Participants: Sara Lewis (UX), Priya Raman, Meera Shah, Customer Support Lead, Fraud Analyst
+
+Sara: The payment page should show trusted method cards: Cards, UPI, Wallet, BNPL, Gift Card, Net Banking, COD when eligible.
+Customer Support: Please include a visible order number after success and a support link if payment is pending too long.
+Fraud Analyst: High-risk orders may go to manual review after payment authorization. UI should say order is being verified, not payment failed.
+Meera: I need UI designs for product listing, product detail, cart, checkout payment, and order confirmation to validate ingestion from visual assets.
+Priya: Payment failure screen should show a recoverable path. Avoid generic 'something went wrong.'
+Sara: We'll provide a checkout payment design with right-side order summary, masked saved cards, UPI input, and trust indicators.
+Meera: Test cases should include accessibility: keyboard navigation, focus state, error text association, readable contrast, and mobile layout.
+Decision: UI states needed for default, validation error, gateway processing, payment failed, and payment success.
+Open Question: Should BNPL display eligibility before address is selected? Product to confirm with credit partner.

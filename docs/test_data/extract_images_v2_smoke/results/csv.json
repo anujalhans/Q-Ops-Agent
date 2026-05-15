@@ -1,0 +1,36 @@
+{
+  "projectName": "Extraction Smoke Project",
+  "status": "processing",
+  "jobId": "SMOKE-EXTRACT-V2",
+  "projectId": "project-smoke",
+  "requestedBy": "tester-smoke",
+  "settingsVersion": "2",
+  "fileName": "requirements_sample.csv",
+  "fileType": "csv",
+  "docType": "UNKNOWN",
+  "pageCount": 0,
+  "contentMode": "text-only",
+  "containsText": true,
+  "containsImages": false,
+  "rawText": "requirement_id | module | priority\nREQ-101 | checkout | high\nREQ-205 | refunds | medium",
+  "imageCount": 0,
+  "images": [],
+  "tables": [],
+  "renderedPages": [],
+  "annotations": [],
+  "links": [],
+  "warnings": [],
+  "extractionStats": {
+    "rowsExtracted": 3
+  },
+  "visionConfigApplied": {
+    "maxRenderedPagesPerDocument": 12,
+    "maxEmbeddedImagesPerDocument": 20,
+    "maxStandaloneImagesPerDocument": 10,
+    "renderDpi": 144,
+    "maxImagesPerJob": 80,
+    "batchSize": 5,
+    "deferOverflowVisuals": true
+  },
+  "documentId": "621e527e-7647-452f-a366-d1d7af330af6"
+}

@@ -3,7 +3,7 @@ import { ArrowRight, FileText, Sparkles } from 'lucide-react'
 export default function Transformation() {
   return (
     <section className="bg-surface py-16">
-      <div className="mx-auto grid max-w-7xl gap-6 px-6 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
+      <div className="mx-auto grid max-w-7xl gap-6 px-6 lg:grid-cols-3 lg:items-stretch">
         <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
           <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-md bg-surface-container-high text-on-surface-variant">
             <FileText className="h-5 w-5" />

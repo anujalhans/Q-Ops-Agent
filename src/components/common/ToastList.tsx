@@ -22,7 +22,7 @@ const palette: Record<ToastType, { ring: string; icon: FC<{ className?: string }
 
 const ToastList: FC<ToastListProps> = ({ toasts }) => {
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex w-[min(340px,calc(100vw-2rem))] flex-col gap-3" aria-live="polite">
+    <div className="fixed bottom-4 left-4 right-4 z-50 flex flex-col gap-3 sm:left-auto sm:w-80" aria-live="polite">
       {toasts.map((toast) => {
         const p = palette[toast.type]
         const Icon = p.icon

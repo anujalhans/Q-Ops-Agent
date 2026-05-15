@@ -1,0 +1,310 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e8]
+      - generic [ref=e13]:
+        - heading "Q-Ops Agent" [level=1] [ref=e14]
+        - paragraph [ref=e15]: A Purpose-Built AI System for QA Engineering
+    - navigation [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]: QA Intelligence
+        - generic [ref=e20]:
+          - button "Dashboard" [ref=e21] [cursor=pointer]:
+            - img [ref=e22]
+            - generic [ref=e27]: Dashboard
+          - button "Artifacts" [ref=e28] [cursor=pointer]:
+            - img [ref=e29]
+            - generic [ref=e32]: Artifacts
+          - button "Doc Gen" [ref=e33] [cursor=pointer]:
+            - img [ref=e34]
+            - generic [ref=e37]: Doc Gen
+          - button "Knowledge Base" [ref=e38] [cursor=pointer]:
+            - img [ref=e39]
+            - generic [ref=e41]: Knowledge Base
+          - button "Analytics" [ref=e42] [cursor=pointer]:
+            - img [ref=e43]
+            - generic [ref=e45]: Analytics
+      - generic [ref=e46]:
+        - generic [ref=e47]: Delivery Intelligence
+        - generic [ref=e48]:
+          - button "DI Overview" [ref=e49] [cursor=pointer]:
+            - img [ref=e50]
+            - generic [ref=e58]: DI Overview
+          - button "Project Profile" [ref=e59] [cursor=pointer]:
+            - img [ref=e60]
+            - generic [ref=e68]: Project Profile
+          - button "Onboarding" [ref=e69] [cursor=pointer]:
+            - img [ref=e70]
+            - generic [ref=e72]: Onboarding
+          - button "Discovery" [ref=e73] [cursor=pointer]:
+            - img [ref=e74]
+            - generic [ref=e77]: Discovery
+          - button "Solutions" [ref=e78] [cursor=pointer]:
+            - img [ref=e79]
+            - generic [ref=e83]: Solutions
+          - button "Governance" [ref=e84] [cursor=pointer]:
+            - img [ref=e85]
+            - generic [ref=e88]: Governance
+          - button "Similarity" [ref=e89] [cursor=pointer]:
+            - img [ref=e90]
+            - generic [ref=e95]: Similarity
+          - button "Technologies" [ref=e96] [cursor=pointer]:
+            - img [ref=e97]
+            - generic [ref=e102]: Technologies
+          - button "Recommendations" [ref=e103] [cursor=pointer]:
+            - img [ref=e104]
+            - generic [ref=e107]: Recommendations
+          - button "Learnings" [ref=e108] [cursor=pointer]:
+            - img [ref=e109]
+            - generic [ref=e111]: Learnings
+          - button "Relationships" [ref=e112] [cursor=pointer]:
+            - img [ref=e113]
+            - generic [ref=e114]: Relationships
+    - generic [ref=e115]:
+      - button "Settings" [ref=e116] [cursor=pointer]:
+        - img [ref=e117]
+        - generic [ref=e120]: Settings
+      - button "Documentation" [ref=e121] [cursor=pointer]:
+        - img [ref=e122]
+        - generic [ref=e124]: Documentation
+  - main [ref=e125]:
+    - generic [ref=e126]:
+      - button "Search operations... Ctrl K" [ref=e127] [cursor=pointer]:
+        - img [ref=e128]
+        - generic [ref=e131]: Search operations...
+        - generic [ref=e132]: Ctrl K
+      - generic [ref=e133]:
+        - button "Toggle theme" [ref=e134] [cursor=pointer]:
+          - img [ref=e135]
+        - button "Notifications" [ref=e137] [cursor=pointer]:
+          - img [ref=e138]
+          - generic [ref=e141]: "56"
+        - button "Help" [ref=e142] [cursor=pointer]:
+          - img [ref=e143]
+        - generic [ref=e147]:
+          - generic [ref=e148]:
+            - paragraph [ref=e149]: Admin User
+            - paragraph [ref=e150]: Admin
+          - img "User profile" [ref=e151]
+          - button "Logout" [ref=e152] [cursor=pointer]
+    - generic [ref=e154]:
+      - generic [ref=e155]:
+        - generic [ref=e156]:
+          - heading "Good evening, Admin" [level=2] [ref=e157]
+          - paragraph [ref=e158]: Workspace initialized with 13 active jobs, 304 artifacts, and 56 unread notifications.
+        - button "View Audit Log" [ref=e160] [cursor=pointer]:
+          - img [ref=e161]
+          - text: View Audit Log
+      - generic [ref=e165]:
+        - generic [ref=e166]:
+          - button "Live 13 Active jobs 26 failed job needs review" [ref=e167] [cursor=pointer]:
+            - generic [ref=e168]:
+              - img [ref=e169]
+              - generic [ref=e172]: Live
+            - paragraph [ref=e173]: "13"
+            - paragraph [ref=e174]: Active jobs
+            - paragraph [ref=e175]: 26 failed job needs review
+          - button "Live 304 Artifacts Uploaded or selected in this workspace" [ref=e176] [cursor=pointer]:
+            - generic [ref=e177]:
+              - img [ref=e178]
+              - generic [ref=e181]: Live
+            - paragraph [ref=e182]: "304"
+            - paragraph [ref=e183]: Artifacts
+            - paragraph [ref=e184]: Uploaded or selected in this workspace
+          - button "Live 75 Generated outputs Recent document and Jira results" [ref=e185] [cursor=pointer]:
+            - generic [ref=e186]:
+              - img [ref=e187]
+              - generic [ref=e190]: Live
+            - paragraph [ref=e191]: "75"
+            - paragraph [ref=e192]: Generated outputs
+            - paragraph [ref=e193]: Recent document and Jira results
+          - button "Live 2 Knowledge bases ready Ready for document generation" [ref=e194] [cursor=pointer]:
+            - generic [ref=e195]:
+              - img [ref=e196]
+              - generic [ref=e200]: Live
+            - paragraph [ref=e201]: "2"
+            - paragraph [ref=e202]: Knowledge bases ready
+            - paragraph [ref=e203]: Ready for document generation
+        - generic [ref=e204]:
+          - generic [ref=e205]:
+            - generic [ref=e206]:
+              - generic [ref=e207]:
+                - paragraph [ref=e208]: Workspace launchpad
+                - heading "Use Dashboard to monitor, then jump into the right workflow" [level=3] [ref=e209]
+                - paragraph [ref=e210]: Ingestion and document generation now live in their dedicated screens. This dashboard is focused on status, recent activity, and the fastest next action.
+              - generic [ref=e211]:
+                - generic [ref=e212]:
+                  - generic [ref=e213]:
+                    - generic [ref=e214]:
+                      - paragraph [ref=e215]: Knowledge pipeline
+                      - heading "Knowledge Base" [level=4] [ref=e216]
+                    - img [ref=e218]
+                  - paragraph [ref=e221]: Upload BRD, FRD, HLD, LLD, transcripts, and images to build retrieval-ready project context.
+                  - generic [ref=e222]:
+                    - generic [ref=e223]:
+                      - paragraph [ref=e224]: Ready projects
+                      - paragraph [ref=e225]: "2"
+                    - generic [ref=e226]:
+                      - paragraph [ref=e227]: Tracked artifacts
+                      - paragraph [ref=e228]: "304"
+                  - button "Open Knowledge Base" [ref=e229] [cursor=pointer]:
+                    - img [ref=e230]
+                    - text: Open Knowledge Base
+                - generic [ref=e232]:
+                  - generic [ref=e233]:
+                    - generic [ref=e234]:
+                      - paragraph [ref=e235]: Generation pipeline
+                      - heading "Doc Gen" [level=4] [ref=e236]
+                    - img [ref=e238]
+                  - paragraph [ref=e241]: Create test strategy, test plan, risk matrix, test cases, traceability, and Jira backlog outputs.
+                  - generic [ref=e242]:
+                    - generic [ref=e243]:
+                      - paragraph [ref=e244]: Generated outputs
+                      - paragraph [ref=e245]: "75"
+                    - generic [ref=e246]:
+                      - paragraph [ref=e247]: Recent doc jobs
+                      - paragraph [ref=e248]: "8"
+                  - button "Open Doc Gen" [ref=e249] [cursor=pointer]:
+                    - img [ref=e250]
+                    - text: Open Doc Gen
+                - generic [ref=e252]:
+                  - generic [ref=e253]:
+                    - generic [ref=e254]:
+                      - paragraph [ref=e255]: Repository
+                      - heading "Artifacts" [level=4] [ref=e256]
+                    - img [ref=e258]
+                  - paragraph [ref=e261]: Review uploads, reprocess failed files, and verify project coverage without reopening ingestion forms.
+                  - generic [ref=e262]:
+                    - generic [ref=e263]:
+                      - paragraph [ref=e264]: Artifacts
+                      - paragraph [ref=e265]: "304"
+                    - generic [ref=e266]:
+                      - paragraph [ref=e267]: Failed jobs
+                      - paragraph [ref=e268]: "26"
+                  - button "Open Artifacts" [ref=e269] [cursor=pointer]:
+                    - img [ref=e270]
+                    - text: Open Artifacts
+                - generic [ref=e272]:
+                  - generic [ref=e273]:
+                    - generic [ref=e274]:
+                      - paragraph [ref=e275]: Insights
+                      - heading "Analytics" [level=4] [ref=e276]
+                    - img [ref=e278]
+                  - paragraph [ref=e280]: See trends, costs, throughput, ingestion volumes, and job health in one reporting view.
+                  - generic [ref=e281]:
+                    - generic [ref=e282]:
+                      - paragraph [ref=e283]: Active jobs
+                      - paragraph [ref=e284]: "13"
+                    - generic [ref=e285]:
+                      - paragraph [ref=e286]: Knowledge jobs
+                      - paragraph [ref=e287]: "0"
+                  - button "Open Analytics" [ref=e288] [cursor=pointer]:
+                    - img [ref=e289]
+                    - text: Open Analytics
+            - generic [ref=e291]:
+              - generic [ref=e292]:
+                - generic [ref=e293]:
+                  - heading "Recent generation activity" [level=4] [ref=e294]
+                  - paragraph [ref=e295]: The latest document-generation requests, retries, and completions.
+                - generic [ref=e296]:
+                  - generic [ref=e297]:
+                    - generic [ref=e298]:
+                      - generic [ref=e299]:
+                        - paragraph [ref=e300]: user_stories
+                        - paragraph [ref=e301]: ShopSmart
+                      - generic [ref=e302]: completed
+                    - paragraph [ref=e303]: "Job ID: PRO-260512-RDR2ZR"
+                    - paragraph [ref=e304]: May 12, 07:13 AM
+                  - generic [ref=e305]:
+                    - generic [ref=e306]:
+                      - generic [ref=e307]:
+                        - paragraph [ref=e308]: user_stories
+                        - paragraph [ref=e309]: ShopSmart
+                      - generic [ref=e310]: failed
+                    - paragraph [ref=e311]: "Job ID: PRO-260512-3XBYVE"
+                    - paragraph [ref=e312]: May 12, 07:04 AM
+                  - generic [ref=e313]:
+                    - generic [ref=e314]:
+                      - generic [ref=e315]:
+                        - paragraph [ref=e316]: user_stories
+                        - paragraph [ref=e317]: ShopSmart
+                      - generic [ref=e318]: failed
+                    - paragraph [ref=e319]: "Job ID: PRO-260512-1SKIE3"
+                    - paragraph [ref=e320]: May 12, 06:52 AM
+                  - generic [ref=e321]:
+                    - generic [ref=e322]:
+                      - generic [ref=e323]:
+                        - paragraph [ref=e324]: user_stories
+                        - paragraph [ref=e325]: ShopSmart
+                      - generic [ref=e326]: failed
+                    - paragraph [ref=e327]: "Job ID: PRO-260512-LPX6H0"
+                    - paragraph [ref=e328]: May 12, 06:43 AM
+                - button "Open Doc Gen" [ref=e330] [cursor=pointer]
+              - generic [ref=e331]:
+                - generic [ref=e332]:
+                  - heading "Recent ingestion activity" [level=4] [ref=e333]
+                  - paragraph [ref=e334]: The latest knowledge-base requests and project readiness progress.
+                - paragraph [ref=e335]: No knowledge-base ingestion activity yet.
+                - button "Open Knowledge Base" [ref=e337] [cursor=pointer]
+          - generic [ref=e338]:
+            - 'button "Project Activity Review needed My Projects 26 failed jobs in the last 24 hours. Review before retrying. Running 13 Waiting 0 Recent failures 26 Completed today 0 Services: Not checked Open diagnostics" [ref=e339] [cursor=pointer]':
+              - generic [ref=e340]:
+                - generic [ref=e341]:
+                  - img [ref=e343]
+                  - generic [ref=e346]:
+                    - generic [ref=e347]:
+                      - generic [ref=e348]:
+                        - paragraph [ref=e349]: Project Activity
+                        - paragraph [ref=e350]: Review needed
+                      - generic [ref=e351]: My Projects
+                    - paragraph [ref=e352]: 26 failed jobs in the last 24 hours. Review before retrying.
+                - generic [ref=e353]:
+                  - generic [ref=e354]:
+                    - paragraph [ref=e355]: Running
+                    - paragraph [ref=e356]: "13"
+                  - generic [ref=e357]:
+                    - paragraph [ref=e358]: Waiting
+                    - paragraph [ref=e359]: "0"
+                  - generic [ref=e360]:
+                    - paragraph [ref=e361]: Recent failures
+                    - paragraph [ref=e362]: "26"
+                  - generic [ref=e363]:
+                    - paragraph [ref=e364]: Completed today
+                    - paragraph [ref=e365]: "0"
+                - generic [ref=e366]:
+                  - generic [ref=e367]:
+                    - text: "Services:"
+                    - strong [ref=e368]: Not checked
+                  - generic [ref=e369]: Open diagnostics
+            - generic [ref=e370]:
+              - generic [ref=e371]:
+                - heading "Recommended next actions" [level=4] [ref=e372]
+                - paragraph [ref=e373]: A cleaner dashboard means the next step should always be obvious.
+              - generic [ref=e374]:
+                - generic [ref=e375]:
+                  - paragraph [ref=e376]: Generate QA deliverables
+                  - paragraph [ref=e377]: 2 projects are ready for document generation.
+                  - button "Open Doc Gen" [ref=e378] [cursor=pointer]
+                - generic [ref=e379]:
+                  - paragraph [ref=e380]: Review failed work
+                  - paragraph [ref=e381]: 26 failed jobs should be reviewed or retried.
+                  - button "Open Artifacts" [ref=e382] [cursor=pointer]
+                - generic [ref=e383]:
+                  - paragraph [ref=e384]: Monitor in-flight jobs
+                  - paragraph [ref=e385]: 13 jobs currently in progress. Keep an eye on trends and status.
+                  - button "Open Analytics" [ref=e386] [cursor=pointer]
+            - generic [ref=e387]:
+              - generic [ref=e388]:
+                - img [ref=e389]
+                - heading "QUICK TIPS" [level=3] [ref=e391]
+              - generic [ref=e392]:
+                - generic [ref=e393]:
+                  - paragraph [ref=e394]: "Tip #1"
+                  - paragraph [ref=e395]: Select a document type to generate QA artifacts.
+                - generic [ref=e396]:
+                  - paragraph [ref=e397]: "Tip #2"
+                  - paragraph [ref=e398]: Reference an existing knowledge base project.
+                - generic [ref=e399]:
+                  - paragraph [ref=e400]: "Tip #3"
+                  - paragraph [ref=e401]: Generated documents will appear as Jira or Confluence links.
+              - button "View Help Center" [ref=e402] [cursor=pointer]

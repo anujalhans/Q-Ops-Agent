@@ -78,7 +78,7 @@ function ComparisonTable({ full }: { full: boolean }) {
 
   return (
     <div className="overflow-x-auto rounded-lg border border-outline-variant">
-      <table className="w-full min-w-[680px] text-left text-sm">
+      <table className="w-full min-w-full text-left text-sm">
         <thead className="bg-surface-container-high text-xs uppercase tracking-wider text-on-surface-variant">
           <tr>
             <th className="p-4">Capability</th>
@@ -163,7 +163,7 @@ export default function CapabilityGrid() {
       </section>
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Full Comparison" maxWidth="max-w-5xl">
-        <div className="max-h-[70vh] overflow-auto pr-1">
+        <div className="max-h-dvh overflow-auto pr-1">
           <ComparisonTable full />
         </div>
         <div className="mt-4 flex justify-end">

@@ -14,7 +14,7 @@ export default function DashboardHeader({ greeting, onLogout }: Props) {
         <>
           <div className="hidden text-right sm:block">
             <p className="text-xs font-semibold text-on-surface">{greeting}</p>
-            <p className="text-[11px] text-on-surface-variant">Admin</p>
+            <p className="text-xs text-on-surface-variant">Admin</p>
           </div>
           <Button variant="secondary" size="md" leftIcon={<LogOut className="h-4 w-4" />} onClick={onLogout}>
             Logout

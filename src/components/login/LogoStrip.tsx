@@ -7,7 +7,7 @@ export default function LogoStrip() {
 
   return (
     <section className="border-y border-outline-variant bg-surface-container-low py-10">
-      <div className="mx-auto grid max-w-7xl gap-6 px-6 lg:grid-cols-[1fr_auto] lg:items-center">
+      <div className="mx-auto grid max-w-7xl gap-6 px-6 lg:grid-cols-2 lg:items-center">
         <div className="min-w-0">
           <p className="text-center text-xs font-semibold uppercase tracking-wider text-on-surface-variant lg:text-left">
             Our Trusted Partners

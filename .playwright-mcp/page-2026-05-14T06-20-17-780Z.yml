@@ -1,0 +1,115 @@
+- generic [ref=e603]:
+  - banner [ref=e604]:
+    - generic [ref=e605]:
+      - generic [ref=e606]: Q
+      - generic [ref=e607]: Q-Ops Agent
+    - generic [ref=e608]:
+      - button "Toggle theme" [ref=e609] [cursor=pointer]:
+        - img [ref=e610]
+      - button "Login" [active] [ref=e612] [cursor=pointer]
+  - main [ref=e613]:
+    - generic [ref=e615]:
+      - generic [ref=e616]:
+        - generic [ref=e617]:
+          - img [ref=e618]
+          - text: AI-Powered
+        - heading "Build QA That Starts Before Code Exists." [level=1] [ref=e621]:
+          - text: Build QA That Starts
+          - text: Before Code Exists.
+        - paragraph [ref=e622]: Transform requirements, designs, and conversations into a complete QA foundation instantly.
+        - paragraph [ref=e623]: Q-Ops Agent doesn't assist QA. It builds it.
+        - paragraph [ref=e624]: From scattered artifacts to structured QA ready in minutes.
+        - generic [ref=e625]:
+          - button "Explore More" [ref=e626] [cursor=pointer]
+          - button "Login to Dashboard" [ref=e627] [cursor=pointer]
+      - img "Modern enterprise dashboard interface" [ref=e630]
+    - generic [ref=e632]:
+      - paragraph [ref=e633]: Trusted by innovative engineering teams
+      - generic [ref=e634]:
+        - img "Corporate partner logo" [ref=e635]
+        - img "Corporate partner logo" [ref=e636]
+        - img "Corporate partner logo" [ref=e637]
+        - img "Corporate partner logo" [ref=e638]
+        - img "Corporate partner logo" [ref=e639]
+    - generic [ref=e641]:
+      - generic [ref=e642]:
+        - heading "Core Capabilities" [level=2] [ref=e643]
+        - paragraph [ref=e644]: Purpose-built features that integrate into QA workflows and accelerate delivery.
+      - generic [ref=e645]:
+        - generic [ref=e647]:
+          - generic [ref=e648]:
+            - img [ref=e649]
+            - heading "AI Test Strategy & Planning" [level=3] [ref=e652]
+            - paragraph [ref=e653]: Generate detailed test strategies and plans using semantic analysis of requirements.
+          - img "Document generation interface" [ref=e654]
+        - generic [ref=e655]:
+          - img [ref=e656]
+          - heading "Automated Risk Analysis" [level=3] [ref=e659]
+          - paragraph [ref=e660]: Identify and prioritize risks automatically across all project artifacts.
+        - generic [ref=e667]:
+          - img [ref=e668]
+          - heading "Intelligent Knowledge Base" [level=3] [ref=e670]
+          - paragraph [ref=e671]: Build searchable knowledge bases with vector embeddings for contextual QA insights.
+        - generic [ref=e672]:
+          - img [ref=e673]
+          - heading "JIRA-Ready Artifacts" [level=3] [ref=e677]
+          - paragraph [ref=e678]: Create production-ready epics, user stories, and test cases ready for development.
+        - generic [ref=e679]:
+          - img [ref=e680]
+          - heading "Enterprise Security" [level=3] [ref=e682]
+          - paragraph [ref=e683]: Your data is protected with enterprise-grade privacy controls.
+    - generic [ref=e685]:
+      - generic [ref=e686]:
+        - generic [ref=e687]: 75%
+        - paragraph [ref=e688]: Reduction in QA planning time
+      - generic [ref=e689]:
+        - generic [ref=e690]: 40%
+        - paragraph [ref=e691]: Improvement in test coverage
+      - generic [ref=e692]:
+        - generic [ref=e693]: 50+
+        - paragraph [ref=e694]: Hours saved per project
+    - generic [ref=e696]:
+      - generic [ref=e697]:
+        - img [ref=e698]
+        - paragraph [ref=e701]: "\"Q-Ops Agent adheres to the highest industry standards for data privacy and security.\""
+      - generic [ref=e702]:
+        - generic [ref=e703]: SOC2 Compliant
+        - generic [ref=e704]: GDPR Ready
+        - generic [ref=e705]: HIPAA Eligible
+    - generic [ref=e710]:
+      - heading "Start shipping reliable tests faster" [level=2] [ref=e711]
+      - paragraph [ref=e712]: Join teams that reduced manual QA effort and improved confidence.
+      - generic [ref=e713]:
+        - button "Explore Q-Ops Agent" [ref=e714] [cursor=pointer]
+        - button "Documentation" [ref=e715] [cursor=pointer]
+  - contentinfo [ref=e716]:
+    - generic [ref=e717]: © 2024 Q-Ops Agent. AI-Powered Enterprise Solutions.
+    - generic [ref=e718]:
+      - button "Documentation" [ref=e719] [cursor=pointer]
+      - button "Privacy Policy" [ref=e720] [cursor=pointer]
+      - button "Terms of Service" [ref=e721] [cursor=pointer]
+      - button "System Status" [ref=e722] [cursor=pointer]
+  - generic [ref=e724]:
+    - generic [ref=e725]:
+      - generic [ref=e726]:
+        - paragraph [ref=e727]: Welcome back, QA lead.
+        - heading "Login to Q-Ops Agent" [level=2] [ref=e728]
+      - button "Close" [ref=e729] [cursor=pointer]:
+        - img [ref=e730]
+    - generic [ref=e733]:
+      - generic [ref=e734]:
+        - generic [ref=e735]: Email
+        - textbox "Email" [ref=e736]:
+          - /placeholder: admin@qops.local
+      - generic [ref=e737]:
+        - generic [ref=e738]:
+          - generic [ref=e739]: Password
+          - button "Forgot your password?" [ref=e740] [cursor=pointer]
+        - textbox "Password" [ref=e741]:
+          - /placeholder: "********"
+      - generic [ref=e742]:
+        - paragraph [ref=e743]:
+          - text: Having trouble?
+          - button "Fill admin email" [ref=e744] [cursor=pointer]
+        - button "All systems operational" [ref=e745] [cursor=pointer]: All systems operational
+      - button "Login" [ref=e747] [cursor=pointer]

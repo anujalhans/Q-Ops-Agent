@@ -19,7 +19,7 @@ export default function Header({ rightSlot, showAiBadge = true, showTagline = tr
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="truncate font-display text-lg font-semibold text-on-surface">Q-Ops Agent</h1>
               {showAiBadge ? (
-                <span className="inline-flex items-center rounded-sm border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                <span className="inline-flex items-center rounded-sm border border-primary/20 bg-primary/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-primary">
                   AI-Powered
                 </span>
               ) : null}

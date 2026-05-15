@@ -25,7 +25,7 @@ export default function WorkflowSteps() {
       <div className="mx-auto max-w-7xl px-6">
         <p className="text-xs font-semibold uppercase tracking-wider text-primary">How Q-Ops Agent Works</p>
         <h2 className="mt-2 font-display text-3xl font-semibold text-on-surface">End-to-end QA flow with clarity</h2>
-        <div className="mt-8 grid gap-4 lg:grid-cols-[1fr_auto_1fr_auto_1fr] lg:items-center">
+        <div className="mt-8 grid gap-4 lg:grid-cols-5 lg:items-center">
           {steps.map(({ Icon, title, description }, index) => (
             <div key={title} className="contents">
               <Card className="h-full text-center">

@@ -1,0 +1,274 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e8]
+      - generic [ref=e13]:
+        - heading "Q-Ops Agent" [level=1] [ref=e14]
+        - paragraph [ref=e15]: A Purpose-Built AI System for QA Engineering
+    - navigation [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]: QA Intelligence
+        - generic [ref=e20]:
+          - button "Dashboard" [ref=e21] [cursor=pointer]:
+            - img [ref=e22]
+            - generic [ref=e27]: Dashboard
+          - button "Artifacts" [ref=e28] [cursor=pointer]:
+            - img [ref=e29]
+            - generic [ref=e32]: Artifacts
+          - button "Doc Gen" [ref=e33] [cursor=pointer]:
+            - img [ref=e34]
+            - generic [ref=e37]: Doc Gen
+          - button "Knowledge Base" [active] [ref=e38] [cursor=pointer]:
+            - img [ref=e39]
+            - generic [ref=e41]: Knowledge Base
+          - button "Analytics" [ref=e42] [cursor=pointer]:
+            - img [ref=e43]
+            - generic [ref=e45]: Analytics
+      - generic [ref=e46]:
+        - generic [ref=e47]: Delivery Intelligence
+        - generic [ref=e48]:
+          - button "DI Overview" [ref=e49] [cursor=pointer]:
+            - img [ref=e50]
+            - generic [ref=e58]: DI Overview
+          - button "Project Profile" [ref=e59] [cursor=pointer]:
+            - img [ref=e60]
+            - generic [ref=e68]: Project Profile
+          - button "Onboarding" [ref=e69] [cursor=pointer]:
+            - img [ref=e70]
+            - generic [ref=e72]: Onboarding
+          - button "Discovery" [ref=e73] [cursor=pointer]:
+            - img [ref=e74]
+            - generic [ref=e77]: Discovery
+          - button "Solutions" [ref=e78] [cursor=pointer]:
+            - img [ref=e79]
+            - generic [ref=e83]: Solutions
+          - button "Governance" [ref=e84] [cursor=pointer]:
+            - img [ref=e85]
+            - generic [ref=e88]: Governance
+          - button "Similarity" [ref=e89] [cursor=pointer]:
+            - img [ref=e90]
+            - generic [ref=e95]: Similarity
+          - button "Technologies" [ref=e96] [cursor=pointer]:
+            - img [ref=e97]
+            - generic [ref=e102]: Technologies
+          - button "Recommendations" [ref=e103] [cursor=pointer]:
+            - img [ref=e104]
+            - generic [ref=e107]: Recommendations
+          - button "Learnings" [ref=e108] [cursor=pointer]:
+            - img [ref=e109]
+            - generic [ref=e111]: Learnings
+          - button "Relationships" [ref=e112] [cursor=pointer]:
+            - img [ref=e113]
+            - generic [ref=e114]: Relationships
+    - generic [ref=e115]:
+      - button "Settings" [ref=e116] [cursor=pointer]:
+        - img [ref=e117]
+        - generic [ref=e120]: Settings
+      - button "Documentation" [ref=e121] [cursor=pointer]:
+        - img [ref=e122]
+        - generic [ref=e124]: Documentation
+  - main [ref=e125]:
+    - generic [ref=e126]:
+      - button "Search operations... Ctrl K" [ref=e128] [cursor=pointer]:
+        - img [ref=e129]
+        - generic [ref=e132]: Search operations...
+        - generic [ref=e133]: Ctrl K
+      - generic [ref=e134]:
+        - button "Toggle theme" [ref=e135] [cursor=pointer]:
+          - img [ref=e136]
+        - button "Notifications" [ref=e138] [cursor=pointer]:
+          - img [ref=e139]
+          - generic [ref=e142]: "120"
+        - button "Help" [ref=e143] [cursor=pointer]:
+          - img [ref=e144]
+        - generic [ref=e148]:
+          - generic [ref=e149]:
+            - paragraph [ref=e150]: Anuj
+            - paragraph [ref=e151]: Registered User
+          - img "User profile" [ref=e152]
+          - button "Logout" [ref=e153] [cursor=pointer]
+    - generic [ref=e155]:
+      - generic [ref=e156]:
+        - generic [ref=e157]:
+          - heading "Knowledge Base" [level=2] [ref=e404]
+          - paragraph [ref=e159]: Create, update, and review knowledge bases for QA intelligence.
+        - button "View Audit Log" [ref=e161] [cursor=pointer]:
+          - img [ref=e162]
+          - text: View Audit Log
+      - generic [ref=e405]:
+        - generic [ref=e407]:
+          - generic [ref=e409]:
+            - generic [ref=e410]:
+              - paragraph [ref=e411]: QA Intelligence workspace
+              - heading "Knowledge Base" [level=3] [ref=e412]
+              - paragraph [ref=e413]: Collect project artifacts, organize them into a retrieval-ready knowledge base, and monitor ingestion confidence from one place.
+            - generic [ref=e414]: Ingestion workflow
+          - generic [ref=e415]:
+            - button "1. Knowledge Base" [pressed] [ref=e416] [cursor=pointer]
+            - button "2. Generate Documents" [ref=e417] [cursor=pointer]
+            - generic [ref=e418]: Workspace
+          - generic [ref=e419]:
+            - generic [ref=e420]:
+              - generic [ref=e421]:
+                - generic [ref=e422]:
+                  - heading "Existing knowledge bases" [level=3] [ref=e423]
+                  - paragraph [ref=e424]: Use assigned projects below to see which ones are already retrieval-ready and which ones still need source artifacts.
+                - generic [ref=e425]: 4 assigned projects
+              - generic [ref=e426]:
+                - generic [ref=e427]:
+                  - paragraph [ref=e428]: Ready for generation
+                  - paragraph [ref=e429]: "2"
+                  - paragraph [ref=e430]: Projects with retrieval-ready context
+                - generic [ref=e431]:
+                  - paragraph [ref=e432]: Draft or ingesting
+                  - paragraph [ref=e433]: "2"
+                  - paragraph [ref=e434]: Projects still being prepared
+                - generic [ref=e435]:
+                  - paragraph [ref=e436]: Needs attention
+                  - paragraph [ref=e437]: "0"
+                  - paragraph [ref=e438]: Projects blocked or requiring review
+              - generic [ref=e439]:
+                - generic [ref=e440]:
+                  - generic [ref=e441]:
+                    - paragraph [ref=e442]: ShopSmart
+                    - generic [ref=e443]: ready
+                  - paragraph [ref=e444]: Ecommerce
+                - generic [ref=e445]:
+                  - generic [ref=e446]:
+                    - paragraph [ref=e447]: E2E-QOPS-20260509-171521
+                    - generic [ref=e448]: draft
+                  - paragraph [ref=e449]: E2E Module | E2E Sprint
+                - generic [ref=e450]:
+                  - generic [ref=e451]:
+                    - paragraph [ref=e452]: UISmoleTest
+                    - generic [ref=e453]: ready
+                  - paragraph [ref=e454]: UISmoke
+                - generic [ref=e455]:
+                  - generic [ref=e456]:
+                    - paragraph [ref=e457]: Codex Smoke Project 20260507-163940
+                    - generic [ref=e458]: draft
+                  - paragraph [ref=e459]: Smoke | test
+            - generic [ref=e460]:
+              - generic [ref=e461]:
+                - generic [ref=e462]:
+                  - paragraph [ref=e463]: Ingestion flow
+                  - heading "Prepare project context for retrieval" [level=4] [ref=e464]
+                  - paragraph [ref=e465]: Choose a project, attach the source artifacts that matter most, and Q-Ops will build a knowledge base that later powers document generation.
+                - generic [ref=e466]:
+                  - generic [ref=e467]:
+                    - paragraph [ref=e468]: Assigned projects
+                    - paragraph [ref=e469]: "4"
+                    - paragraph [ref=e470]: Available for ingestion
+                  - generic [ref=e471]:
+                    - paragraph [ref=e472]: Selected files
+                    - paragraph [ref=e473]: "0"
+                    - paragraph [ref=e474]: Current upload set
+              - generic [ref=e476]:
+                - text: Project name
+                - combobox "Project name Select the project that should own these uploaded artifacts." [ref=e477]:
+                  - option "Select a project" [selected]
+                  - option "ShopSmart"
+                  - option "E2E-QOPS-20260509-171521"
+                  - option "UISmoleTest"
+                  - option "Codex Smoke Project 20260507-163940"
+                - generic [ref=e478]: Select the project that should own these uploaded artifacts.
+              - generic [ref=e479]:
+                - heading "Business documents" [level=4] [ref=e480]
+                - paragraph [ref=e481]: Start with the primary requirements artifacts that explain business intent and scope.
+                - generic [ref=e482]:
+                  - generic [ref=e483] [cursor=pointer]:
+                    - button "BRD document No file selected Business requirements document Drag and drop here or click to browse." [ref=e484]
+                    - generic [ref=e485]:
+                      - generic [ref=e486]: BRD document
+                      - img [ref=e487]
+                    - paragraph [ref=e490]: No file selected
+                    - paragraph [ref=e491]: Business requirements document
+                    - paragraph [ref=e492]: Drag and drop here or click to browse.
+                  - generic [ref=e493] [cursor=pointer]:
+                    - button "FRD document No file selected Functional requirements document Drag and drop here or click to browse." [ref=e494]
+                    - generic [ref=e495]:
+                      - generic [ref=e496]: FRD document
+                      - img [ref=e497]
+                    - paragraph [ref=e500]: No file selected
+                    - paragraph [ref=e501]: Functional requirements document
+                    - paragraph [ref=e502]: Drag and drop here or click to browse.
+              - generic [ref=e503]:
+                - heading "Technical documents" [level=4] [ref=e504]
+                - paragraph [ref=e505]: Add architecture and design-level documentation to improve traceability and solution depth.
+                - generic [ref=e506]:
+                  - generic [ref=e507] [cursor=pointer]:
+                    - button "HLD document No file selected High-level design Drag and drop here or click to browse." [ref=e508]
+                    - generic [ref=e509]:
+                      - generic [ref=e510]: HLD document
+                      - img [ref=e511]
+                    - paragraph [ref=e514]: No file selected
+                    - paragraph [ref=e515]: High-level design
+                    - paragraph [ref=e516]: Drag and drop here or click to browse.
+                  - generic [ref=e517] [cursor=pointer]:
+                    - button "LLD document No file selected Low-level design Drag and drop here or click to browse." [ref=e518]
+                    - generic [ref=e519]:
+                      - generic [ref=e520]: LLD document
+                      - img [ref=e521]
+                    - paragraph [ref=e524]: No file selected
+                    - paragraph [ref=e525]: Low-level design
+                    - paragraph [ref=e526]: Drag and drop here or click to browse.
+              - generic [ref=e527]:
+                - heading "Supporting assets" [level=4] [ref=e528]
+                - paragraph [ref=e529]: Supplement text documents with transcripts and UI designs so retrieval can use both textual and visual context.
+                - generic [ref=e530]:
+                  - generic [ref=e531] [cursor=pointer]:
+                    - button "Transcript files No file selected Upload one or more meeting notes or transcript files. Drag and drop here or click to browse." [ref=e532]
+                    - generic [ref=e533]:
+                      - generic [ref=e534]: Transcript files
+                      - img [ref=e535]
+                    - paragraph [ref=e538]: No file selected
+                    - paragraph [ref=e539]: Upload one or more meeting notes or transcript files.
+                    - paragraph [ref=e540]: Drag and drop here or click to browse.
+                  - generic [ref=e541] [cursor=pointer]:
+                    - button "UI designs No file selected Upload one or more design images, screenshots, or annotated mockups. Drag and drop here or click to browse." [ref=e542]
+                    - generic [ref=e543]:
+                      - generic [ref=e544]: UI designs
+                      - img [ref=e545]
+                    - paragraph [ref=e548]: No file selected
+                    - paragraph [ref=e549]: Upload one or more design images, screenshots, or annotated mockups.
+                    - paragraph [ref=e550]: Drag and drop here or click to browse.
+              - generic [ref=e551]:
+                - button "Reset" [ref=e552] [cursor=pointer]
+                - button "Create Knowledge Base" [disabled] [ref=e553]
+        - generic [ref=e554]:
+          - generic [ref=e555]:
+            - generic [ref=e556]:
+              - heading "Job Status" [level=3] [ref=e557]
+              - img [ref=e558]
+            - generic [ref=e563]: No active knowledge base job.
+          - generic [ref=e564]:
+            - generic [ref=e565]:
+              - heading "My Knowledge Jobs" [level=3] [ref=e566]
+              - paragraph [ref=e567]: Track multiple ingestion runs and retry failed artifact batches.
+            - generic [ref=e568]:
+              - generic [ref=e569]:
+                - generic [ref=e570]:
+                  - generic [ref=e571]:
+                    - paragraph [ref=e572]: ShopSmart
+                    - paragraph [ref=e573]: Knowledge base ingestion
+                  - generic [ref=e574]: failed
+                - generic [ref=e575]:
+                  - generic [ref=e576]: "Job ID: ING-260513-6BMK3N"
+                  - generic [ref=e577]: "Started: May 13, 03:37 PM"
+                - paragraph [ref=e578]: Job failed. Please try again.
+                - button "Retry Failed Artifacts" [ref=e580] [cursor=pointer]:
+                  - img [ref=e581]
+                  - text: Retry Failed Artifacts
+              - generic [ref=e586]:
+                - generic [ref=e587]:
+                  - generic [ref=e588]:
+                    - paragraph [ref=e589]: ShopSmart
+                    - paragraph [ref=e590]: Knowledge base ingestion
+                  - generic [ref=e591]: failed
+                - generic [ref=e592]:
+                  - generic [ref=e593]: "Job ID: ING-260513-GUVWAK"
+                  - generic [ref=e594]: "Started: May 13, 03:21 PM"
+                - paragraph [ref=e595]: Job failed. Please try again.
+                - button "Retry Failed Artifacts" [ref=e597] [cursor=pointer]:
+                  - img [ref=e598]
+                  - text: Retry Failed Artifacts

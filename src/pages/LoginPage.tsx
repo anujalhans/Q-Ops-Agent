@@ -272,7 +272,7 @@ export default function LoginPage({ onSuccess, addToast, authReady = true }: Pro
               <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
                 <Bolt className="h-3.5 w-3.5" /> AI-Powered
               </span>
-              <h1 className="font-display text-4xl font-black leading-tight tracking-tight text-on-surface sm:text-5xl lg:text-[56px] lg:leading-[64px]">
+              <h1 className="font-display text-4xl font-black leading-tight tracking-tight text-on-surface sm:text-5xl lg:text-6xl">
                 Build QA That Starts <br className="hidden sm:block" />
                 <span className="text-primary">Before Code Exists</span>.
               </h1>
@@ -335,10 +335,10 @@ export default function LoginPage({ onSuccess, addToast, authReady = true }: Pro
                 <p className="text-sm leading-5 text-on-surface-variant">Identify and prioritize risks automatically across all project artifacts.</p>
                 <div className="mt-auto pt-6">
                   <div className="flex h-28 items-end justify-between rounded border border-dashed border-outline-variant bg-surface-container-low px-4 pb-2 sm:h-32 sm:px-6 sm:pb-3">
-                    <div className="h-[40%] w-3 rounded-t-sm bg-primary sm:w-4" />
-                    <div className="h-[60%] w-3 rounded-t-sm bg-primary sm:w-4" />
-                    <div className="h-[50%] w-3 rounded-t-sm bg-primary sm:w-4" />
-                    <div className="h-[85%] w-3 rounded-t-sm bg-primary sm:w-4" />
+                    <div className="h-2/5 w-3 rounded-t-sm bg-primary sm:w-4" />
+                    <div className="h-3/5 w-3 rounded-t-sm bg-primary sm:w-4" />
+                    <div className="h-1/2 w-3 rounded-t-sm bg-primary sm:w-4" />
+                    <div className="h-5/6 w-3 rounded-t-sm bg-primary sm:w-4" />
                   </div>
                 </div>
               </div>
@@ -368,7 +368,7 @@ export default function LoginPage({ onSuccess, addToast, authReady = true }: Pro
               ['50+', 'Hours saved per project'],
             ].map(([value, label]) => (
               <div key={label} className="space-y-2">
-                <div className="font-display text-5xl font-black leading-none tracking-tight sm:text-[64px]">{value}</div>
+                <div className="font-display text-5xl font-black leading-none tracking-tight sm:text-6xl">{value}</div>
                 <p className="text-xs font-bold uppercase tracking-widest text-on-primary/80">{label}</p>
               </div>
             ))}
@@ -506,7 +506,7 @@ function InfoModal({ kind, onClose }: { kind: 'docs' | 'privacy' | 'terms' | 'st
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center bg-inverse-surface/40 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="max-h-[86vh] w-full max-w-2xl overflow-auto rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+      <div className="max-h-dvh w-full max-w-2xl overflow-auto rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-xl font-bold text-on-surface">{content.title}</h2>
           <button onClick={onClose} className="rounded-full p-2 text-on-surface-variant hover:bg-surface-container-high" aria-label="Close">

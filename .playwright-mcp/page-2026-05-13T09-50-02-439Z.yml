@@ -1,0 +1,230 @@
+- generic [ref=e149]:
+  - complementary [ref=e150]:
+    - generic [ref=e151]:
+      - img [ref=e153]
+      - generic [ref=e158]:
+        - heading "Q-Ops Agent" [level=1] [ref=e159]
+        - paragraph [ref=e160]: A Purpose-Built AI System for QA Engineering
+    - navigation [ref=e162]:
+      - generic [ref=e163]:
+        - generic [ref=e164]: QA Intelligence
+        - generic [ref=e165]:
+          - button "Dashboard" [ref=e166] [cursor=pointer]:
+            - img [ref=e167]
+            - generic [ref=e172]: Dashboard
+          - button "Artifacts" [ref=e173] [cursor=pointer]:
+            - img [ref=e174]
+            - generic [ref=e177]: Artifacts
+          - button "Doc Gen" [ref=e178] [cursor=pointer]:
+            - img [ref=e179]
+            - generic [ref=e182]: Doc Gen
+          - button "Knowledge Base" [active] [ref=e183] [cursor=pointer]:
+            - img [ref=e184]
+            - generic [ref=e186]: Knowledge Base
+          - button "Analytics" [ref=e187] [cursor=pointer]:
+            - img [ref=e188]
+            - generic [ref=e190]: Analytics
+      - generic [ref=e191]:
+        - generic [ref=e192]: Delivery Intelligence
+        - generic [ref=e193]:
+          - button "DI Overview" [ref=e194] [cursor=pointer]:
+            - img [ref=e195]
+            - generic [ref=e203]: DI Overview
+          - button "Project Profile" [ref=e204] [cursor=pointer]:
+            - img [ref=e205]
+            - generic [ref=e213]: Project Profile
+          - button "Onboarding" [ref=e214] [cursor=pointer]:
+            - img [ref=e215]
+            - generic [ref=e217]: Onboarding
+          - button "Discovery" [ref=e218] [cursor=pointer]:
+            - img [ref=e219]
+            - generic [ref=e222]: Discovery
+          - button "Solutions" [ref=e223] [cursor=pointer]:
+            - img [ref=e224]
+            - generic [ref=e228]: Solutions
+          - button "Governance" [ref=e229] [cursor=pointer]:
+            - img [ref=e230]
+            - generic [ref=e233]: Governance
+          - button "Similarity" [ref=e234] [cursor=pointer]:
+            - img [ref=e235]
+            - generic [ref=e240]: Similarity
+          - button "Technologies" [ref=e241] [cursor=pointer]:
+            - img [ref=e242]
+            - generic [ref=e247]: Technologies
+          - button "Recommendations" [ref=e248] [cursor=pointer]:
+            - img [ref=e249]
+            - generic [ref=e252]: Recommendations
+          - button "Learnings" [ref=e253] [cursor=pointer]:
+            - img [ref=e254]
+            - generic [ref=e256]: Learnings
+          - button "Relationships" [ref=e257] [cursor=pointer]:
+            - img [ref=e258]
+            - generic [ref=e259]: Relationships
+    - generic [ref=e260]:
+      - button "Settings" [ref=e261] [cursor=pointer]:
+        - img [ref=e262]
+        - generic [ref=e265]: Settings
+      - button "Documentation" [ref=e266] [cursor=pointer]:
+        - img [ref=e267]
+        - generic [ref=e269]: Documentation
+  - main [ref=e270]:
+    - generic [ref=e271]:
+      - button "Search operations... Ctrl K" [ref=e273] [cursor=pointer]:
+        - img [ref=e274]
+        - generic [ref=e277]: Search operations...
+        - generic [ref=e278]: Ctrl K
+      - generic [ref=e279]:
+        - button "Toggle theme" [ref=e280] [cursor=pointer]:
+          - img [ref=e281]
+        - button "Notifications" [ref=e283] [cursor=pointer]:
+          - img [ref=e284]
+          - generic [ref=e287]: "96"
+        - button "Help" [ref=e288] [cursor=pointer]:
+          - img [ref=e289]
+        - generic [ref=e293]:
+          - generic [ref=e294]:
+            - paragraph [ref=e295]: Anuj
+            - paragraph [ref=e296]: Registered User
+          - img "User profile" [ref=e297]
+          - button "Logout" [ref=e298] [cursor=pointer]
+    - generic [ref=e300]:
+      - generic [ref=e301]:
+        - generic [ref=e302]:
+          - heading "Knowledge Base" [level=2] [ref=e544]
+          - paragraph [ref=e304]: Create, update, and review knowledge bases for QA intelligence.
+        - button "View Audit Log" [ref=e306] [cursor=pointer]:
+          - img [ref=e307]
+          - text: View Audit Log
+      - generic [ref=e545]:
+        - generic [ref=e547]:
+          - generic [ref=e549]:
+            - generic [ref=e550]:
+              - paragraph [ref=e551]: QA Intelligence workspace
+              - heading "Knowledge Base" [level=3] [ref=e552]
+              - paragraph [ref=e553]: Collect project artifacts, organize them into a retrieval-ready knowledge base, and monitor ingestion confidence from one place.
+            - generic [ref=e554]: Ingestion workflow
+          - generic [ref=e555]:
+            - button "1. Knowledge Base" [pressed] [ref=e556] [cursor=pointer]
+            - button "2. Generate Documents" [ref=e557] [cursor=pointer]
+            - generic [ref=e558]: Workspace
+          - generic [ref=e559]:
+            - generic [ref=e560]:
+              - generic [ref=e561]:
+                - generic [ref=e562]:
+                  - heading "Existing knowledge bases" [level=3] [ref=e563]
+                  - paragraph [ref=e564]: Use assigned projects below to see which ones are already retrieval-ready and which ones still need source artifacts.
+                - generic [ref=e565]: 2 assigned projects
+              - generic [ref=e566]:
+                - generic [ref=e567]:
+                  - paragraph [ref=e568]: Ready for generation
+                  - paragraph [ref=e569]: "2"
+                  - paragraph [ref=e570]: Projects with retrieval-ready context
+                - generic [ref=e571]:
+                  - paragraph [ref=e572]: Draft or ingesting
+                  - paragraph [ref=e573]: "0"
+                  - paragraph [ref=e574]: Projects still being prepared
+                - generic [ref=e575]:
+                  - paragraph [ref=e576]: Needs attention
+                  - paragraph [ref=e577]: "0"
+                  - paragraph [ref=e578]: Projects blocked or requiring review
+              - generic [ref=e579]:
+                - generic [ref=e580]:
+                  - generic [ref=e581]:
+                    - paragraph [ref=e582]: ShopSmart
+                    - generic [ref=e583]: ready
+                  - paragraph [ref=e584]: Ecommerce
+                - generic [ref=e585]:
+                  - generic [ref=e586]:
+                    - paragraph [ref=e587]: UISmoleTest
+                    - generic [ref=e588]: ready
+                  - paragraph [ref=e589]: UISmoke
+            - generic [ref=e590]:
+              - generic [ref=e591]:
+                - generic [ref=e592]:
+                  - paragraph [ref=e593]: Ingestion flow
+                  - heading "Prepare project context for retrieval" [level=4] [ref=e594]
+                  - paragraph [ref=e595]: Choose a project, attach the source artifacts that matter most, and Q-Ops will build a knowledge base that later powers document generation.
+                - generic [ref=e596]:
+                  - generic [ref=e597]:
+                    - paragraph [ref=e598]: Assigned projects
+                    - paragraph [ref=e599]: "2"
+                    - paragraph [ref=e600]: Available for ingestion
+                  - generic [ref=e601]:
+                    - paragraph [ref=e602]: Selected files
+                    - paragraph [ref=e603]: "0"
+                    - paragraph [ref=e604]: Current upload set
+              - generic [ref=e606]:
+                - text: Project name
+                - combobox "Project name Select the project that should own these uploaded artifacts." [ref=e607]:
+                  - option "Select a project" [selected]
+                  - option "ShopSmart"
+                  - option "UISmoleTest"
+                - generic [ref=e608]: Select the project that should own these uploaded artifacts.
+              - generic [ref=e609]:
+                - heading "Business documents" [level=4] [ref=e610]
+                - paragraph [ref=e611]: Start with the primary requirements artifacts that explain business intent and scope.
+                - generic [ref=e612]:
+                  - generic [ref=e613] [cursor=pointer]:
+                    - button "BRD document No file selected Business requirements document Drag and drop here or click to browse." [ref=e614]
+                    - generic [ref=e615]:
+                      - generic [ref=e616]: BRD document
+                      - img [ref=e617]
+                    - paragraph [ref=e620]: No file selected
+                    - paragraph [ref=e621]: Business requirements document
+                    - paragraph [ref=e622]: Drag and drop here or click to browse.
+                  - generic [ref=e623] [cursor=pointer]:
+                    - button "FRD document No file selected Functional requirements document Drag and drop here or click to browse." [ref=e624]
+                    - generic [ref=e625]:
+                      - generic [ref=e626]: FRD document
+                      - img [ref=e627]
+                    - paragraph [ref=e630]: No file selected
+                    - paragraph [ref=e631]: Functional requirements document
+                    - paragraph [ref=e632]: Drag and drop here or click to browse.
+              - generic [ref=e633]:
+                - heading "Technical documents" [level=4] [ref=e634]
+                - paragraph [ref=e635]: Add architecture and design-level documentation to improve traceability and solution depth.
+                - generic [ref=e636]:
+                  - generic [ref=e637] [cursor=pointer]:
+                    - button "HLD document No file selected High-level design Drag and drop here or click to browse." [ref=e638]
+                    - generic [ref=e639]:
+                      - generic [ref=e640]: HLD document
+                      - img [ref=e641]
+                    - paragraph [ref=e644]: No file selected
+                    - paragraph [ref=e645]: High-level design
+                    - paragraph [ref=e646]: Drag and drop here or click to browse.
+                  - generic [ref=e647] [cursor=pointer]:
+                    - button "LLD document No file selected Low-level design Drag and drop here or click to browse." [ref=e648]
+                    - generic [ref=e649]:
+                      - generic [ref=e650]: LLD document
+                      - img [ref=e651]
+                    - paragraph [ref=e654]: No file selected
+                    - paragraph [ref=e655]: Low-level design
+                    - paragraph [ref=e656]: Drag and drop here or click to browse.
+              - generic [ref=e657]:
+                - heading "Supporting assets" [level=4] [ref=e658]
+                - paragraph [ref=e659]: Supplement text documents with transcripts and UI designs so retrieval can use both textual and visual context.
+                - generic [ref=e660]:
+                  - generic [ref=e661] [cursor=pointer]:
+                    - button "Transcript file No file selected Meeting notes or transcript Drag and drop here or click to browse." [ref=e662]
+                    - generic [ref=e663]:
+                      - generic [ref=e664]: Transcript file
+                      - img [ref=e665]
+                    - paragraph [ref=e668]: No file selected
+                    - paragraph [ref=e669]: Meeting notes or transcript
+                    - paragraph [ref=e670]: Drag and drop here or click to browse.
+                  - generic [ref=e671] [cursor=pointer]:
+                    - button "UI designs No file selected Upload one or more design images, screenshots, or annotated mockups. Drag and drop here or click to browse." [ref=e672]
+                    - generic [ref=e673]:
+                      - generic [ref=e674]: UI designs
+                      - img [ref=e675]
+                    - paragraph [ref=e678]: No file selected
+                    - paragraph [ref=e679]: Upload one or more design images, screenshots, or annotated mockups.
+                    - paragraph [ref=e680]: Drag and drop here or click to browse.
+              - generic [ref=e681]:
+                - button "Reset" [ref=e682] [cursor=pointer]
+                - button "Create Knowledge Base" [disabled] [ref=e683]
+        - generic [ref=e685]:
+          - generic [ref=e686]:
+            - heading "Job Status" [level=3] [ref=e687]
+            - img [ref=e688]
+          - generic [ref=e693]: No active knowledge base job.

@@ -1,0 +1,36 @@
+{
+  "projectName": "Extraction Smoke Project",
+  "status": "processing",
+  "jobId": "SMOKE-EXTRACT-V2",
+  "projectId": "project-smoke",
+  "requestedBy": "tester-smoke",
+  "settingsVersion": "2",
+  "fileName": "grooming_transcript_sample.txt",
+  "fileType": "text",
+  "docType": "TRANSCRIPT",
+  "pageCount": 0,
+  "contentMode": "text-only",
+  "containsText": true,
+  "containsImages": false,
+  "rawText": "Grooming transcript extract\r\nParticipants: Product Owner, QA Lead, Architect\r\nDecision: support partial capture, refunds, and 3DS fallback validation.",
+  "imageCount": 0,
+  "images": [],
+  "tables": [],
+  "renderedPages": [],
+  "annotations": [],
+  "links": [],
+  "warnings": [],
+  "extractionStats": {
+    "textCharacters": 152
+  },
+  "visionConfigApplied": {
+    "maxRenderedPagesPerDocument": 12,
+    "maxEmbeddedImagesPerDocument": 20,
+    "maxStandaloneImagesPerDocument": 10,
+    "renderDpi": 144,
+    "maxImagesPerJob": 80,
+    "batchSize": 5,
+    "deferOverflowVisuals": true
+  },
+  "documentId": "66e806e4-3711-4750-bd8c-1396d272dda8"
+}

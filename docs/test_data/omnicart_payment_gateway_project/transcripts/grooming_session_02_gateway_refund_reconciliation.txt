@@ -1,0 +1,14 @@
+OmniCart Grooming Session 02 - Gateway, Refund, and Reconciliation
+Date: 2026-05-13
+Participants: Priya Raman, Arjun Mehta, Ravi Menon, Nisha Kapoor (Security), Daniel Cho (Gateway Partner Manager)
+
+Daniel: Gateway routing should prefer Razorpay for domestic cards and PayU for UPI, but fallback must be configurable during incidents.
+Arjun: The route decision will include routeId, ruleVersion, selectedGateway, fallbackSequence, and reason codes.
+Ravi: Settlement files arrive T+1 from gateways. We need automated comparison against payment_ledger_entries and an exception dashboard.
+Nisha: Webhooks need HMAC signature verification. Invalid signature must be audited and rejected.
+Priya: Refunds must follow original tender. Gift card portion goes back to gift card balance; card portion goes back to card.
+Ravi: Partial refunds are common because orders split by shipment. Settlement adjustments must map to order line and seller.
+Arjun: We will store refund_requests and payment_ledger_entries with immutable rows. Updates should append corrections rather than overwrite financial facts.
+Nisha: No raw card numbers. Only token references. Logs must mask customer identifiers where possible.
+Decision: Gateway webhook event id and gateway code form a unique dedupe key.
+Decision: Refund API enforces refundable balance and chargeback hold checks.

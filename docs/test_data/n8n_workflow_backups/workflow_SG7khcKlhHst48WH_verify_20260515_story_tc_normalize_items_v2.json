@@ -1,0 +1,637 @@
+[
+  {
+    "updatedAt": "2026-05-15T06:05:54.000Z",
+    "createdAt": "2026-05-12T14:13:40.565Z",
+    "id": "SG7khcKlhHst48WH",
+    "name": "PRO QA Jira Story Test Case Generator",
+    "description": "Generates expanded enterprise-grade Jira Test Case coverage from existing generated Jira user stories, links cases back to stories, and persists traceability.",
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "id": "4e15c0a4-c08a-4ab2-916c-6e626ee2413e",
+        "name": "When Executed by Another Workflow",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          112
+        ],
+        "parameters": {
+          "inputSource": "passthrough"
+        }
+      },
+      {
+        "id": "f453a7fa-e99f-4597-8afd-e33fc0793f54",
+        "name": "Normalize Story Test Case Request",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          112
+        ],
+        "parameters": {
+          "jsCode": "const input = $json || {};\nconst config = input.configSnapshot || input.config_snapshot || {};\nconst jira = config.jira || {};\nconst models = config.models || {};\nconst cleanBase = (value, fallback) => {\n  const s = String(value || fallback || '');\n  return s.endsWith('/') ? s.slice(0, -1) : s;\n};\nreturn [{\n  json: {\n    jobId: input.jobId || input.job_id || ('STC-' + Date.now()),\n    projectId: input.projectId || input.project_id || null,\n    projectName: input.projectName || input.project_name || 'Unknown Project',\n    requestedBy: input.requestedBy || input.requested_by || null,\n    settingsVersion: input.settingsVersion || input.settings_version || null,\n    startedAt: input.startedAt || input.createdAt || new Date().toISOString(),\n    jiraBaseUrl: cleanBase(input.jiraBaseUrl || jira.baseUrl, 'https://anujalhans1.atlassian.net'),\n    jiraProjectKey: input.jiraProjectKey || jira.projectKey || 'KAN',\n    testCaseIssueTypeName: input.testCaseIssueTypeName || jira.testCaseIssueTypeName || jira.testCaseIssueType || 'Test Case',\n    generationModel: input.generationModel || models.generationModel || 'gpt-4.1-mini',\n    maxTokens: Math.max(6000, Number(input.maxTokens || models.maxTokens || 12000) || 12000),\n    idempotencyLabelPrefix: input.idempotencyLabelPrefix || jira.idempotencyLabelPrefix || 'qops',\n    productOwner: input.productOwner || input.product_owner || 'Product Owner',\n    configSnapshot: config\n  }\n}];"
+        }
+      },
+      {
+        "id": "7903c2e8-99d5-4061-8d6c-443e21aca1eb",
+        "name": "Fetch Completed User Story Jobs",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          448,
+          112
+        ],
+        "parameters": {
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "status",
+                "value": "eq.completed"
+              },
+              {
+                "name": "input->>documentType",
+                "value": "eq.user_stories"
+              },
+              {
+                "name": "order",
+                "value": "created_at.desc"
+              },
+              {
+                "name": "limit",
+                "value": "25"
+              },
+              {
+                "name": "select",
+                "value": "job_id,project_id,requested_by,created_at,input,output"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+          "options": {}
+        },
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "DpZbhUxkEbKeXIiJ",
+            "name": "supabase-service-role-key"
+          }
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "3958ece9-c966-444a-844d-6cf592c6e593",
+        "name": "Build Story Source Items",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          112
+        ],
+        "parameters": {
+          "jsCode": "const request = $('Normalize Story Test Case Request').first().json;\nconst rows = $input.all().map(item => item.json || {});\nconst normalizedProjectName = String(request.projectName || '').trim().toLowerCase();\nconst matchingJob = rows.find((row) => {\n  const rowProjectId = String(row.project_id || '').trim();\n  const rowProjectName = String(row.input?.projectName || row.input?.project_name || '').trim().toLowerCase();\n  if (request.projectId && rowProjectId) return rowProjectId === String(request.projectId);\n  return rowProjectName === normalizedProjectName;\n});\nif (!matchingJob) throw new Error('No completed Epics & User Stories generation job was found for project=' + request.projectName + '. Generate Epics & User Stories first, then retry Story Test Cases.');\nconst storySourceJobId = matchingJob.job_id || null;\nconst stories = matchingJob.output?.jira?.stories || matchingJob.output?.stories || [];\nif (!Array.isArray(stories) || !stories.length) throw new Error('The latest Epics & User Stories job for project=' + request.projectName + ' does not contain Jira story references. Story Test Cases cannot be created until user stories exist in Jira.');\nreturn stories.map((story, index) => ({ json: { ...request, storySourceJobId, storyIndex: index + 1, totalStories: stories.length, storyKey: story.storyKey || story.key || '', storyId: story.storyId || story.id || '', storySummary: story.summary || '', storyCorrelationId: story.storyCorrelationId || story.userStoryId || '', storyStableLabel: story.stableLabel || '', storySelf: story.storySelf || story.self || '', storyLink: story.storyKey ? request.jiraBaseUrl + '/browse/' + story.storyKey : null } }));"
+        }
+      },
+      {
+        "id": "b24c8627-ee3b-444b-9ff6-96811cafacf9",
+        "name": "Fetch Jira Story Issue",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          896,
+          112
+        ],
+        "parameters": {
+          "url": "={{ $json.jiraBaseUrl + \"/rest/api/3/issue/\" + encodeURIComponent($json.storyKey) + \"?fields=summary,description,labels\" }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "jiraSoftwareCloudApi",
+          "options": {}
+        },
+        "credentials": {
+          "jiraSoftwareCloudApi": {
+            "id": "F5nyQnchcdE8LxV1",
+            "name": "Jira SW Cloud account"
+          }
+        }
+      },
+      {
+        "id": "d961c0c2-d8fa-4af9-815c-f2cd88747832",
+        "name": "Prepare Story Test Case Prompt",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          112
+        ],
+        "parameters": {
+          "jsCode": "const source = $('Build Story Source Items').item.json;\nconst issue = $json || {};\nconst NL = String.fromCharCode(10);\nfunction flattenAdf(node) {\n  if (!node) return '';\n  if (Array.isArray(node)) return node.map(flattenAdf).filter(Boolean).join(NL);\n  if (typeof node === 'string') return node;\n  if (node.type === 'text') return node.text || '';\n  const content = Array.isArray(node.content) ? node.content.map(flattenAdf).filter(Boolean).join(node.type === 'paragraph' ? '' : NL) : '';\n  if (node.type === 'paragraph') return content.trim();\n  if (node.type === 'bulletList' || node.type === 'orderedList') return content.trim();\n  if (node.type === 'listItem') return '- ' + content.trim();\n  if (node.type === 'heading') return content.trim();\n  return content.trim();\n}\nconst descriptionText = flattenAdf(issue.fields?.description || '').replace(new RegExp(NL + '{3,}', 'g'), NL + NL).trim();\nconst storySummary = issue.fields?.summary || source.storySummary || source.storyKey;\nconst system = [\n  'You are a Senior QA Test Architect with 15+ years of experience designing enterprise-scale, risk-driven, automation-ready Jira Test Case issues from existing Jira user stories.',\n  'You specialize in requirement decomposition, boundary and edge case design, negative testing, failure modeling, UI/API/integration validation, and automation feasibility optimization.',\n  'Return one JSON object only. No markdown. No prose outside JSON.',\n  'Avoid generic test cases. Every case must be specific to the story, realistic, execution-ready, and traceable to the available Jira story details.',\n  'Use this exact schema:',\n  '{',\n  '  \"storyKey\": \"KAN-123\",',\n  '  \"storySummary\": \"Story title\",',\n  '  \"testCases\": [',\n  '    {',\n  '      \"testCaseId\": \"TC-001\",',\n  '      \"summary\": \"Short Jira-ready test case title\",',\n  '      \"objective\": \"Why this test exists\",',\n  '      \"requirementReference\": \"Story KAN-123 acceptance criterion or story detail covered\",',\n  '      \"testLevel\": \"UI | API | SIT | FAT | Regression | Security | Performance | Network | Data | Accessibility\",',\n  '      \"testCategory\": \"Positive | Negative | Boundary | Edge | Alternate | Exception | Integration | Validation | Resilience\",',\n  '      \"preconditions\": [\"...\"],',\n  '      \"testSteps\": [\"...\"],',\n  '      \"testData\": [\"...\"],',\n  '      \"expectedResult\": \"Observable outcome\",',\n  '      \"priority\": \"High\",',\n  '      \"riskLevel\": \"High\",',\n  '      \"testType\": \"functional\",',\n  '      \"automationFeasibility\": \"High\",',\n  '      \"acceptanceCriteriaCovered\": [\"...\"],',\n  '      \"notes\": [\"...\"]',\n  '    }',\n  '  ]',\n  '}',\n  'Generate maximum useful coverage for this story. Do not cap output at 7 test cases.',\n  'For simple or low-risk stories, generate at least 8 to 12 distinct test cases.',\n  'For medium-complexity stories, generate at least 15 to 25 distinct test cases.',\n  'For complex, integration-heavy, data-heavy, payment, authentication, authorization, or high-risk stories, generate 25 to 40 distinct test cases when the story details support it.',\n  'Cover UI, FAT, SIT, regression, API/service, data validation, positive, negative, boundary, edge, alternate, exception, integration, security, performance, network/resilience, and accessibility scenarios wherever applicable.',\n  'Do not invent unsupported systems or requirements. If a coverage type is not applicable, omit it rather than creating filler.',\n  'Prioritize breadth first, then depth: cover distinct behaviors, validations, integrations, roles, permissions, data states, and failure modes before adding variants.',\n  'Keep titles concise and professional for Jira.',\n  'Every test case must have at least 3 clear steps, concrete test data where applicable, a concrete expected result, priority, risk level, and automation feasibility.',\n  'Use stable, sequential testCaseId values from TC-001 onward.'\n].join(NL);\nconst user = ['Project: ' + source.projectName, 'Story Key: ' + source.storyKey, 'Story Summary: ' + storySummary, 'Story Correlation ID: ' + (source.storyCorrelationId || 'N/A'), '', 'Story Description:', descriptionText || 'No Jira description was available. Use the story summary and source context only.', '', 'Generate exhaustive, enterprise-grade, execution-ready Jira Test Case issues for this story.'].join(NL);\nreturn [{ json: { ...source, storySummary, storyDescriptionText: descriptionText, system, user } }];"
+        }
+      },
+      {
+        "id": "d6c134e5-c24c-4c02-ad2f-eb4be173d356",
+        "name": "Story Test Case Generator",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          1344,
+          112
+        ],
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.user }}",
+          "options": {
+            "systemMessage": "={{ $json.system }}"
+          }
+        }
+      },
+      {
+        "id": "829e34a3-2de5-4811-ab33-f867446700a2",
+        "name": "OpenAI Chat Model",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          1424,
+          336
+        ],
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4.1-mini",
+            "mode": "id",
+            "cachedResultName": "gpt-4.1-mini"
+          },
+          "builtInTools": {},
+          "options": {
+            "maxTokens": 12000
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "rdVg2Kks1mUCJf4R",
+            "name": "OpenAi Paid Account (Aonu)"
+          }
+        }
+      },
+      {
+        "id": "52a332b9-10b1-402a-909a-424b49e4bfeb",
+        "name": "Robust Story Test Case Parser",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1696,
+          112
+        ],
+        "parameters": {
+          "jsCode": "const source = $('Prepare Story Test Case Prompt').item.json;\nconst raw = $json.output ?? $json.text ?? $json.response ?? $json;\nconst NL = String.fromCharCode(10);\nconst BACKSLASH = String.fromCharCode(92);\nconst stringifyRaw = value => {\n  if (value && typeof value === 'object') {\n    if (typeof value.output === 'string') return value.output;\n    if (typeof value.text === 'string') return value.text;\n    if (typeof value.response === 'string') return value.response;\n  }\n  return String(value || '').trim();\n};\nconst count = (text, pattern) => (text.match(pattern) || []).length;\nconst truncationMessage = text => 'Story Test Case parser detected incomplete or truncated model JSON for story ' + source.storyKey + '. Output chars=' + text.length + ', maxTokens=' + source.maxTokens + '. Please rerun or reduce prompt size.';\nconst extractBalancedJsonObject = text => {\n  const firstBrace = text.indexOf('{');\n  if (firstBrace < 0) throw new Error('Story Test Case parser received a response without a JSON object. Raw preview: ' + text.slice(0, 500));\n  let depth = 0;\n  let inString = false;\n  let escaped = false;\n  for (let i = firstBrace; i < text.length; i++) {\n    const char = text[i];\n    if (inString) {\n      if (escaped) escaped = false;\n      else if (char === BACKSLASH) escaped = true;\n      else if (char === '\"') inString = false;\n      continue;\n    }\n    if (char === '\"') inString = true;\n    else if (char === '{') depth += 1;\n    else if (char === '}') { depth -= 1; if (depth === 0) return text.slice(firstBrace, i + 1); }\n  }\n  throw new Error(truncationMessage(text) + ' JSON balance: {' + count(text, /{/g) + '/' + count(text, /}/g) + '}');\n};\nlet text = stringifyRaw(raw);\nif (!text) throw new Error('Story Test Case parser received an empty model response.');\nconst fence = String.fromCharCode(96, 96, 96);\nconst fenceStart = text.indexOf(fence);\nconst fenceEnd = text.lastIndexOf(fence);\nif (fenceStart >= 0 && fenceEnd > fenceStart) {\n  const firstLineEnd = text.indexOf(NL, fenceStart + fence.length);\n  if (firstLineEnd >= 0 && fenceEnd > firstLineEnd) text = text.slice(firstLineEnd + 1, fenceEnd).trim();\n}\nconst candidate = extractBalancedJsonObject(text);\nlet parsed;\ntry { parsed = JSON.parse(candidate); } catch (error) { throw new Error('Story Test Case parser failed to parse model JSON: ' + error.message + '. Raw preview: ' + candidate.slice(0, 800)); }\nif (!Array.isArray(parsed.testCases) || !parsed.testCases.length) throw new Error('Story Test Case generator returned no testCases for story ' + source.storyKey + '.');\nreturn [{ json: { ...source, parsed, storyWordCount: Math.max(1, candidate.trim().split(new RegExp(BACKSLASH + 's+')).length), storyTokensInput: Math.max(1, Math.ceil(((source.system || '') + (source.user || '')).length / 4)), storyTokensOutput: Math.max(1, Math.ceil(candidate.length / 4)), storyEstimatedCostUsd: Number((((Math.max(1, Math.ceil(((source.system || '') + (source.user || '')).length / 4)) * 0.40) + (Math.max(1, Math.ceil(candidate.length / 4)) * 1.60)) / 1000000).toFixed(6)) } }];"
+        }
+      },
+      {
+        "id": "14a62f22-0f63-486d-8661-9cbd9b718fd1",
+        "name": "Expand Story Test Case Items",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1920,
+          112
+        ],
+        "parameters": {
+          "jsCode": "const source = $json;\nconst parsed = source.parsed || {};\nconst normalizeArray = value => Array.isArray(value) ? value.map(v => String(v || '').trim()).filter(Boolean) : (String(value || '').trim() ? [String(value).trim()] : []);\nconst slugify = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50);\nfunction adfParagraph(text, strongLabel) { const content = []; if (strongLabel) content.push({ type: 'text', text: strongLabel + ': ', marks: [{ type: 'strong' }] }); if (text) content.push({ type: 'text', text: String(text).slice(0, 12000) }); return { type: 'paragraph', content }; }\nfunction adfHeading(text, level = 3) { return { type: 'heading', attrs: { level }, content: [{ type: 'text', text: String(text).slice(0, 250) }] }; }\nfunction adfBulletList(items) { const normalized = normalizeArray(items); if (!normalized.length) return null; return { type: 'bulletList', content: normalized.map(item => ({ type: 'listItem', content: [{ type: 'paragraph', content: [{ type: 'text', text: item.slice(0, 800) }] }] })) }; }\nconst storySummary = parsed.storySummary || source.storySummary || source.storyKey;\nconst testCases = Array.isArray(parsed.testCases) ? parsed.testCases : [];\nreturn testCases.map((testCase, index) => {\n  const testCaseId = String(testCase.testCaseId || ('TC-' + String(index + 1).padStart(3, '0'))).trim();\n  const summary = String(testCase.summary || ('Test ' + testCaseId + ' for ' + storySummary)).trim();\n  const stableLabel = [source.idempotencyLabelPrefix || 'qops', 'tc', slugify(source.storyCorrelationId || source.storyKey), slugify(testCaseId), slugify(summary)].filter(Boolean).join('-').slice(0, 120);\n  const preconditions = normalizeArray(testCase.preconditions);\n  const testSteps = normalizeArray(testCase.testSteps);\n  const testData = normalizeArray(testCase.testData);\n  const acceptanceCriteriaCovered = normalizeArray(testCase.acceptanceCriteriaCovered);\n  const notes = normalizeArray(testCase.notes);\n  const requirementReference = String(testCase.requirementReference || (source.storyKey + ' story details')).trim();\n  const testLevel = String(testCase.testLevel || 'UI').trim();\n  const testCategory = String(testCase.testCategory || 'Functional').trim();\n  const riskLevel = String(testCase.riskLevel || 'Medium').trim();\n  const automationFeasibility = String(testCase.automationFeasibility || 'Medium').trim();\n  const jiraDescription = { type: 'doc', version: 1, content: [adfHeading('Source Story', 3), adfParagraph(source.storyKey + ' - ' + storySummary), adfParagraph(testCase.objective || '', 'Objective'), adfParagraph(requirementReference, 'Requirement Reference'), adfParagraph(testLevel, 'Test Level'), adfParagraph(testCategory, 'Test Category'), adfParagraph(riskLevel, 'Risk Level'), adfParagraph(automationFeasibility, 'Automation Feasibility'), preconditions.length ? adfHeading('Preconditions', 3) : null, preconditions.length ? adfBulletList(preconditions) : null, testSteps.length ? adfHeading('Test Steps', 3) : null, testSteps.length ? adfBulletList(testSteps.map((step, stepIndex) => (stepIndex + 1) + '. ' + step)) : null, testData.length ? adfHeading('Test Data', 3) : null, testData.length ? adfBulletList(testData) : null, adfHeading('Expected Result', 3), adfParagraph(testCase.expectedResult || 'Expected result not provided by generator.'), acceptanceCriteriaCovered.length ? adfHeading('Acceptance Criteria Covered', 3) : null, acceptanceCriteriaCovered.length ? adfBulletList(acceptanceCriteriaCovered) : null, notes.length ? adfHeading('Notes', 3) : null, notes.length ? adfBulletList(notes) : null, adfHeading('Traceability', 3), adfParagraph(source.storyKey + ' | ' + (source.storyCorrelationId || 'N/A') + ' | Source Job ' + (source.storySourceJobId || 'N/A'))].filter(Boolean) };\n  return { json: { ...source, testCaseIndex: index + 1, testCaseId, testCaseSummary: summary, priority: String(testCase.priority || 'Medium'), testType: String(testCase.testType || 'functional'), requirementReference, testLevel, testCategory, riskLevel, automationFeasibility, objective: String(testCase.objective || '').trim(), preconditions, testSteps, testData, expectedResult: String(testCase.expectedResult || '').trim(), acceptanceCriteriaCovered, notes, stableLabel, jiraDescription, createIssueBody: { fields: { project: { key: source.jiraProjectKey }, issuetype: { name: source.testCaseIssueTypeName || 'Test Case' }, summary, description: jiraDescription, labels: [stableLabel, 'qops-story-test-cases', ('story-' + slugify(source.storyKey)).slice(0, 80)] } }, linkIssueBody: { type: { name: 'Relates' }, inwardIssue: { key: source.storyKey }, outwardIssue: { key: '__REPLACE_TEST_CASE_KEY__' }, comment: { body: { type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Linked by Q-Ops Story Test Cases generation.' }] }] } } } } };\n});"
+        }
+      },
+      {
+        "id": "2445849c-c4e0-4b29-ad99-6268ec697259",
+        "name": "Search Existing Test Case By Stable Label",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          2144,
+          112
+        ],
+        "parameters": {
+          "url": "={{ $json.jiraBaseUrl + \"/rest/api/3/search/jql\" }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "jiraSoftwareCloudApi",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "jql",
+                "value": "={{ \"project = \" + $json.jiraProjectKey + \" AND issuetype = \\\"\" + ($json.testCaseIssueTypeName || \"Test Case\") + \"\\\" AND labels = \\\"\" + $json.stableLabel + \"\\\" ORDER BY created DESC\" }}"
+              },
+              {
+                "name": "fields",
+                "value": "summary"
+              },
+              {
+                "name": "maxResults",
+                "value": "1"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "credentials": {
+          "jiraSoftwareCloudApi": {
+            "id": "F5nyQnchcdE8LxV1",
+            "name": "Jira SW Cloud account"
+          }
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "4f5844c8-6a19-4b5d-b568-f6bc9dedf800",
+        "name": "Test Case Needs Create?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          2368,
+          112
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ (($json.issues || []).length) === 0 }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "0069985d-3a8f-42d6-bb70-c4a307359371",
+        "name": "Create Jira Test Case",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          2592,
+          16
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $(\"Expand Story Test Case Items\").item.json.jiraBaseUrl + \"/rest/api/3/issue\" }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "jiraSoftwareCloudApi",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify($(\"Expand Story Test Case Items\").item.json.createIssueBody) }}",
+          "options": {}
+        },
+        "credentials": {
+          "jiraSoftwareCloudApi": {
+            "id": "F5nyQnchcdE8LxV1",
+            "name": "Jira SW Cloud account"
+          }
+        }
+      },
+      {
+        "id": "3326dda4-6bab-4117-b819-8b5b104697f8",
+        "name": "Link Created Test Case To Story",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          2816,
+          16
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $(\"Expand Story Test Case Items\").item.json.jiraBaseUrl + \"/rest/api/3/issueLink\" }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "jiraSoftwareCloudApi",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ type: { name: \"Relates\" }, inwardIssue: { key: $(\"Expand Story Test Case Items\").item.json.storyKey }, outwardIssue: { key: $json.key }, comment: { body: { type: \"doc\", version: 1, content: [{ type: \"paragraph\", content: [{ type: \"text\", text: \"Linked by Q-Ops Story Test Cases generation.\" }] }] } } }) }}",
+          "options": {}
+        },
+        "credentials": {
+          "jiraSoftwareCloudApi": {
+            "id": "F5nyQnchcdE8LxV1",
+            "name": "Jira SW Cloud account"
+          }
+        }
+      },
+      {
+        "id": "fc6e7df1-41fc-4761-bfbe-40ac26c0640d",
+        "name": "Normalize Created Story Test Case",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3040,
+          16
+        ],
+        "parameters": {
+          "jsCode": "const expandedItems = $('Expand Story Test Case Items').all().map((item) => item.json || {});\nconst createdIssues = $('Create Jira Test Case').all().map((item) => item.json || {});\n\nreturn createdIssues.map((created, index) => {\n  const source = expandedItems[index] || expandedItems.find((item) => item.testCaseIndex === index + 1) || expandedItems[0] || {};\n  return {\n    json: {\n      ...source,\n      action: 'created',\n      testcaseKey: created.key,\n      testcaseId: created.id,\n      testcaseSelf: created.self,\n      testcaseLink: source.jiraBaseUrl + '/browse/' + created.key\n    }\n  };\n});"
+        }
+      },
+      {
+        "id": "7919f86a-755a-4d4a-91c1-cd245bc9b2d1",
+        "name": "Upsert Story Test Case Mapping",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          3264,
+          112
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_story_testcase_links?on_conflict=story_jira_key,testcase_jira_key",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"resolution=merge-duplicates,return=minimal\" }",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ job_id: $json.jobId, project_id: $json.projectId, project_name: $json.projectName, requested_by: $json.requestedBy, source_user_story_job_id: $json.storySourceJobId, story_jira_key: $json.storyKey, story_jira_id: $json.storyId, story_correlation_id: $json.storyCorrelationId || null, story_summary: $json.storySummary, testcase_jira_key: $json.testcaseKey, testcase_jira_id: $json.testcaseId, testcase_summary: $json.testCaseSummary, stable_label: $json.stableLabel, link_type: \"Relates\", status: $json.action === \"created\" ? \"linked\" : \"reused\", metadata: { action: $json.action, priority: $json.priority, risk_level: $json.riskLevel, test_type: $json.testType, test_level: $json.testLevel, test_category: $json.testCategory, automation_feasibility: $json.automationFeasibility, requirement_reference: $json.requirementReference, story_link: $json.storyLink, testcase_link: $json.testcaseLink, test_data: $json.testData || [], acceptance_criteria_covered: $json.acceptanceCriteriaCovered || [], notes: $json.notes || [] } }) }}",
+          "options": {}
+        },
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "DpZbhUxkEbKeXIiJ",
+            "name": "supabase-service-role-key"
+          }
+        }
+      },
+      {
+        "id": "673cd158-3b9a-48c4-8c31-1c258e9bd521",
+        "name": "Finalize Story Test Case Result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3488,
+          112
+        ],
+        "parameters": {
+          "jsCode": "function safeAll(nodeName) { try { return $(nodeName).all().map((item) => item.json || {}); } catch (error) { if (String(error?.message || error).includes(\"hasn't been executed\")) return []; throw error; } }\nconst createdItems = safeAll('Normalize Created Story Test Case');\nconst reusedItems = safeAll('Normalize Existing Story Test Case');\nconst allItems = [...createdItems, ...reusedItems];\nif (!allItems.length) throw new Error('Story Test Case generator did not produce any reusable or created Jira Test Cases.');\nconst perStoryMetrics = $('Robust Story Test Case Parser').all().map(item => item.json || {});\nconst storyMap = new Map();\nallItems.forEach((item) => { if (!storyMap.has(item.storyKey)) storyMap.set(item.storyKey, { storyKey: item.storyKey, storyId: item.storyId, summary: item.storySummary, storyCorrelationId: item.storyCorrelationId, storyLink: item.storyLink }); });\nconst stories = Array.from(storyMap.values());\nconst testCases = allItems.map((item) => ({ action: item.action, testcaseKey: item.testcaseKey, testcaseId: item.testcaseId, testcaseSummary: item.testCaseSummary, testcaseLink: item.testcaseLink, storyKey: item.storyKey, storySummary: item.storySummary, stableLabel: item.stableLabel, priority: item.priority, riskLevel: item.riskLevel, testType: item.testType, testLevel: item.testLevel, testCategory: item.testCategory, automationFeasibility: item.automationFeasibility, requirementReference: item.requirementReference }));\nconst mappings = allItems.map((item) => ({ storyKey: item.storyKey, storySummary: item.storySummary, testcaseKey: item.testcaseKey, testcaseSummary: item.testCaseSummary, action: item.action }));\nconst wordCount = perStoryMetrics.reduce((sum, item) => sum + Number(item.storyWordCount || 0), 0);\nconst tokensInput = perStoryMetrics.reduce((sum, item) => sum + Number(item.storyTokensInput || 0), 0);\nconst tokensOutput = perStoryMetrics.reduce((sum, item) => sum + Number(item.storyTokensOutput || 0), 0);\nconst estimatedCostUsd = Number(perStoryMetrics.reduce((sum, item) => sum + Number(item.storyEstimatedCostUsd || 0), 0).toFixed(6));\nconst first = allItems[0];\nreturn [{ json: { documentType: 'story_test_cases', jobId: first.jobId, projectId: first.projectId, projectName: first.projectName, sourceUserStoryJobId: first.storySourceJobId || null, stories, testCases, mappings, jira: { projectKey: first.jiraProjectKey, created: testCases.filter(item => item.action === 'created').length, reused: testCases.filter(item => item.action === 'reused').length }, wordCount, tokensInput, tokensOutput, tokensTotal: tokensInput + tokensOutput, estimatedCostUsd } }];"
+        },
+        "executeOnce": true
+      },
+      {
+        "id": "f58b8235-2c84-4521-b28b-efc93ae9ea9a",
+        "name": "Normalize Existing Story Test Case",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3040,
+          208
+        ],
+        "parameters": {
+          "jsCode": "const expandedItems = $('Expand Story Test Case Items').all().map((item) => item.json || {});\nconst searchItems = $input.all().map((item) => item.json || {});\n\nreturn searchItems.map((search, index) => {\n  const source = expandedItems[index] || expandedItems.find((item) => item.testCaseIndex === index + 1) || expandedItems[0] || {};\n  const existing = Array.isArray(search.issues) ? search.issues[0] : null;\n  if (!existing?.key) throw new Error('Expected an existing Jira Test Case issue for stable label ' + source.stableLabel + ' but none was returned.');\n  return {\n    json: {\n      ...source,\n      action: 'reused',\n      testcaseKey: existing.key,\n      testcaseId: existing.id || null,\n      testcaseSelf: existing.self || null,\n      testcaseLink: source.jiraBaseUrl + '/browse/' + existing.key\n    }\n  };\n});"
+        }
+      }
+    ],
+    "connections": {
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "Normalize Story Test Case Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize Story Test Case Request": {
+        "main": [
+          [
+            {
+              "node": "Fetch Completed User Story Jobs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Completed User Story Jobs": {
+        "main": [
+          [
+            {
+              "node": "Build Story Source Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Story Source Items": {
+        "main": [
+          [
+            {
+              "node": "Fetch Jira Story Issue",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Jira Story Issue": {
+        "main": [
+          [
+            {
+              "node": "Prepare Story Test Case Prompt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Story Test Case Prompt": {
+        "main": [
+          [
+            {
+              "node": "Story Test Case Generator",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Story Test Case Generator": {
+        "main": [
+          [
+            {
+              "node": "Robust Story Test Case Parser",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Story Test Case Generator",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Robust Story Test Case Parser": {
+        "main": [
+          [
+            {
+              "node": "Expand Story Test Case Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Expand Story Test Case Items": {
+        "main": [
+          [
+            {
+              "node": "Search Existing Test Case By Stable Label",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Search Existing Test Case By Stable Label": {
+        "main": [
+          [
+            {
+              "node": "Test Case Needs Create?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Test Case Needs Create?": {
+        "main": [
+          [
+            {
+              "node": "Create Jira Test Case",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Normalize Existing Story Test Case",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Jira Test Case": {
+        "main": [
+          [
+            {
+              "node": "Link Created Test Case To Story",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Link Created Test Case To Story": {
+        "main": [
+          [
+            {
+              "node": "Normalize Created Story Test Case",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize Created Story Test Case": {
+        "main": [
+          [
+            {
+              "node": "Upsert Story Test Case Mapping",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upsert Story Test Case Mapping": {
+        "main": [
+          [
+            {
+              "node": "Finalize Story Test Case Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize Existing Story Test Case": {
+        "main": [
+          [
+            {
+              "node": "Upsert Story Test Case Mapping",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "availableInMCP": true,
+      "binaryMode": "separate"
+    },
+    "staticData": null,
+    "meta": {
+      "aiBuilderAssisted": true,
+      "builderVariant": "mcp"
+    },
+    "pinData": {},
+    "versionId": "908a8026-06f4-4b09-acaf-304b51684e2d",
+    "activeVersionId": "908a8026-06f4-4b09-acaf-304b51684e2d",
+    "versionCounter": 58,
+    "triggerCount": 0,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-05-12T14:13:40.574Z",
+        "createdAt": "2026-05-12T14:13:40.574Z",
+        "role": "workflow:owner",
+        "workflowId": "SG7khcKlhHst48WH",
+        "projectId": "yL9RuH1JDK0PNYdi",
+        "project": {
+          "updatedAt": "2025-09-23T18:14:55.316Z",
+          "createdAt": "2025-09-23T18:14:01.272Z",
+          "id": "yL9RuH1JDK0PNYdi",
+          "name": "Anuj Alhans <aonu123@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

@@ -1,5 +1,5 @@
-const SUPABASE_URL = 'https://ifnznfspkjayhnooncrv.supabase.co'
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt'
+export const SUPABASE_URL = 'https://ifnznfspkjayhnooncrv.supabase.co'
+export const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt'
 
 const SESSION_KEY = 'qops-agent-supabase-session'
 

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Solution Marketplace - Q-Ops Agent</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#b9c7df",
+                        "on-surface": "#1b1b24",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "outline-variant": "#c7c4d8",
+                        "on-tertiary-container": "#ffd2be",
+                        "on-secondary-container": "#57657a",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-primary-container": "#dad7ff",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "error-container": "#ffdad6",
+                        "background": "#fcf8ff",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#7b2f00",
+                        "tertiary": "#7e3000",
+                        "surface": "#fcf8ff",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e4e1ee",
+                        "on-background": "#1b1b24",
+                        "on-primary-fixed": "#0f0069",
+                        "inverse-on-surface": "#f3effc",
+                        "tertiary-container": "#a44100",
+                        "secondary-container": "#d5e3fc",
+                        "surface-dim": "#dcd8e5",
+                        "primary-container": "#4f46e5",
+                        "inverse-surface": "#302f39",
+                        "tertiary-fixed": "#ffdbcc",
+                        "surface-container": "#f0ecf9",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f5f2ff",
+                        "surface-bright": "#fcf8ff",
+                        "outline": "#777587",
+                        "inverse-primary": "#c3c0ff",
+                        "secondary-fixed": "#d5e3fc",
+                        "secondary": "#515f74",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "primary-fixed": "#e2dfff",
+                        "primary": "#3525cd",
+                        "surface-container-high": "#eae6f4",
+                        "surface-container-highest": "#e4e1ee",
+                        "on-tertiary-fixed": "#351000",
+                        "on-surface-variant": "#464555",
+                        "surface-tint": "#4d44e3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "lg": "24px",
+                        "gutter": "24px",
+                        "xl": "48px",
+                        "md": "16px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "container-max": "1440px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ai-suggestion-border {
+            border-image: linear-gradient(to right, #4f46e5, transparent) 1;
+            border-left-width: 2px;
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-surface antialiased">
+<!-- Sidebar Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full w-64 border-r border-slate-200 bg-slate-50 dark:bg-slate-900 flex flex-col py-6 z-50">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">hub</span>
+</div>
+<div>
+<h1 class="text-lg font-black text-indigo-600 tracking-wide">Enterprise QA</h1>
+<p class="text-[10px] text-slate-500 font-medium">V2.4.0-Stable</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-inter text-sm tracking-wide">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-indigo-50 text-indigo-700 border-r-4 border-indigo-600 rounded-lg font-semibold transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="font-inter text-sm tracking-wide">Artifacts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-inter text-sm tracking-wide">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-inter text-sm tracking-wide">Settings</span>
+</a>
+</nav>
+<div class="px-4 mt-auto space-y-1 border-t border-slate-200 pt-6">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-inter text-sm tracking-wide">Documentation</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">support_agent</span>
+<span class="font-inter text-sm tracking-wide">Support</span>
+</a>
+<button class="w-full mt-4 bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-indigo-700 transition-colors">
+<span class="material-symbols-outlined text-sm">add</span>
+                New Run
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen flex flex-col">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-40 bg-white border-b border-slate-200 px-6 py-3 flex justify-between items-center w-full">
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 w-80">
+<span class="material-symbols-outlined text-slate-400 mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full placeholder:text-slate-400" placeholder="Search solutions..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 text-slate-600 hover:bg-slate-50 rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-indigo-600 rounded-full border-2 border-white"></span>
+</button>
+<button class="p-2 text-slate-600 hover:bg-slate-50 rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+<button class="bg-primary-container text-white px-4 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-2 hover:opacity-90 transition-all">
+                    Create Project
+                </button>
+<div class="ml-2 w-8 h-8 rounded-full bg-slate-200 overflow-hidden border border-slate-300">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a software engineer in a modern office setting. The lighting is soft and natural, emphasizing a clean, corporate light-mode aesthetic. The individual has a confident, approachable expression, fitting a high-end enterprise environment with minimalist design sensibilities and precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKKX_fPe6N_2geySfKt7cPITcZS7KczSKqMG4hFytruHuHpkKETVUnEIDmmFek54lKYcJD4MQ5WBSGGUUlxxkBNnEHuyZ2AfSBBcy4_5x8caexLu3jqB8-M-DGH8W6kUM6WiRCbXBF3OlJZtzfbwOgc8tQZqPvoC0oJXkFs0riUYFZelCM5r3LNymAQNgGVrQjxC268WI5cSB3I958ERsobXFk1TjKFg4ffkAGgTcUOBkJE1GXkRcliiRQUBP67xQFOD5cCTLonwtW"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="flex-1 p-lg">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-2 text-body-sm mb-md">
+<span class="text-slate-500">Delivery Intelligence</span>
+<span class="material-symbols-outlined text-slate-300 text-sm">chevron_right</span>
+<span class="font-semibold text-indigo-600">Solutions</span>
+</nav>
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-lg">
+<div>
+<h2 class="font-display-lg text-display-lg text-on-surface">Solution Marketplace</h2>
+<p class="text-slate-500 mt-1">Discover and deploy reusable QA frameworks and engineering modules across the organization.</p>
+</div>
+<button class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-sm hover:bg-indigo-700 transition-all">
+<span class="material-symbols-outlined">auto_fix_high</span>
+                    Contribute Solution
+                </button>
+</div>
+<!-- Bento Stats Grid -->
+<div class="grid grid-cols-12 gap-gutter mb-lg">
+<div class="col-span-4 bg-white p-6 rounded-xl border border-slate-200 flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-indigo-50 rounded-lg">
+<span class="material-symbols-outlined text-indigo-600">deployed_code</span>
+</div>
+<span class="text-emerald-600 text-xs font-bold bg-emerald-50 px-2 py-1 rounded">+12% vs LW</span>
+</div>
+<div class="mt-4">
+<p class="text-label-caps text-slate-500 uppercase tracking-widest">Active Solutions</p>
+<h3 class="text-headline-md font-bold mt-1">142</h3>
+</div>
+</div>
+<div class="col-span-4 bg-white p-6 rounded-xl border border-slate-200 flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-secondary-container/30 rounded-lg">
+<span class="material-symbols-outlined text-secondary">verified</span>
+</div>
+</div>
+<div class="mt-4">
+<p class="text-label-caps text-slate-500 uppercase tracking-widest">Global Confidence</p>
+<h3 class="text-headline-md font-bold mt-1">98.4%</h3>
+</div>
+</div>
+<div class="col-span-4 bg-indigo-600 p-6 rounded-xl text-white flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-white/20 rounded-lg">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+</div>
+<div class="mt-4">
+<p class="text-label-caps text-white/70 uppercase tracking-widest">Reusable Potential</p>
+<h3 class="text-headline-md font-bold mt-1">High Impact</h3>
+</div>
+</div>
+</div>
+<!-- AI Suggestion Box -->
+<div class="ai-suggestion-border bg-indigo-50/30 p-4 rounded-lg mb-lg flex items-center gap-4">
+<span class="material-symbols-outlined text-indigo-600" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<p class="text-body-sm text-slate-700">
+<span class="font-semibold">AI Recommendation:</span> The "End-to-End Visual Regression" suite is highly compatible with your current Project Alpha. Consider deploying for 40% faster test coverage.
+                </p>
+<button class="ml-auto text-indigo-600 text-sm font-bold hover:underline">Review Specs</button>
+</div>
+<!-- Data Table Container -->
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+<h3 class="font-title-sm text-slate-900">Available Solutions</h3>
+<div class="flex gap-2">
+<button class="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+                            Filter
+                        </button>
+<button class="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50">
+<span class="material-symbols-outlined text-sm">sort</span>
+                            Sort
+                        </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50/50">
+<th class="px-6 py-4 text-label-caps text-slate-800 border-b border-slate-200">Solution Title</th>
+<th class="px-6 py-4 text-label-caps text-slate-800 border-b border-slate-200">Summary</th>
+<th class="px-6 py-4 text-label-caps text-slate-800 border-b border-slate-200">Source Project</th>
+<th class="px-6 py-4 text-label-caps text-slate-800 border-b border-slate-200">Visibility</th>
+<th class="px-6 py-4 text-label-caps text-slate-800 border-b border-slate-200">Confidence</th>
+<th class="px-6 py-4 text-label-caps text-slate-800 border-b border-slate-200">Technologies</th>
+<th class="px-6 py-4 text-label-caps text-slate-800 border-b border-slate-200">Status</th>
+<th class="px-6 py-4 text-label-caps text-slate-800 border-b border-slate-200">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="font-semibold text-slate-900">End-to-End Visual Regression</div>
+<div class="text-[10px] text-slate-400 mt-0.5">UID: SOL-001</div>
+</td>
+<td class="px-6 py-4 text-body-sm text-slate-600 max-w-xs truncate">Automated pixel-perfect UI validation across 12 viewports.</td>
+<td class="px-6 py-4 text-body-sm text-slate-600">Finance Gateway</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-xs text-indigo-700 bg-indigo-50 px-2 py-1 rounded-full w-fit font-medium">
+<span class="material-symbols-outlined text-[14px]">public</span>
+                                        Org-wide
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-12 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+<div class="bg-indigo-600 h-full w-[95%]"></div>
+</div>
+<span class="text-xs font-bold text-slate-700">95%</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-1">
+<span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">Cypress</span>
+<span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">Percy</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-xs font-semibold text-emerald-700 flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Ready
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<a class="text-indigo-600 font-semibold text-sm hover:text-indigo-800" href="#">Preview</a>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="font-semibold text-slate-900">API Payload Interceptor</div>
+<div class="text-[10px] text-slate-400 mt-0.5">UID: SOL-004</div>
+</td>
+<td class="px-6 py-4 text-body-sm text-slate-600 max-w-xs truncate">Middleware for dynamic request modification during perf testing.</td>
+<td class="px-6 py-4 text-body-sm text-slate-600">Auth Core</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded-full w-fit font-medium">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+                                        Project
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-12 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+<div class="bg-indigo-600 h-full w-[82%]"></div>
+</div>
+<span class="text-xs font-bold text-slate-700">82%</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-1">
+<span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">Node.js</span>
+<span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">Jest</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-xs font-semibold text-amber-700 flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span> Draft
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<a class="text-indigo-600 font-semibold text-sm hover:text-indigo-800" href="#">Preview</a>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="font-semibold text-slate-900">Load Test Data Generator</div>
+<div class="text-[10px] text-slate-400 mt-0.5">UID: SOL-012</div>
+</td>
+<td class="px-6 py-4 text-body-sm text-slate-600 max-w-xs truncate">Synthetic user profile generator for K6 distributed tests.</td>
+<td class="px-6 py-4 text-body-sm text-slate-600">Analytics V2</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-xs text-indigo-700 bg-indigo-50 px-2 py-1 rounded-full w-fit font-medium">
+<span class="material-symbols-outlined text-[14px]">public</span>
+                                        Org-wide
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-12 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+<div class="bg-indigo-600 h-full w-[99%]"></div>
+</div>
+<span class="text-xs font-bold text-slate-700">99%</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-1">
+<span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">Go</span>
+<span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">Docker</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-xs font-semibold text-emerald-700 flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Ready
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<a class="text-indigo-600 font-semibold text-sm hover:text-indigo-800" href="#">Preview</a>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="font-semibold text-slate-900">OAuth2 Token Lifecycle Manager</div>
+<div class="text-[10px] text-slate-400 mt-0.5">UID: SOL-022</div>
+</td>
+<td class="px-6 py-4 text-body-sm text-slate-600 max-w-xs truncate">Automates token refresh and injection for multi-tenant tests.</td>
+<td class="px-6 py-4 text-body-sm text-slate-600">Enterprise SSO</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-xs text-indigo-700 bg-indigo-50 px-2 py-1 rounded-full w-fit font-medium">
+<span class="material-symbols-outlined text-[14px]">public</span>
+                                        Org-wide
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-12 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+<div class="bg-indigo-600 h-full w-[91%]"></div>
+</div>
+<span class="text-xs font-bold text-slate-700">91%</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-1">
+<span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">Python</span>
+<span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">AWS Lambda</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-xs font-semibold text-emerald-700 flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Ready
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<a class="text-indigo-600 font-semibold text-sm hover:text-indigo-800" href="#">Preview</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-body-sm text-slate-500">
+<span>Showing 4 of 142 solutions</span>
+<div class="flex gap-2">
+<button class="p-1 border border-slate-200 rounded hover:bg-white disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="p-1 border border-slate-200 rounded hover:bg-white">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Promotion / Help Card -->
+<div class="mt-lg grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<div class="bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 flex items-center gap-6">
+<div class="w-16 h-16 bg-white rounded-lg flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-indigo-600 text-3xl">school</span>
+</div>
+<div>
+<h4 class="font-semibold text-slate-900">Learn to Contribute</h4>
+<p class="text-body-sm text-slate-600 mb-2">Our internal engineering guide on publishing clean, reusable modules.</p>
+<a class="text-indigo-600 text-xs font-bold flex items-center gap-1 hover:underline" href="#">
+                            Read Guide <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</a>
+</div>
+</div>
+<div class="bg-slate-900 p-6 rounded-xl text-white relative overflow-hidden">
+<div class="relative z-10">
+<h4 class="font-semibold">Join the Q-Ops Beta</h4>
+<p class="text-body-sm text-slate-400 mb-3">Early access to autonomous agent-based testing scripts.</p>
+<button class="bg-white text-slate-900 px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-100 transition-colors">
+                            Apply for Access
+                        </button>
+</div>
+<!-- Abstract graphic element -->
+<div class="absolute right-0 bottom-0 opacity-20 transform translate-x-1/4 translate-y-1/4">
+<span class="material-symbols-outlined text-9xl">rocket_launch</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="mt-auto px-lg py-md text-center border-t border-slate-200 bg-white">
+<p class="text-[11px] text-slate-400 font-medium tracking-wider uppercase">© 2024 Enterprise QA Solutions | Confidential System</p>
+</footer>
+</main>
+</body></html>

@@ -22,7 +22,7 @@ export default function KnowledgeBaseForm({ onJobStarted, addToast }: Props) {
   const [frd, setFrd] = useState<File | null>(null)
   const [hld, setHld] = useState<File | null>(null)
   const [lld, setLld] = useState<File | null>(null)
-  const [transcript, setTranscript] = useState<File | null>(null)
+  const [transcripts, setTranscripts] = useState<File[]>([])
   const [images, setImages] = useState<File[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -32,7 +32,7 @@ export default function KnowledgeBaseForm({ onJobStarted, addToast }: Props) {
     setLoading(true)
     setError('')
     try {
-      const payload: KnowledgeBasePayload = { projectName, brd, frd, hld, lld, transcript, images }
+      const payload: KnowledgeBasePayload = { projectName, brd, frd, hld, lld, transcripts, images }
       const res = await uploadKnowledgeBase(payload)
       onJobStarted(res)
       addToast({ title: 'Ingestion started', message: 'Knowledge base ingestion queued.', type: 'info' })
@@ -51,7 +51,7 @@ export default function KnowledgeBaseForm({ onJobStarted, addToast }: Props) {
     setFrd(null)
     setHld(null)
     setLld(null)
-    setTranscript(null)
+    setTranscripts([])
     setImages([])
     setError('')
     addToast({ title: 'Form reset', message: 'All files and data have been cleared.', type: 'info' })
@@ -89,7 +89,15 @@ export default function KnowledgeBaseForm({ onJobStarted, addToast }: Props) {
         <Card>
           <p className="mb-3 text-sm font-semibold text-on-surface">Supporting Assets</p>
           <div className="space-y-3">
-            <FileDropField label="Transcript file" accept=".txt" value={transcript} onChange={setFile(setTranscript)} icon={<Mic className="h-4 w-4 text-on-surface-variant" />} />
+            <FileDropField
+              label="Transcript files"
+              accept=".txt"
+              multiple
+              value={transcripts}
+              onChange={(v) => setTranscripts(Array.isArray(v) ? v : v ? [v] : [])}
+              helper="Upload one or more meeting notes or transcript files."
+              icon={<Mic className="h-4 w-4 text-on-surface-variant" />}
+            />
             <FileDropField
               label="UI designs"
               accept=".jpg,.png"

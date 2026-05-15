@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#b9c7df",
+                        "on-surface": "#1b1b24",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "outline-variant": "#c7c4d8",
+                        "on-tertiary-container": "#ffd2be",
+                        "on-secondary-container": "#57657a",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-primary-container": "#dad7ff",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "error-container": "#ffdad6",
+                        "background": "#fcf8ff",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#7b2f00",
+                        "tertiary": "#7e3000",
+                        "surface": "#fcf8ff",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e4e1ee",
+                        "on-background": "#1b1b24",
+                        "on-primary-fixed": "#0f0069",
+                        "inverse-on-surface": "#f3effc",
+                        "tertiary-container": "#a44100",
+                        "secondary-container": "#d5e3fc",
+                        "surface-dim": "#dcd8e5",
+                        "primary-container": "#4f46e5",
+                        "inverse-surface": "#302f39",
+                        "tertiary-fixed": "#ffdbcc",
+                        "surface-container": "#f0ecf9",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f5f2ff",
+                        "surface-bright": "#fcf8ff",
+                        "outline": "#777587",
+                        "inverse-primary": "#c3c0ff",
+                        "secondary-fixed": "#d5e3fc",
+                        "secondary": "#515f74",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "primary-fixed": "#e2dfff",
+                        "primary": "#3525cd",
+                        "surface-container-high": "#eae6f4",
+                        "surface-container-highest": "#e4e1ee",
+                        "on-tertiary-fixed": "#351000",
+                        "on-surface-variant": "#464555",
+                        "surface-tint": "#4d44e3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "lg": "24px",
+                        "gutter": "24px",
+                        "xl": "48px",
+                        "md": "16px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "container-max": "1440px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ai-suggestion-box {
+            border-left: 2px solid;
+            border-image: linear-gradient(to bottom, #4f46e5, transparent) 1;
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-background">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full w-64 border-r border-slate-200 bg-slate-50 flex flex-col py-6 z-50">
+<div class="px-6 mb-8">
+<h2 class="text-lg font-black text-indigo-600">Enterprise QA</h2>
+<p class="text-xs text-slate-500 font-inter">V2.4.0-Stable</p>
+</div>
+<nav class="flex-1 space-y-1 px-3">
+<a class="flex items-center px-3 py-2 text-slate-500 hover:bg-slate-100 transition-all duration-200 ease-in-out group" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-inter text-sm tracking-wide">Dashboard</span>
+</a>
+<a class="flex items-center px-3 py-2 bg-indigo-50 text-indigo-700 border-r-4 border-indigo-600 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">inventory_2</span>
+<span class="font-inter text-sm tracking-wide">Artifacts</span>
+</a>
+<a class="flex items-center px-3 py-2 text-slate-500 hover:bg-slate-100 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">analytics</span>
+<span class="font-inter text-sm tracking-wide">Analytics</span>
+</a>
+<a class="flex items-center px-3 py-2 text-slate-500 hover:bg-slate-100 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="font-inter text-sm tracking-wide">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-3 space-y-1 pt-6 border-t border-slate-200">
+<a class="flex items-center px-3 py-2 text-slate-500 hover:bg-slate-100 transition-all" href="#">
+<span class="material-symbols-outlined mr-3">menu_book</span>
+<span class="font-inter text-sm tracking-wide">Documentation</span>
+</a>
+<a class="flex items-center px-3 py-2 text-slate-500 hover:bg-slate-100 transition-all" href="#">
+<span class="material-symbols-outlined mr-3">support_agent</span>
+<span class="font-inter text-sm tracking-wide">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 bg-white border-b border-slate-200 flex justify-between items-center w-full px-6 py-3">
+<div class="flex items-center space-x-4">
+<span class="text-xl font-bold tracking-tight text-slate-900">Q-Ops Agent</span>
+<div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+<!-- Breadcrumbs -->
+<nav class="flex items-center space-x-2 text-sm font-medium">
+<span class="text-slate-400">Delivery Intelligence</span>
+<span class="material-symbols-outlined text-slate-300 text-base">chevron_right</span>
+<span class="text-indigo-600 font-semibold">Learnings</span>
+</nav>
+</div>
+<div class="flex items-center space-x-4">
+<div class="relative group">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+<span class="material-symbols-outlined text-sm">search</span>
+</span>
+<input class="pl-10 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none w-64 transition-all" placeholder="Search learnings..." type="text"/>
+</div>
+<div class="flex items-center space-x-2">
+<button class="p-2 text-slate-600 hover:bg-slate-50 transition-colors rounded">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-slate-600 hover:bg-slate-50 transition-colors rounded">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 text-slate-600 hover:bg-slate-50 transition-colors rounded">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<button class="bg-primary-container text-white px-4 py-2 rounded font-inter text-sm font-medium hover:bg-indigo-700 transition-all active:opacity-80">
+                    Create Project
+                </button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-slate-200">
+<img alt="User Profile" data-alt="A professional headshot of a software architect in a clean, modern workspace. The lighting is soft and natural, emphasizing a calm and focused professional demeanor. The background is a blurred high-end corporate office with minimalist furniture and cool blue tones, matching a high-tech enterprise aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFq4Fx-fMiGKuZliBxDaoEA4hnBjfxT7X4RO4gWqIJiniB0qU_QkaXEJXCUUGFswrchRuGzy3nd8TqUiiJKEVzw2rIHuTqhn6xp_DFDnD_4hHTDZqeKgMdGD6BkRUhDw-moqabukggmBZJj_bSLWxFFeLFjyGWZnqJGIdheoDDtT1HiKKpVhiwHIFkmIOYTVUoTI_njAag41CZe1ZhLOsgFT3NQ0vh1gBF10mC4aX81RLeOjKQIrHLyevvh0Mg5KLpVGkzc99J-9Rr"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-lg max-w-7xl mx-auto">
+<div class="flex justify-between items-end mb-lg">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface">Organizational Learnings</h1>
+<p class="text-on-surface-variant mt-2 max-w-2xl">A curated timeline of architectural insights, delivery breakthroughs, and quality assurance strategies derived from active engineering cycles.</p>
+</div>
+<div class="flex space-x-3">
+<div class="flex bg-surface-container rounded-lg p-1">
+<button class="px-4 py-1.5 rounded-md bg-white text-on-surface shadow-sm text-sm font-semibold">Timeline</button>
+<button class="px-4 py-1.5 rounded-md text-on-surface-variant text-sm font-medium hover:text-on-surface">Grid View</button>
+</div>
+<button class="flex items-center space-x-2 border border-outline-variant px-4 py-2 rounded text-sm font-medium hover:bg-slate-50">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+<span>Filter</span>
+</button>
+</div>
+</div>
+<!-- Knowledge Timeline -->
+<div class="relative">
+<!-- Vertical Line -->
+<div class="absolute left-8 top-0 bottom-0 w-px bg-slate-200"></div>
+<div class="space-y-12">
+<!-- Timeline Item 1 -->
+<div class="relative flex items-start group">
+<div class="absolute left-8 -translate-x-1/2 w-4 h-4 rounded-full bg-white border-2 border-indigo-600 z-10"></div>
+<div class="ml-16 w-full">
+<div class="flex items-center space-x-2 text-xs font-label-caps text-slate-500 mb-2 uppercase tracking-widest">
+<span>October 24, 2023</span>
+<span>•</span>
+<span class="text-indigo-600 font-bold">Latest Insight</span>
+</div>
+<div class="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300">
+<div class="flex justify-between items-start mb-4">
+<h3 class="font-headline-md text-headline-md text-slate-900">Distributed Tracing in Serverless Architecture</h3>
+<div class="flex space-x-2">
+<span class="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold">Architecture</span>
+<span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">High Impact</span>
+</div>
+</div>
+<p class="text-slate-600 leading-relaxed mb-6">
+                                    Transitioning to OpenTelemetry for cross-service observability reduced MTTR (Mean Time To Recovery) by 40% during complex downstream failures. The key learning was the injection of trace IDs at the API Gateway level rather than deep in the application layer.
+                                </p>
+<div class="ai-suggestion-box p-4 bg-slate-50 rounded-r-lg mb-6">
+<div class="flex items-center space-x-2 text-indigo-600 mb-2">
+<span class="material-symbols-outlined text-sm">auto_awesome</span>
+<span class="text-xs font-bold uppercase tracking-wider">Implementation Evidence</span>
+</div>
+<a class="text-indigo-600 hover:underline flex items-center space-x-1 text-sm font-medium" href="#">
+<span>View Jenkins Build Artifacts #992-B</span>
+<span class="material-symbols-outlined text-xs">open_in_new</span>
+</a>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100">
+<div class="flex items-center space-x-3">
+<img alt="Author" class="w-6 h-6 rounded-full" data-alt="A close-up portrait of a senior cloud engineer with a modern, tech-focused appearance. The setting is a minimalist studio with clean lines and soft, professional lighting. The color palette is composed of muted slates and whites, reflecting a corporate and reliable brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjn8bexjd-MJOrQy_kqLIm-HLZykqDA4WBRzdoFFE1PxcQAo-f215z94vgCI8QyOdi2jiKYUKzyxVFHVOvi8gPB_fCKRl7OdjUTnHBJFvLh1XVkF4QR9JJYQy87zrV3haS_PBhD1_vDG3q02Z0ZEc-pInPsGGl9xzJhVBSri90fWZWWQLxIeWiJCG4xjbGTV1YBC7njLmn4Cd1VUXoafiHXpgXnZEHf35TEpRRS8RYrGAff6Ly4JH3kuE1woakPArOTW3Bq7ItV_FQ"/>
+<span class="text-xs text-slate-500 font-medium">Contributed by Marcus Chen</span>
+</div>
+<button class="text-indigo-600 text-sm font-semibold flex items-center space-x-1 hover:translate-x-1 transition-transform">
+<span>Read Full Report</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Item 2 -->
+<div class="relative flex items-start group">
+<div class="absolute left-8 -translate-x-1/2 w-4 h-4 rounded-full bg-white border-2 border-slate-300 z-10 group-hover:border-indigo-400 transition-colors"></div>
+<div class="ml-16 w-full">
+<div class="flex items-center space-x-2 text-xs font-label-caps text-slate-500 mb-2 uppercase tracking-widest">
+<span>September 12, 2023</span>
+</div>
+<div class="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300">
+<div class="flex justify-between items-start mb-4">
+<h3 class="font-headline-md text-headline-md text-slate-900">Shift-Left Security in CI/CD Pipelines</h3>
+<div class="flex space-x-2">
+<span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">DevOps</span>
+<span class="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold">Critical Impact</span>
+</div>
+</div>
+<p class="text-slate-600 leading-relaxed mb-6">
+                                    Integrating static analysis directly into PR workflows discovered 12 critical vulnerabilities before production deployment. We learned that custom sonar-rules are necessary for organization-specific data handling policies.
+                                </p>
+<div class="ai-suggestion-box p-4 bg-slate-50 rounded-r-lg mb-6">
+<div class="flex items-center space-x-2 text-indigo-600 mb-2">
+<span class="material-symbols-outlined text-sm">auto_awesome</span>
+<span class="text-xs font-bold uppercase tracking-wider">Implementation Evidence</span>
+</div>
+<a class="text-indigo-600 hover:underline flex items-center space-x-1 text-sm font-medium" href="#">
+<span>Security Compliance Dashboard v4</span>
+<span class="material-symbols-outlined text-xs">open_in_new</span>
+</a>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100">
+<div class="flex items-center space-x-3">
+<img alt="Author" class="w-6 h-6 rounded-full" data-alt="A professional portrait of a security analyst in a contemporary office environment. The style is clean and minimal, with a bright light-mode aesthetic. The color palette focuses on sophisticated greys and indigo accents, reflecting precision and intelligence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFes9qi7lD7JgtuWc2s_NG0UvFqoYRmaGDkTpnosjljyYI2fN65Q_Bc67d4NudfCLCMDys8Kz7QI-YRglIQEYpCz2rNerVKdQrxdl0Oawq2EMO_ZB765290GGJwxigo34JifkAr0oiapT8WZLh_FMavPO6BMhRG0U1N9Hx5G4_VH43XPebauKLmcQah83-JA4M0C0rvIRAk_97xPwP66LDE4XGwmubydurs_c3zsU6XrBqDtHSV4YuTCAjHRik1bfvRWVOsZ-09_SN"/>
+<span class="text-xs text-slate-500 font-medium">Contributed by Sarah Jenkins</span>
+</div>
+<button class="text-indigo-600 text-sm font-semibold flex items-center space-x-1 hover:translate-x-1 transition-transform">
+<span>Read Full Report</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Item 3 (QA Focus) -->
+<div class="relative flex items-start group">
+<div class="absolute left-8 -translate-x-1/2 w-4 h-4 rounded-full bg-white border-2 border-slate-300 z-10 group-hover:border-indigo-400 transition-colors"></div>
+<div class="ml-16 w-full">
+<div class="flex items-center space-x-2 text-xs font-label-caps text-slate-500 mb-2 uppercase tracking-widest">
+<span>August 30, 2023</span>
+</div>
+<div class="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300">
+<div class="flex justify-between items-start mb-4">
+<h3 class="font-headline-md text-headline-md text-slate-900">Contract Testing for Microservices</h3>
+<div class="flex space-x-2">
+<span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">QA</span>
+<span class="px-2.5 py-0.5 rounded-full bg-slate-50 text-slate-600 text-xs font-semibold">Medium Impact</span>
+</div>
+</div>
+<p class="text-slate-600 leading-relaxed mb-6">
+                                    Pact-based contract testing replaced brittle E2E tests for internal service communication. This shift improved CI speeds by 65% and eliminated 100% of integration-related production rollbacks in the last quarter.
+                                </p>
+<div class="ai-suggestion-box p-4 bg-slate-50 rounded-r-lg mb-6">
+<div class="flex items-center space-x-2 text-indigo-600 mb-2">
+<span class="material-symbols-outlined text-sm">auto_awesome</span>
+<span class="text-xs font-bold uppercase tracking-wider">Implementation Evidence</span>
+</div>
+<a class="text-indigo-600 hover:underline flex items-center space-x-1 text-sm font-medium" href="#">
+<span>Pact Broker Logs (Project X)</span>
+<span class="material-symbols-outlined text-xs">open_in_new</span>
+</a>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100">
+<div class="flex items-center space-x-3">
+<img alt="Author" class="w-6 h-6 rounded-full" data-alt="A sharp, professional headshot of a software tester in a bright, modern corporate environment. The lighting is crisp and high-key, using a light mode aesthetic with white and light grey backgrounds. Indigo accents in the room decor tie the scene together with the brand's primary color." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuV4zvXwjUQ3I5ZcaAuLBmDzZMI94Y288QydbbIS-3oDiD-iOmTKNpJ81LerJ3ZgYXsqNl4GqrBfEmwWctWXeCaWaV91SIaaAY6_h8mEF6upyS8m3_Bcd6cucvji7m-7I3XoA5YTh9zSNJPRpoNWMHUFTjDFifQY9vT-sJanSWnuYgHkc2Y_7HSD5UH5JLPVG59XRWB6kyjwpcJk4gU99h7MSFRV8TxknJN4CHT8QkjI6oVZ5trC5uhd43uadSI25eUl4bUVdrMQfY"/>
+<span class="text-xs text-slate-500 font-medium">Contributed by Elena Rodriguez</span>
+</div>
+<button class="text-indigo-600 text-sm font-semibold flex items-center space-x-1 hover:translate-x-1 transition-transform">
+<span>Read Full Report</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Load More Section -->
+<div class="mt-xl flex justify-center pb-xl">
+<button class="flex items-center space-x-2 bg-white border border-slate-200 px-6 py-2.5 rounded-full text-slate-600 font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all">
+<span>Explore Older Learnings</span>
+<span class="material-symbols-outlined">expand_more</span>
+</button>
+</div>
+</div>
+</main>
+<!-- FAB Contextual (Only for relevant screens) -->
+<div class="fixed bottom-8 right-8 z-50">
+<button class="bg-indigo-600 text-white w-14 h-14 rounded-full shadow-xl flex items-center justify-center hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all group">
+<span class="material-symbols-outlined text-3xl">add</span>
+<span class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-1.5 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">Submit Learning</span>
+</button>
+</div>
+</body></html>

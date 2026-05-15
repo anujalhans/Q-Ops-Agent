@@ -1,0 +1,409 @@
+- generic [ref=e548]:
+  - complementary [ref=e549]:
+    - generic [ref=e550]:
+      - img [ref=e552]
+      - generic [ref=e557]:
+        - heading "Q-Ops Agent" [level=1] [ref=e558]
+        - paragraph [ref=e559]: A Purpose-Built AI System for QA Engineering
+    - navigation [ref=e561]:
+      - generic [ref=e562]:
+        - generic [ref=e563]: QA Intelligence
+        - generic [ref=e564]:
+          - button "Dashboard" [ref=e565] [cursor=pointer]:
+            - img [ref=e566]
+            - generic [ref=e571]: Dashboard
+          - button "Artifacts" [ref=e572] [cursor=pointer]:
+            - img [ref=e573]
+            - generic [ref=e576]: Artifacts
+          - button "Doc Gen" [ref=e577] [cursor=pointer]:
+            - img [ref=e578]
+            - generic [ref=e581]: Doc Gen
+          - button "Knowledge Base" [ref=e582] [cursor=pointer]:
+            - img [ref=e583]
+            - generic [ref=e585]: Knowledge Base
+          - button "Analytics" [ref=e586] [cursor=pointer]:
+            - img [ref=e587]
+            - generic [ref=e589]: Analytics
+      - generic [ref=e590]:
+        - generic [ref=e591]: Delivery Intelligence
+        - generic [ref=e592]:
+          - button "DI Overview" [ref=e593] [cursor=pointer]:
+            - img [ref=e594]
+            - generic [ref=e602]: DI Overview
+          - button "Project Profile" [ref=e603] [cursor=pointer]:
+            - img [ref=e604]
+            - generic [ref=e612]: Project Profile
+          - button "Onboarding" [ref=e613] [cursor=pointer]:
+            - img [ref=e614]
+            - generic [ref=e616]: Onboarding
+          - button "Discovery" [ref=e617] [cursor=pointer]:
+            - img [ref=e618]
+            - generic [ref=e621]: Discovery
+          - button "Solutions" [ref=e622] [cursor=pointer]:
+            - img [ref=e623]
+            - generic [ref=e627]: Solutions
+          - button "Governance" [ref=e628] [cursor=pointer]:
+            - img [ref=e629]
+            - generic [ref=e632]: Governance
+          - button "Similarity" [ref=e633] [cursor=pointer]:
+            - img [ref=e634]
+            - generic [ref=e639]: Similarity
+          - button "Technologies" [ref=e640] [cursor=pointer]:
+            - img [ref=e641]
+            - generic [ref=e646]: Technologies
+          - button "Recommendations" [ref=e647] [cursor=pointer]:
+            - img [ref=e648]
+            - generic [ref=e651]: Recommendations
+          - button "Learnings" [ref=e652] [cursor=pointer]:
+            - img [ref=e653]
+            - generic [ref=e655]: Learnings
+          - button "Relationships" [ref=e656] [cursor=pointer]:
+            - img [ref=e657]
+            - generic [ref=e658]: Relationships
+    - generic [ref=e659]:
+      - button "Settings" [ref=e660] [cursor=pointer]:
+        - img [ref=e661]
+        - generic [ref=e664]: Settings
+      - button "Documentation" [ref=e665] [cursor=pointer]:
+        - img [ref=e666]
+        - generic [ref=e668]: Documentation
+  - main [ref=e669]:
+    - generic [ref=e670]:
+      - button "Search operations... Ctrl K" [ref=e671] [cursor=pointer]:
+        - img [ref=e672]
+        - generic [ref=e675]: Search operations...
+        - generic [ref=e676]: Ctrl K
+      - generic [ref=e677]:
+        - button "Toggle theme" [ref=e678] [cursor=pointer]:
+          - img [ref=e679]
+        - button "Notifications" [ref=e681] [cursor=pointer]:
+          - img [ref=e682]
+          - generic [ref=e685]: "62"
+        - button "Help" [ref=e686] [cursor=pointer]:
+          - img [ref=e687]
+        - generic [ref=e691]:
+          - generic [ref=e692]:
+            - paragraph [ref=e693]: Admin User
+            - paragraph [ref=e694]: Admin
+          - img "User profile" [ref=e695]
+          - button "Logout" [ref=e696] [cursor=pointer]
+    - generic [ref=e698]:
+      - generic [ref=e699]:
+        - generic [ref=e700]:
+          - heading "Document Generation" [level=2] [ref=e963]
+          - paragraph [ref=e702]: Generate QA deliverables and review recent generated outputs.
+        - generic [ref=e703]:
+          - button "View Audit Log" [ref=e704] [cursor=pointer]:
+            - img [ref=e705]
+            - text: View Audit Log
+          - button "New Project" [ref=e709] [cursor=pointer]:
+            - img [ref=e710]
+            - text: New Project
+      - generic [ref=e964]:
+        - generic [ref=e966]:
+          - generic [ref=e968]:
+            - generic [ref=e969]:
+              - paragraph [ref=e970]: QA Intelligence workspace
+              - heading "Document Generation" [level=3] [ref=e971]
+              - paragraph [ref=e972]: Select a retrieval-ready project, choose the deliverable, and create polished QA outputs with clear visibility into recent results.
+            - generic [ref=e973]: Generation workflow
+          - generic [ref=e974]:
+            - button "1. Knowledge Base" [ref=e975] [cursor=pointer]
+            - button "2. Generate Documents" [pressed] [ref=e976] [cursor=pointer]
+            - generic [ref=e977]: Workspace
+          - generic [ref=e978]:
+            - generic [ref=e979]:
+              - generic [ref=e980]:
+                - generic [ref=e981]:
+                  - paragraph [ref=e982]: Generation flow
+                  - heading "Create QA deliverables from a retrieval-ready project" [level=4] [ref=e983]
+                  - paragraph [ref=e984]: Pick the project, choose the artifact type, and Q-Ops will generate the deliverable using the underlying knowledge base and workflow routing.
+                - generic [ref=e985]:
+                  - generic [ref=e986]:
+                    - paragraph [ref=e987]: Available projects
+                    - paragraph [ref=e988]: "4"
+                    - paragraph [ref=e989]: Ready or assigned projects
+                  - generic [ref=e990]:
+                    - paragraph [ref=e991]: Selected artifact
+                    - paragraph [ref=e992]: Story Test Cases
+                    - paragraph [ref=e993]: Output type to generate
+              - generic [ref=e995]:
+                - text: Project name
+                - combobox "Project name Choose the project whose knowledge base should be used for retrieval." [ref=e996]:
+                  - option "Select a project"
+                  - option "ShopSmart" [selected]
+                  - option "E2E-QOPS-20260509-171521"
+                  - option "UISmoleTest"
+                  - option "Codex Smoke Project 20260507-163940"
+                - generic [ref=e997]: Choose the project whose knowledge base should be used for retrieval.
+              - generic [ref=e998]:
+                - generic [ref=e999]:
+                  - paragraph [ref=e1000]: Select deliverable
+                  - paragraph [ref=e1001]: Choose the artifact Q-Ops should create from the selected project context.
+                - generic [ref=e1002]:
+                  - generic [ref=e1003] [cursor=pointer]:
+                    - radio "Test Strategy Generate Test Strategy from your knowledge base." [ref=e1004]
+                    - generic [ref=e1006]:
+                      - text: Test Strategy
+                      - generic [ref=e1007]: Generate Test Strategy from your knowledge base.
+                  - generic [ref=e1008] [cursor=pointer]:
+                    - radio "Test Plan Generate Test Plan from your knowledge base." [ref=e1009]
+                    - generic [ref=e1011]:
+                      - text: Test Plan
+                      - generic [ref=e1012]: Generate Test Plan from your knowledge base.
+                  - generic [ref=e1013] [cursor=pointer]:
+                    - radio "Risk Matrix Generate Risk Matrix from your knowledge base." [ref=e1014]
+                    - generic [ref=e1016]:
+                      - text: Risk Matrix
+                      - generic [ref=e1017]: Generate Risk Matrix from your knowledge base.
+                  - generic [ref=e1018] [cursor=pointer]:
+                    - radio "Story Test Cases Generate Jira Test Case issues from existing Epics & User Stories for this project. Selected" [checked] [ref=e1283]
+                    - generic [ref=e1020]:
+                      - generic [ref=e1021]:
+                        - text: Story Test Cases
+                        - generic [ref=e1022]: Generate Jira Test Case issues from existing Epics & User Stories for this project.
+                      - generic [ref=e1284]: Selected
+                  - generic [ref=e1025] [cursor=pointer]:
+                    - radio "Epics & User Stories Generate Epics & User Stories from your knowledge base." [ref=e1026]
+                    - generic [ref=e1028]:
+                      - text: Epics & User Stories
+                      - generic [ref=e1029]: Generate Epics & User Stories from your knowledge base.
+                  - generic [ref=e1030] [cursor=pointer]:
+                    - radio "Traceability Matrix Generate Traceability Matrix from your knowledge base." [ref=e1031]
+                    - generic [ref=e1033]:
+                      - text: Traceability Matrix
+                      - generic [ref=e1034]: Generate Traceability Matrix from your knowledge base.
+                - generic [ref=e1285]:
+                  - paragraph [ref=e1286]: Story Test Cases
+                  - paragraph [ref=e1287]: Generate Jira Test Case issues from existing Epics & User Stories for this project.
+              - generic [ref=e1035]:
+                - button "Reset" [ref=e1036] [cursor=pointer]
+                - button "Generate Documents" [ref=e1037] [cursor=pointer]
+            - generic [ref=e1038]:
+              - generic [ref=e1039]:
+                - generic [ref=e1040]:
+                  - heading "Recent generated outputs" [level=3] [ref=e1041]
+                  - paragraph [ref=e1042]: Your latest successful and in-flight deliverables appear here for quick follow-up.
+                - generic [ref=e1043]: 78 tracked outputs
+              - generic [ref=e1044]:
+                - generic [ref=e1389]:
+                  - generic [ref=e1390]:
+                    - paragraph [ref=e1391]: story_test_cases
+                    - paragraph [ref=e1392]: ShopSmart
+                    - paragraph [ref=e1393]: May 12, 05:59 PM
+                  - generic [ref=e1395]: failed
+                - generic [ref=e1361]:
+                  - generic [ref=e1362]:
+                    - paragraph [ref=e1363]: story_test_cases
+                    - paragraph [ref=e1364]: ShopSmart
+                    - paragraph [ref=e1365]: May 12, 05:43 PM
+                  - generic [ref=e1367]: failed
+                - generic [ref=e1288]:
+                  - generic [ref=e1289]:
+                    - paragraph [ref=e1290]: story_test_cases
+                    - paragraph [ref=e1291]: ShopSmart
+                    - paragraph [ref=e1292]: May 12, 05:35 PM
+                  - generic [ref=e1294]: failed
+                - generic [ref=e1045]:
+                  - generic [ref=e1046]:
+                    - paragraph [ref=e1047]: user_stories
+                    - paragraph [ref=e1048]: ShopSmart
+                    - paragraph [ref=e1049]: May 12, 07:13 AM
+                  - generic [ref=e1050]:
+                    - generic [ref=e1051]: completed
+                    - link "Open" [ref=e1052] [cursor=pointer]:
+                      - /url: https://anujalhans1.atlassian.net/wiki/spaces/TD/pages/19496961/ShopSmart+Agile+Backlog+Epics+and+User+Stories+-+ShopSmart
+                      - text: Open
+                      - img [ref=e1053]
+                - generic [ref=e1057]:
+                  - generic [ref=e1058]:
+                    - paragraph [ref=e1059]: user_stories
+                    - paragraph [ref=e1060]: ShopSmart
+                    - paragraph [ref=e1061]: May 12, 07:04 AM
+                  - generic [ref=e1063]: failed
+        - generic [ref=e1090]:
+          - generic [ref=e1091]:
+            - generic [ref=e1092]:
+              - heading "Job Status" [level=3] [ref=e1093]
+              - img [ref=e1094]
+            - generic [ref=e1099]:
+              - generic [ref=e1295]:
+                - paragraph [ref=e1296]: failed
+                - paragraph [ref=e1297]: 15%
+              - paragraph [ref=e1300]: "Job ID: STC-260512-Q8YV8Q"
+              - paragraph [ref=e1301]: The backend could not finish this document generation request.
+              - generic [ref=e1303]:
+                - img [ref=e1424]
+                - generic [ref=e1307]:
+                  - paragraph [ref=e1308]: Document generation could not be completed
+                  - paragraph [ref=e1309]: Please retry the job. If the issue repeats, ask an admin to review the workflow execution.
+                  - paragraph [ref=e1310]: Story Test Cases Failed
+          - generic [ref=e1427]:
+            - img [ref=e1429]
+            - generic [ref=e1431]:
+              - paragraph [ref=e1432]: Story Test Cases Failed
+              - heading "Document generation could not be completed" [level=3] [ref=e1433]
+              - paragraph [ref=e1434]: The backend could not finish this document generation request.
+              - paragraph [ref=e1435]: Please retry the job. If the issue repeats, ask an admin to review the workflow execution.
+              - generic [ref=e1436]:
+                - generic [ref=e1437]: "Job ID: STC-260512-Q8YV8Q"
+                - generic [ref=e1438]: "Failed: May 12, 11:30 PM"
+              - button "Retry Job" [ref=e1440] [cursor=pointer]:
+                - img [ref=e1441]
+                - text: Retry Job
+              - group [ref=e1446]:
+                - generic "Show technical details" [ref=e1447] [cursor=pointer]
+          - generic [ref=e1100]:
+            - generic [ref=e1101]:
+              - heading "My Document Jobs" [level=3] [ref=e1102]
+              - paragraph [ref=e1103]: Track multiple generation requests and retry failed runs.
+            - generic [ref=e1104]:
+              - generic [ref=e1399]:
+                - generic [ref=e1400]:
+                  - generic [ref=e1401]:
+                    - paragraph [ref=e1402]: story_test_cases
+                    - paragraph [ref=e1403]: ShopSmart
+                  - generic [ref=e1404]: failed
+                - generic [ref=e1405]:
+                  - generic [ref=e1406]: "Job ID: STC-260512-Q8YV8Q"
+                  - generic [ref=e1407]: "Started: May 12, 05:59 PM"
+                - button "Retry" [ref=e1449] [cursor=pointer]:
+                  - img [ref=e1450]
+                  - text: Retry
+              - generic [ref=e1371]:
+                - generic [ref=e1372]:
+                  - generic [ref=e1373]:
+                    - paragraph [ref=e1374]: story_test_cases
+                    - paragraph [ref=e1375]: ShopSmart
+                  - generic [ref=e1376]: failed
+                - generic [ref=e1377]:
+                  - generic [ref=e1378]: "Job ID: STC-260512-B80ICC"
+                  - generic [ref=e1379]: "Started: May 12, 05:43 PM"
+                - button "Retry" [active] [ref=e1409] [cursor=pointer]:
+                  - img [ref=e1410]
+                  - text: Retry
+              - generic [ref=e1311]:
+                - generic [ref=e1312]:
+                  - generic [ref=e1313]:
+                    - paragraph [ref=e1314]: story_test_cases
+                    - paragraph [ref=e1315]: ShopSmart
+                  - generic [ref=e1316]: failed
+                - generic [ref=e1317]:
+                  - generic [ref=e1318]: "Job ID: STC-260512-SVL60W"
+                  - generic [ref=e1319]: "Started: May 12, 05:35 PM"
+                  - generic [ref=e1380]: "Retried by: STC-260512-Q8YV8Q"
+                - button "Retry" [ref=e1353] [cursor=pointer]:
+                  - img [ref=e1354]
+                  - text: Retry
+              - generic [ref=e1105]:
+                - generic [ref=e1106]:
+                  - generic [ref=e1107]:
+                    - paragraph [ref=e1108]: user_stories
+                    - paragraph [ref=e1109]: ShopSmart
+                  - generic [ref=e1110]: completed
+                - generic [ref=e1111]:
+                  - generic [ref=e1112]: "Job ID: PRO-260512-RDR2ZR"
+                  - generic [ref=e1113]: "Started: May 12, 07:13 AM"
+                - link "Open" [ref=e1115] [cursor=pointer]:
+                  - /url: https://anujalhans1.atlassian.net/wiki/spaces/TD/pages/19496961/ShopSmart+Agile+Backlog+Epics+and+User+Stories+-+ShopSmart
+                  - img [ref=e1116]
+                  - text: Open
+              - generic [ref=e1120]:
+                - generic [ref=e1121]:
+                  - generic [ref=e1122]:
+                    - paragraph [ref=e1123]: user_stories
+                    - paragraph [ref=e1124]: ShopSmart
+                  - generic [ref=e1125]: failed
+                - generic [ref=e1126]:
+                  - generic [ref=e1127]: "Job ID: PRO-260512-3XBYVE"
+                  - generic [ref=e1128]: "Started: May 12, 07:04 AM"
+                - button "Retry" [ref=e1130] [cursor=pointer]:
+                  - img [ref=e1131]
+                  - text: Retry
+              - generic [ref=e1136]:
+                - generic [ref=e1137]:
+                  - generic [ref=e1138]:
+                    - paragraph [ref=e1139]: user_stories
+                    - paragraph [ref=e1140]: ShopSmart
+                  - generic [ref=e1141]: failed
+                - generic [ref=e1142]:
+                  - generic [ref=e1143]: "Job ID: PRO-260512-1SKIE3"
+                  - generic [ref=e1144]: "Started: May 12, 06:52 AM"
+                - button "Retry" [ref=e1146] [cursor=pointer]:
+                  - img [ref=e1147]
+                  - text: Retry
+              - generic [ref=e1152]:
+                - generic [ref=e1153]:
+                  - generic [ref=e1154]:
+                    - paragraph [ref=e1155]: user_stories
+                    - paragraph [ref=e1156]: ShopSmart
+                  - generic [ref=e1157]: failed
+                - generic [ref=e1158]:
+                  - generic [ref=e1159]: "Job ID: PRO-260512-LPX6H0"
+                  - generic [ref=e1160]: "Started: May 12, 06:43 AM"
+                - button "Retry" [ref=e1162] [cursor=pointer]:
+                  - img [ref=e1163]
+                  - text: Retry
+              - generic [ref=e1168]:
+                - generic [ref=e1169]:
+                  - generic [ref=e1170]:
+                    - paragraph [ref=e1171]: user_stories
+                    - paragraph [ref=e1172]: ShopSmart
+                  - generic [ref=e1173]: completed
+                - generic [ref=e1174]:
+                  - generic [ref=e1175]: "Job ID: PRO-260512-RL7RUF"
+                  - generic [ref=e1176]: "Started: May 12, 05:58 AM"
+                - link "Open" [ref=e1178] [cursor=pointer]:
+                  - /url: https://anujalhans1.atlassian.net/wiki/spaces/TD/pages/18907162/Professional+QA+Backlog+-+ShopSmart
+                  - img [ref=e1179]
+                  - text: Open
+          - generic [ref=e1230]:
+            - generic [ref=e1231]:
+              - img [ref=e1232]
+              - heading "QUICK TIPS" [level=3] [ref=e1234]
+            - generic [ref=e1235]:
+              - generic [ref=e1236]:
+                - paragraph [ref=e1237]: "Tip #1"
+                - paragraph [ref=e1238]: Select a document type to generate QA artifacts.
+              - generic [ref=e1239]:
+                - paragraph [ref=e1240]: "Tip #2"
+                - paragraph [ref=e1241]: Reference an existing knowledge base project.
+              - generic [ref=e1242]:
+                - paragraph [ref=e1243]: "Tip #3"
+                - paragraph [ref=e1244]: Generated documents will appear as Jira or Confluence links.
+            - button "View Help Center" [ref=e1245] [cursor=pointer]
+          - 'button "Operations Snapshot Service attention Workspace 1 service check needs attention. Open diagnostics for details. Running 16 Waiting 0 Failures 24h 16 Avg duration 56m 32s Tokens today 73396 Cost today $0.04 Services: Healthy Open diagnostics" [ref=e1455] [cursor=pointer]':
+            - generic [ref=e1247]:
+              - generic [ref=e1248]:
+                - img [ref=e1250]
+                - generic [ref=e1252]:
+                  - generic [ref=e1253]:
+                    - generic [ref=e1254]:
+                      - paragraph [ref=e1255]: Operations Snapshot
+                      - paragraph [ref=e1256]: Service attention
+                    - generic [ref=e1257]: Workspace
+                  - paragraph [ref=e1258]: 1 service check needs attention. Open diagnostics for details.
+              - generic [ref=e1259]:
+                - generic [ref=e1260]:
+                  - paragraph [ref=e1261]: Running
+                  - paragraph [ref=e1262]: "16"
+                - generic [ref=e1263]:
+                  - paragraph [ref=e1264]: Waiting
+                  - paragraph [ref=e1265]: "0"
+                - generic [ref=e1266]:
+                  - paragraph [ref=e1267]: Failures 24h
+                  - paragraph [ref=e1268]: "16"
+                - generic [ref=e1269]:
+                  - paragraph [ref=e1270]: Avg duration
+                  - paragraph [ref=e1271]: 56m 32s
+                - generic [ref=e1272]:
+                  - paragraph [ref=e1273]: Tokens today
+                  - paragraph [ref=e1274]: "73396"
+                - generic [ref=e1275]:
+                  - paragraph [ref=e1276]: Cost today
+                  - paragraph [ref=e1277]: $0.04
+              - generic [ref=e1278]:
+                - generic [ref=e1279]:
+                  - text: "Services:"
+                  - strong [ref=e1280]: Healthy
+                - generic [ref=e1281]: Open diagnostics

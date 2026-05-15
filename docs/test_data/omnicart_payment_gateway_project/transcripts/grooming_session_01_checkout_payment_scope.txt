@@ -1,0 +1,14 @@
+OmniCart Grooming Session 01 - Checkout and Payment Scope
+Date: 2026-05-13
+Participants: Priya Raman (Payments PO), Arjun Mehta (Engineering Lead), Meera Shah (QA Lead), Ravi Menon (Finance Ops), Sara Lewis (UX Lead)
+
+Priya: The checkout experience must handle Amazon-like cart complexity: multiple sellers, mixed delivery dates, gift card plus card, and recovery from failed payments.
+Arjun: From engineering side, we should create an order intent first, then payment intent. The order should remain PENDING_PAYMENT until authorization is final.
+Meera: For QA coverage, we need positive, negative, boundary, retry, duplicate webhook, timeout, and partial refund scenarios. I also want gateway-specific error mapping covered.
+Ravi: Finance needs each tender line separated in the ledger. A gift card plus card payment cannot appear as one blended line.
+Sara: UX should preserve cart state after payment failure. The user should see clear recovery actions: retry, change card, switch payment method, or contact bank.
+Priya: Please add a business rule that gateway timeout should not immediately fail the order. We need a status inquiry.
+Arjun: Agreed. Timeout means UNKNOWN, then inquiry worker decides AUTHORIZED or FAILED.
+Meera: Acceptance criteria: duplicate callbacks must not duplicate order confirmation, capture, refund, notification, or ledger entry.
+Decision: Use payment intent state machine and idempotency key across payment APIs.
+Open Question: Do we support COD for high-risk orders? Priya to confirm with Risk team.

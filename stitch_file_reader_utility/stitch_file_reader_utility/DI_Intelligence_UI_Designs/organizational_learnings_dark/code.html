@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#0b1326",
+                        "surface-container-low": "#131b2e",
+                        "primary-fixed": "#d8e2ff",
+                        "surface-container": "#171f33",
+                        "primary-container": "#4d8eff",
+                        "on-error": "#690005",
+                        "outline": "#8c909f",
+                        "on-tertiary-container": "#00311f",
+                        "on-tertiary": "#003824",
+                        "tertiary-fixed": "#6ffbbe",
+                        "primary-fixed-dim": "#adc6ff",
+                        "secondary-container": "#6f00be",
+                        "tertiary": "#4edea3",
+                        "on-secondary-fixed": "#2c0051",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-container": "#00285d",
+                        "surface-variant": "#2d3449",
+                        "on-primary-fixed": "#001a42",
+                        "on-background": "#dae2fd",
+                        "on-surface-variant": "#c2c6d6",
+                        "on-surface": "#dae2fd",
+                        "secondary-fixed-dim": "#ddb7ff",
+                        "secondary-fixed": "#f0dbff",
+                        "error": "#ffb4ab",
+                        "tertiary-container": "#00a572",
+                        "primary": "#adc6ff",
+                        "inverse-primary": "#005ac2",
+                        "outline-variant": "#424754",
+                        "surface-dim": "#0b1326",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-tertiary-fixed": "#002113",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-bright": "#31394d",
+                        "on-secondary-fixed-variant": "#6900b3",
+                        "surface-container-high": "#222a3d",
+                        "error-container": "#93000a",
+                        "on-secondary": "#490080",
+                        "surface-container-highest": "#2d3449",
+                        "inverse-on-surface": "#283044",
+                        "background": "#0b1326",
+                        "surface-tint": "#adc6ff",
+                        "surface-container-lowest": "#060e20",
+                        "secondary": "#ddb7ff",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-secondary-container": "#d6a9ff",
+                        "inverse-surface": "#dae2fd",
+                        "on-primary": "#002e6a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "grid_columns": "12",
+                        "xs": "4px",
+                        "unit": "4px",
+                        "sm": "8px",
+                        "container_margin": "24px",
+                        "xl": "40px",
+                        "lg": "24px",
+                        "grid_gutter": "16px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "h3": ["Space Grotesk"],
+                        "h2": ["Space Grotesk"],
+                        "label-caps": ["Inter"],
+                        "h1": ["Space Grotesk"],
+                        "data-mono": ["Space Grotesk"],
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h3": ["18px", {"lineHeight": "1.4", "letterSpacing": "0em", "fontWeight": "500"}],
+                        "h2": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-caps": ["11px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                        "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "data-mono": ["13px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .ai-glow {
+            box-shadow: 0 0 20px rgba(173, 198, 255, 0.1);
+        }
+        .timeline-line {
+            background: linear-gradient(180deg, rgba(173, 198, 255, 0) 0%, rgba(173, 198, 255, 0.2) 20%, rgba(173, 198, 255, 0.2) 80%, rgba(173, 198, 255, 0) 100%);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-sm text-on-surface antialiased">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-slate-50 tracking-tighter font-['Space_Grotesk']">Q-Ops Agent</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="font-['Space_Grotesk'] tracking-tight text-sm text-slate-400 hover:text-slate-200 transition-colors" href="#">Projects</a>
+<a class="font-['Space_Grotesk'] tracking-tight text-sm text-[#3b82f6] border-b-2 border-[#3b82f6] pb-1" href="#">Knowledge Hub</a>
+<a class="font-['Space_Grotesk'] tracking-tight text-sm text-slate-400 hover:text-slate-200 transition-colors" href="#">Infrastructure</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-white/5 border border-white/10 rounded px-3 py-1.5">
+<span class="material-symbols-outlined text-sm text-slate-400" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs w-48 text-slate-200 placeholder-slate-500" placeholder="Global Search" type="text"/>
+</div>
+<button class="material-symbols-outlined text-slate-400 hover:bg-white/5 p-2 rounded transition-colors" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined text-slate-400 hover:bg-white/5 p-2 rounded transition-colors" data-icon="history">history</button>
+<div class="w-8 h-8 rounded-full border border-white/20 overflow-hidden">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a technical lead in a high-contrast cinematic lighting setting. The subject is wearing a dark charcoal turtleneck, set against a blurred background of a modern enterprise server room with subtle blue and purple LED highlights. The overall aesthetic is clean, authoritative, and perfectly suited for a dark-themed enterprise dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDcLUb2rWNy-VnUqbo97U2xZ-BNg8rH9wZz__emlLCtM-5evpzfs-YOG1iurXo7Ii3MTT4l60d1xG7t9tq7tvjOt75Lf7GnNaqOja3TJfP53DURyugs7Ajg1gfDlJIgJVJsjLIEqMDEPkdlx-5vhRre2nBPuj9_krGwN7_v-eyEKgBtcwJ_1nLs7URzwpPxdcaVxHTRgm-Exa0mJ-3k6WVLYedcStWgS1b0yyBC0JIk6Kl3nKFeErh0dNbpDsviGMdzYkSSetdoK4r"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 bottom-0 flex flex-col pt-8 bg-[#1e293b] w-64 border-r border-white/5 z-40">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-primary-container rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container text-lg" data-icon="hub">hub</span>
+</div>
+<div>
+<h2 class="text-lg font-black text-[#3b82f6] font-['Space_Grotesk']">Q-Ops Node</h2>
+<p class="text-[10px] uppercase font-semibold tracking-widest text-slate-500 font-['Space_Grotesk']">AI Enterprise QA</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-6 py-3 font-['Space_Grotesk'] uppercase text-xs font-semibold tracking-widest text-slate-500 hover:bg-white/5 hover:text-slate-200 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-3 px-6 py-3 font-['Space_Grotesk'] uppercase text-xs font-semibold tracking-widest bg-blue-500/10 text-[#3b82f6] border-r-4 border-[#3b82f6]" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+                Artifacts
+            </a>
+<a class="flex items-center gap-3 px-6 py-3 font-['Space_Grotesk'] uppercase text-xs font-semibold tracking-widest text-slate-500 hover:bg-white/5 hover:text-slate-200 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+                Integrations
+            </a>
+<a class="flex items-center gap-3 px-6 py-3 font-['Space_Grotesk'] uppercase text-xs font-semibold tracking-widest text-slate-500 hover:bg-white/5 hover:text-slate-200 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings_suggest">settings_suggest</span>
+                Settings
+            </a>
+</nav>
+<div class="p-6 border-t border-white/5">
+<button class="w-full py-2 bg-[#3b82f6] text-white rounded font-['Space_Grotesk'] font-bold text-xs uppercase tracking-widest hover:bg-[#2563eb] transition-colors">
+                Launch Scan
+            </button>
+<div class="mt-6 space-y-2">
+<a class="flex items-center gap-2 text-slate-500 text-xs hover:text-slate-300" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="contact_support">contact_support</span>
+                    Support
+                </a>
+<a class="flex items-center gap-2 text-slate-500 text-xs hover:text-slate-300" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="menu_book">menu_book</span>
+                    Documentation
+                </a>
+</div>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-64 mt-16 p-8 min-h-screen">
+<div class="max-w-6xl mx-auto">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="text-tertiary font-label-caps uppercase">Systemic Intelligence</span>
+<div class="w-1.5 h-1.5 rounded-full bg-tertiary"></div>
+</div>
+<h1 class="font-h1 text-on-surface mb-2">Organizational Learnings</h1>
+<p class="text-on-surface-variant font-body-lg max-w-2xl">A continuous stream of architectural patterns, delivery insights, and performance benchmarks harvested from enterprise-wide Q-Ops cycles.</p>
+</div>
+<div class="flex gap-3">
+<div class="glass-panel px-4 py-2 flex items-center gap-4">
+<div class="text-center px-4 border-r border-white/10">
+<span class="block font-h2 text-primary">124</span>
+<span class="block text-[10px] text-slate-500 font-label-caps uppercase">Insights</span>
+</div>
+<div class="text-center px-4">
+<span class="block font-h2 text-tertiary">92%</span>
+<span class="block text-[10px] text-slate-500 font-label-caps uppercase">Adoption</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Container -->
+<div class="relative">
+<!-- Vertical Timeline Line -->
+<div class="absolute left-8 top-0 bottom-0 w-px timeline-line z-0"></div>
+<!-- Learning Event 1: Architecture -->
+<div class="relative z-10 flex gap-12 mb-16">
+<div class="flex-none">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center border border-primary/30 ai-glow">
+<span class="material-symbols-outlined text-primary text-2xl" data-icon="architecture">architecture</span>
+</div>
+</div>
+<div class="flex-1">
+<div class="glass-panel p-6 border-l-4 border-l-primary/50">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<span class="bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-wider">Architecture</span>
+<span class="text-slate-500 text-xs font-data-mono">AUG 24, 2023 • V4.2</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-slate-400">Impact:</span>
+<span class="flex gap-0.5">
+<div class="w-1 h-3 bg-primary"></div>
+<div class="w-1 h-3 bg-primary"></div>
+<div class="w-1 h-3 bg-primary"></div>
+<div class="w-1 h-3 bg-primary"></div>
+<div class="w-1 h-3 bg-slate-700"></div>
+</span>
+</div>
+</div>
+<h3 class="font-h2 text-on-surface mb-3">Event-Driven Persistence Strategy</h3>
+<p class="text-on-surface-variant font-body-sm mb-6 leading-relaxed">Analysis of Q3 release cycles identified a recurring bottleneck in synchronous database write-locks. Transitioning to an event-driven outbox pattern reduced P99 latency by 420ms across core transaction services. This pattern is now a mandated standard for high-throughput nodes.</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+<div class="bg-black/20 p-4 border border-white/5 rounded">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-tertiary text-sm" data-icon="verified">verified</span>
+<span class="text-xs font-bold text-slate-300">Implementation Evidence</span>
+</div>
+<ul class="space-y-2">
+<li><a class="text-xs text-primary hover:underline flex items-center gap-1" href="#"><span class="material-symbols-outlined text-[14px]" data-icon="link">link</span> Core-Service Pull Request #4921</a></li>
+<li><a class="text-xs text-primary hover:underline flex items-center gap-1" href="#"><span class="material-symbols-outlined text-[14px]" data-icon="link">link</span> Grafana Performance Dashboard: Persistence</a></li>
+</ul>
+</div>
+<div class="bg-black/20 p-4 border border-white/5 rounded flex items-center gap-4">
+<div class="w-10 h-10 rounded-full border border-white/10 overflow-hidden">
+<img alt="Contributor" class="w-full h-full object-cover" data-alt="A detailed portrait of a senior software architect with a thoughtful expression. She is in a high-tech studio setting with soft purple and teal backlighting. She wears modern tech-wear, and the scene is rendered with a shallow depth of field, emphasizing a professional and intelligent enterprise environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDh4II2OFY74HuI5D4k9AFXeHI-IT46sSqrG4SmtHk6hYVEG5F3770C51BPWKMAIdams1M0umei9S6i-HIaSxraPjSAdfQ_E9j45gqtWaj_vOr3WIdSLbpc8c0XByQSlVgxP_mg2hBIG4ntU1OcKZZmT6ZU6XxaB00EsERI3PzJKmPITSiZJQonE_CCOAWe5wNb5QBf7abUQq5ZfvQIZGqSNDsJCazhHmCEPjc_k2NZhAuZ8c5sgYCOXsqP4OX7DlFqVTibYcfRJ7D1"/>
+</div>
+<div>
+<span class="block text-[10px] text-slate-500 font-label-caps uppercase">Contributor</span>
+<span class="block text-sm font-bold text-slate-200">Dr. Aris Thorne</span>
+<span class="block text-[10px] text-slate-400">Principal Architect</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Learning Event 2: DevOps -->
+<div class="relative z-10 flex gap-12 mb-16">
+<div class="flex-none">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center border border-secondary/30">
+<span class="material-symbols-outlined text-secondary text-2xl" data-icon="settings_input_component">settings_input_component</span>
+</div>
+</div>
+<div class="flex-1">
+<div class="glass-panel p-6 border-l-4 border-l-secondary/50">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<span class="bg-secondary/10 text-secondary px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-wider">DevOps</span>
+<span class="text-slate-500 text-xs font-data-mono">JUL 12, 2023 • OPS-GEN</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-slate-400">Impact:</span>
+<span class="flex gap-0.5">
+<div class="w-1 h-3 bg-secondary"></div>
+<div class="w-1 h-3 bg-secondary"></div>
+<div class="w-1 h-3 bg-secondary"></div>
+<div class="w-1 h-3 bg-slate-700"></div>
+<div class="w-1 h-3 bg-slate-700"></div>
+</span>
+</div>
+</div>
+<h3 class="font-h2 text-on-surface mb-3">Ephemeral Environment Provisioning</h3>
+<p class="text-on-surface-variant font-body-sm mb-6 leading-relaxed">By implementing automated teardown of dynamic preview environments, cloud compute overhead for the QA division was reduced by 34% month-over-month. The learning indicates a shift toward 'Just-in-Time' infrastructure is viable for all feature-branch testing.</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+<div class="bg-black/20 p-4 border border-white/5 rounded">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-tertiary text-sm" data-icon="verified">verified</span>
+<span class="text-xs font-bold text-slate-300">Implementation Evidence</span>
+</div>
+<ul class="space-y-2">
+<li><a class="text-xs text-primary hover:underline flex items-center gap-1" href="#"><span class="material-symbols-outlined text-[14px]" data-icon="link">link</span> Terraform Module: ephemeral-node-v2</a></li>
+<li><a class="text-xs text-primary hover:underline flex items-center gap-1" href="#"><span class="material-symbols-outlined text-[14px]" data-icon="link">link</span> FinOps Quarterly Report: QA Optimization</a></li>
+</ul>
+</div>
+<div class="bg-black/20 p-4 border border-white/5 rounded flex items-center gap-4">
+<div class="w-10 h-10 rounded-full border border-white/10 overflow-hidden">
+<img alt="Contributor" class="w-full h-full object-cover" data-alt="A portrait of a male DevOps engineer in a clean, minimalist workspace. He is looking directly at the camera with a confident expression. The room is softly lit with cool blue tones and subtle hints of warm light from high-end computer monitors. The aesthetic is professional, technical, and high-fidelity dark mode." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1NjBDhwazcTJv8dkb_mHTP9tstcwqU1a1xPI1iOGV6ssPvpaBoHSyp_BjKQnogHEzCG0_31_w1CuenjZ8PWY1pnCLld_lNLHIowQ1VVo5vPrgBexK7Fhv0WiOBFkJkF4oispXbtW7QWazmfb5yz29my6xVR-6M_-tHTIodJvWSHzUDMyAu-mpgXd5aTnHYfFmoKPlisdpLvo_BOHxp7GBCB_hPoah8VYCqx9CeSc_KZwn6taloYQ4TsVTIBTxdN9OetqoKVcGIvt_"/>
+</div>
+<div>
+<span class="block text-[10px] text-slate-500 font-label-caps uppercase">Contributor</span>
+<span class="block text-sm font-bold text-slate-200">Marcus Vane</span>
+<span class="block text-[10px] text-slate-400">SRE Lead</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- AI Insight Card: Amethyst Styled -->
+<div class="relative z-10 flex gap-12 mb-16">
+<div class="flex-none">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center border border-secondary-container/50 ai-glow">
+<span class="material-symbols-outlined text-secondary-container text-2xl" data-icon="auto_awesome" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+</div>
+<div class="flex-1">
+<div class="bg-secondary-container/5 backdrop-blur-md p-6 border border-secondary-container/30 rounded-xl relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-20">
+<span class="material-symbols-outlined text-6xl" data-icon="psychology">psychology</span>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-secondary-container text-sm" data-icon="neurology">neurology</span>
+<span class="text-secondary-container font-label-caps uppercase tracking-widest text-[10px] font-bold">AI Predictive Insight</span>
+</div>
+<h3 class="font-h3 text-on-surface mb-3">Anticipated Regression Peak: Q4</h3>
+<p class="text-on-surface-variant font-body-sm mb-4 leading-relaxed">Cross-project semantic analysis predicts a 15% increase in regression failures during the upcoming monolithic-to-microservice migration of the 'Legacy Billing' module. Recommendation: Increase unit test density by 20% in dependent service gateways prior to sprint launch.</p>
+<button class="flex items-center gap-2 text-[11px] font-bold text-secondary-container hover:text-on-secondary-container transition-colors uppercase tracking-widest">
+<span class="material-symbols-outlined text-sm" data-icon="rocket_launch">rocket_launch</span>
+                                Auto-generate Test Suite
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Navigation Drawer (Right Side Intelligence Feed) -->
+<aside class="fixed right-0 top-0 bottom-0 z-[60] p-6 bg-[#1e293b]/95 backdrop-blur-2xl w-96 border-l border-purple-500/20 shadow-[-10px_0_30px_rgba(0,0,0,0.5)]">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h2 class="text-slate-100 font-bold font-['Space_Grotesk'] text-lg">Intelligence Feed</h2>
+<p class="text-slate-400 text-sm font-['Space_Grotesk'] leading-relaxed">Real-time QA insights</p>
+</div>
+<button class="material-symbols-outlined text-slate-400 hover:text-white" data-icon="close">close</button>
+</div>
+<div class="space-y-6">
+<div class="flex gap-4 p-3 rounded-lg border border-transparent hover:border-purple-500/40 transition-colors">
+<div class="flex-none">
+<span class="material-symbols-outlined text-[#a855f7]" data-icon="report">report</span>
+</div>
+<div>
+<span class="block text-[10px] text-[#a855f7] font-bold uppercase tracking-widest mb-1">Critical Alert</span>
+<p class="text-sm text-slate-200 mb-1">Memory leak detected in Node-7 Canary Deployment.</p>
+<span class="text-[10px] text-slate-500 font-data-mono">2 MINUTES AGO</span>
+</div>
+</div>
+<div class="flex gap-4 p-3 rounded-lg bg-purple-500/5 border border-purple-500/20">
+<div class="flex-none">
+<span class="material-symbols-outlined text-[#a855f7]" data-icon="history_edu">history_edu</span>
+</div>
+<div>
+<span class="block text-[10px] text-[#a855f7] font-bold uppercase tracking-widest mb-1">Activity Log</span>
+<p class="text-sm text-slate-200 mb-1">New architectural learning added: "Async Polling Patterns".</p>
+<span class="text-[10px] text-slate-500 font-data-mono">1 HOUR AGO</span>
+</div>
+</div>
+<div class="flex gap-4 p-3 rounded-lg border border-transparent hover:border-purple-500/40 transition-colors">
+<div class="flex-none">
+<span class="material-symbols-outlined text-slate-400" data-icon="dns">dns</span>
+</div>
+<div>
+<span class="block text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">System Health</span>
+<p class="text-sm text-slate-200 mb-1">All AI training nodes operating at 98.4% efficiency.</p>
+<span class="text-[10px] text-slate-500 font-data-mono">4 HOURS AGO</span>
+</div>
+</div>
+</div>
+<div class="absolute bottom-10 left-6 right-6">
+<div class="p-4 bg-white/5 border border-white/10 rounded-lg">
+<div class="flex items-center gap-2 mb-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="text-xs text-slate-300 font-bold uppercase tracking-widest">Global Status</span>
+</div>
+<p class="text-[11px] text-slate-500">Intelligence engine is actively harvesting data from 12 active repositories.</p>
+</div>
+</div>
+</aside>
+</body></html>
