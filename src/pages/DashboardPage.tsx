@@ -73,7 +73,7 @@ import DeliveryIntelligencePage from './DeliveryIntelligencePage'
 import type { DeliveryIntelligenceView } from './DeliveryIntelligencePage'
 
 type ToastType = 'success' | 'error' | 'info'
-type View = 'overview' | 'knowledge' | 'documents' | 'artifacts' | 'analytics' | 'settings' | 'docs' | DeliveryIntelligenceView
+type View = 'overview' | 'knowledge' | 'documents' | 'artifacts' | 'analytics' | 'settings' | 'docs' | 'faqs' | DeliveryIntelligenceView
 type WorkspaceTab = 'knowledge' | 'documents'
 type Overlay = 'search' | 'notifications' | 'help' | 'audit' | 'project' | 'status' | 'diagnostics' | null
 
@@ -1820,6 +1820,7 @@ export default function DashboardPage({ onLogout, addToast, currentUser }: Props
         <div className="mt-auto shrink-0 space-y-2 border-t border-outline-variant bg-surface-container-lowest/95 px-5 py-6 backdrop-blur-xl">
           <NavItem active={view === 'settings'} icon={Settings} label="Settings" onClick={() => navigateTo('settings')} />
           <NavItem active={view === 'docs'} icon={BookOpen} label="Documentation" onClick={() => navigateTo('docs')} />
+          <NavItem active={view === 'faqs'} icon={HelpCircle} label="FAQs" onClick={() => navigateTo('faqs')} />
         </div>
       </aside>
 
@@ -1871,16 +1872,18 @@ export default function DashboardPage({ onLogout, addToast, currentUser }: Props
                     : sectionDescriptions[view]}
                 </p>
               </div>
-              <div className="flex flex-wrap gap-3">
-                <button onClick={() => setOverlay('audit')} className="flex items-center gap-2 rounded-lg border border-outline-variant px-4 py-2 text-sm font-semibold hover:bg-surface-container">
-                  <History className="h-4 w-4" /> View Audit Log
-                </button>
-                {currentUser?.role === 'admin' ? (
-                  <button onClick={() => setOverlay('project')} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary shadow-sm hover:opacity-90">
-                    <Plus className="h-4 w-4" /> New Project
+              {view !== 'docs' && view !== 'faqs' ? (
+                <div className="flex flex-wrap gap-3">
+                  <button onClick={() => setOverlay('audit')} className="flex items-center gap-2 rounded-lg border border-outline-variant px-4 py-2 text-sm font-semibold hover:bg-surface-container">
+                    <History className="h-4 w-4" /> View Audit Log
                   </button>
-                ) : null}
-              </div>
+                  {currentUser?.role === 'admin' ? (
+                    <button onClick={() => setOverlay('project')} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary shadow-sm hover:opacity-90">
+                      <Plus className="h-4 w-4" /> New Project
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
             </section>
 
             {view === 'overview' ? (
@@ -2018,6 +2021,7 @@ export default function DashboardPage({ onLogout, addToast, currentUser }: Props
               />
             ) : null}
             {view === 'docs' ? <DocumentationPage onHelp={() => setOverlay('help')} onKnowledge={() => openWorkspace('knowledge')} onStatus={() => setOverlay('status')} /> : null}
+            {view === 'faqs' ? <FaqPage /> : null}
           </div>
         </div>
       </main>
@@ -2041,6 +2045,7 @@ const viewLabels: Record<View, string> = {
   analytics: 'Analytics',
   settings: 'Settings',
   docs: 'Documentation',
+  faqs: 'FAQs',
   'di-overview': 'Delivery Intelligence',
   'di-profile': 'Project Profile',
   'di-onboarding': 'Onboarding Guide',
@@ -2062,6 +2067,7 @@ const sectionDescriptions: Record<View, string> = {
   analytics: 'Monitor QA operations metrics from n8n analytics, with local fallback while endpoints come online.',
   settings: 'Configure profile, n8n endpoints, integrations, notifications, and security defaults.',
   docs: 'Learn the Q-Ops workflow, artifact types, backend setup, and troubleshooting steps.',
+  faqs: 'Review client and investor-ready answers around AI security, cost, data storage, IP protection, usage, and scalability.',
   'di-overview': 'Run project-scoped Delivery Intelligence extraction and review reusable SDLC insights.',
   'di-profile': 'Read the synthesized project profile built from internal delivery and QA signals.',
   'di-onboarding': 'Use the generated onboarding guide to accelerate internal project ramp-up.',
@@ -2114,26 +2120,34 @@ function Overview(props: {
   onOpenAnalytics: () => void
   onOpenDiagnostics: () => void
 }) {
+  const completedKnowledgeJobs = props.recentKnowledgeJobs.filter((job) => job.status === 'completed').length
+  const completedWork = props.outputs + completedKnowledgeJobs
+  const successRate = completedWork + props.failedJobs ? Math.round((completedWork / (completedWork + props.failedJobs)) * 100) : 100
   const cards = [
-    { label: 'Active jobs', value: props.activeJobs, detail: props.failedJobs ? `${props.failedJobs} failed job needs review` : 'Queue is clear', icon: Clock, onClick: props.onOpenNotifications },
-    { label: 'Artifacts', value: props.artifactCount, detail: 'Uploaded or selected in this workspace', icon: Archive, onClick: props.onOpenArtifacts },
-    { label: 'Generated outputs', value: props.outputs, detail: 'Recent document and Jira results', icon: FileText, onClick: props.onOpenDocuments },
-    { label: 'Knowledge bases ready', value: props.readyKnowledgeBases, detail: 'Ready for document generation', icon: Database, onClick: props.onOpenArtifacts },
+    { label: 'Active jobs', value: props.activeJobs, detail: props.failedJobs ? `${props.failedJobs} need review` : 'Queue is clear', detailTone: props.failedJobs ? 'warning' : 'success', icon: Clock, onClick: props.onOpenNotifications },
+    { label: 'Artifacts', value: props.artifactCount, detail: 'Available in workspace', detailTone: 'neutral', icon: Archive, onClick: props.onOpenArtifacts },
+    { label: 'Generated outputs', value: props.outputs, detail: 'Documents and Jira results', detailTone: 'neutral', icon: FileText, onClick: props.onOpenDocuments },
+    { label: 'Knowledge bases ready', value: props.readyKnowledgeBases, detail: 'Ready for generation', detailTone: 'success', icon: Database, onClick: props.onOpenArtifacts },
   ]
   return (
     <div className="space-y-8">
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map((card) => {
           const Icon = card.icon
+          const detailClass = card.detailTone === 'warning'
+            ? 'border-warning/30 bg-warning/10 text-warning'
+            : card.detailTone === 'success'
+              ? 'border-success/30 bg-success/10 text-success'
+              : 'border-outline-variant bg-surface-container text-on-surface-variant'
           return (
             <button key={card.label} onClick={card.onClick} className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5 text-left shadow-sm transition hover:border-primary">
               <div className="mb-4 flex items-center justify-between">
                 <Icon className="h-5 w-5 text-primary" />
-                <span className="rounded-full bg-surface-container px-2 py-1 text-xs font-bold uppercase text-on-surface-variant">Live</span>
+                <span className="rounded-full border border-success/30 bg-success/10 px-2 py-1 text-xs font-bold uppercase text-success">Live</span>
               </div>
               <p className="text-3xl font-bold text-on-surface">{card.value}</p>
-              <p className="mt-1 text-sm font-semibold text-on-surface">{card.label}</p>
-              <p className="mt-2 text-xs leading-5 text-on-surface-variant">{card.detail}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-wide text-on-surface-variant">{card.label}</p>
+              <span className={`mt-3 inline-flex rounded-full border px-2.5 py-1 text-xs font-bold ${detailClass}`}>{card.detail}</span>
             </button>
           )
         })}
@@ -2152,22 +2166,22 @@ function Overview(props: {
             <div className="grid gap-4 p-6 md:grid-cols-2">
               <OverviewActionCard
                 icon={UploadCloud}
-                eyebrow="Knowledge pipeline"
+                eyebrow="Ingestion"
                 title="Knowledge Base"
                 description="Upload BRD, FRD, HLD, LLD, transcripts, and images to build retrieval-ready project context."
                 primaryMetric={{ label: 'Ready projects', value: String(props.readyKnowledgeBases) }}
-                secondaryMetric={{ label: 'Tracked artifacts', value: String(props.artifactCount) }}
-                actionLabel="Open Knowledge Base"
+                secondaryMetric={{ label: 'Files processed', value: String(props.artifactCount) }}
+                actionLabel="Create Knowledge Base"
                 onAction={props.onOpenKnowledge}
               />
               <OverviewActionCard
                 icon={FileText}
-                eyebrow="Generation pipeline"
-                title="Doc Gen"
+                eyebrow="Generation"
+                title="Generate Documents"
                 description="Create test strategy, test plan, risk matrix, test cases, traceability, and Jira backlog outputs."
-                primaryMetric={{ label: 'Generated outputs', value: String(props.outputs) }}
-                secondaryMetric={{ label: 'Recent doc jobs', value: String(props.recentDocumentJobs.length) }}
-                actionLabel="Open Doc Gen"
+                primaryMetric={{ label: 'Documents generated', value: String(props.outputs) }}
+                secondaryMetric={{ label: 'Generation jobs', value: String(props.recentDocumentJobs.length) }}
+                actionLabel="Generate Documents"
                 onAction={props.onOpenDocuments}
               />
               <OverviewActionCard
@@ -2175,8 +2189,8 @@ function Overview(props: {
                 eyebrow="Repository"
                 title="Artifacts"
                 description="Review uploads, reprocess failed files, and verify project coverage without reopening ingestion forms."
-                primaryMetric={{ label: 'Artifacts', value: String(props.artifactCount) }}
-                secondaryMetric={{ label: 'Failed jobs', value: String(props.failedJobs) }}
+                primaryMetric={{ label: 'Total artifacts', value: String(props.artifactCount) }}
+                secondaryMetric={{ label: 'Needs review', value: String(props.failedJobs) }}
                 actionLabel="Open Artifacts"
                 onAction={props.onOpenArtifacts}
               />
@@ -2186,7 +2200,7 @@ function Overview(props: {
                 title="Analytics"
                 description="See trends, costs, throughput, ingestion volumes, and job health in one reporting view."
                 primaryMetric={{ label: 'Active jobs', value: String(props.activeJobs) }}
-                secondaryMetric={{ label: 'Knowledge jobs', value: String(props.recentKnowledgeJobs.length) }}
+                secondaryMetric={{ label: 'Success rate', value: `${successRate}%` }}
                 actionLabel="Open Analytics"
                 onAction={props.onOpenAnalytics}
               />
@@ -2205,7 +2219,7 @@ function Overview(props: {
                 timestamp: job.createdAt,
               }))}
               emptyText="No document-generation activity yet."
-              actionLabel="Open Doc Gen"
+              actionLabel="Generate Documents"
               onAction={props.onOpenDocuments}
             />
             <OverviewJobsCard
@@ -2219,7 +2233,7 @@ function Overview(props: {
                 timestamp: job.createdAt,
               }))}
               emptyText="No knowledge-base ingestion activity yet."
-              actionLabel="Open Knowledge Base"
+              actionLabel="Create Knowledge Base"
               onAction={props.onOpenKnowledge}
             />
           </div>
@@ -2360,7 +2374,7 @@ function OverviewNextActions({
     {
       title: readyKnowledgeBases ? 'Generate QA deliverables' : 'Build a knowledge base first',
       detail: readyKnowledgeBases ? `${readyKnowledgeBases} project${readyKnowledgeBases === 1 ? '' : 's'} are ready for document generation.` : 'No retrieval-ready project exists yet. Start with ingestion so document generation has source context.',
-      actionLabel: readyKnowledgeBases ? 'Open Doc Gen' : 'Open Knowledge Base',
+      actionLabel: readyKnowledgeBases ? 'Generate Documents' : 'Create Knowledge Base',
       onAction: readyKnowledgeBases ? onOpenDocuments : onOpenKnowledge,
     },
     {
@@ -3765,7 +3779,7 @@ function ArtifactsRepository({ records, onUpload, onReprocess }: { records: Arti
             </table>
           </div>
         ) : (
-          <EmptyState icon={Archive} title="No artifacts uploaded yet" text="Start by creating a project or opening Knowledge Base ingestion." action="Open Knowledge Base" onAction={onUpload} />
+        <EmptyState icon={Archive} title="No artifacts uploaded yet" text="Start by creating a project or opening Knowledge Base ingestion." action="Create Knowledge Base" onAction={onUpload} />
         )}
       </div>
     </section>
@@ -3844,37 +3858,26 @@ function AnalyticsPage({
   const ingestionShare = completedWorkload ? clampPercent((ingestionCompleted / completedWorkload) * 100) : 0
   const activityTrend = buildAnalyticsTrend(recentJobs)
   const deliverableMix = byDocType
-    .map((item) => ({
-      label: documentTypeLabel(String(item.documentType || item.document_type || item.type || 'Generated Output')),
-      value: Number(item.count || item.total || item.jobs || 0),
-      hint: `${Number(item.tokensTotal || item.tokens_total || 0).toLocaleString()} tokens`,
-    }))
+    .map((item) => {
+      const jobCount = Number(item.count || item.total || item.jobs || 0)
+      return {
+        label: documentTypeLabel(String(item.documentType || item.document_type || item.type || 'Generated Output')),
+        value: jobCount,
+        valueLabel: `${formatCompactNumber(jobCount)} job${jobCount === 1 ? '' : 's'}`,
+        hint: `${formatCompactNumber(Number(item.tokensTotal || item.tokens_total || 0))} tokens`,
+      }
+    })
     .filter((item) => item.value > 0)
     .slice(0, 6)
   const knowledgeBaseVolume = filesByKnowledgeBase
     .map((item) => ({
       label: item.projectName,
       value: Number(item.chunksIngested || 0),
-      hint: `${item.filesProcessed} file${item.filesProcessed === 1 ? '' : 's'} processed`,
+      valueLabel: `${formatCompactNumber(Number(item.chunksIngested || 0))} chunks`,
+      hint: `${formatCompactNumber(item.filesProcessed)} file${item.filesProcessed === 1 ? '' : 's'} processed`,
     }))
     .filter((item) => item.value > 0 || item.hint)
     .slice(0, 6)
-  const costByPipelineRows = costByPipeline.map((item) => [
-    item.pipeline || 'unknown',
-    item.jobs,
-    formatCurrency(item.estimatedCostUsd, 4),
-  ])
-  const failureRows = failuresByPipeline.map((item) => [
-    item.pipeline || 'unknown',
-    item.count,
-    item.latestFailureAt ? formatTime(item.latestFailureAt) : '-',
-  ])
-  const costByProjectRows = costByProject.map((item) => [
-    item.projectName || item.projectId || 'Unknown project',
-    item.jobs,
-    item.tokensTotal.toLocaleString(),
-    formatCurrency(item.estimatedCostUsd, 4),
-  ])
   const analyticsTone: StatusTone = successRate >= 95 ? 'success' : successRate >= 80 ? 'info' : totalFailures ? 'warning' : 'error'
   const analyticsSummary = analytics
     ? `Showing ${pipeline === 'all' ? 'all pipelines' : pipeline} activity for the last ${days} days. ${completedWorkload} completed jobs, ${totalFailures} failed jobs, and ${activeJobs} currently active.`
@@ -3946,7 +3949,7 @@ function AnalyticsPage({
           <div className="mt-6 grid gap-4 lg:grid-cols-2">
             <AnalyticsPipelineCard
               icon={FileText}
-              title="Generation jobs"
+              title="Generation"
               subtitle="QA documents, Jira backlog generation, token spend, and recent delivery volume."
               tone="info"
               metrics={[
@@ -3959,7 +3962,7 @@ function AnalyticsPage({
             />
             <AnalyticsPipelineCard
               icon={Database}
-              title="Knowledge base ingestion"
+              title="Ingestion"
               subtitle="Files processed, chunks created, and how quickly projects become ready for generation."
               tone="success"
               metrics={[
@@ -4007,8 +4010,8 @@ function AnalyticsPage({
           emptyText="No recent backend jobs returned yet for trend visualisation."
         />
         <AnalyticsBarList
-          title="Generation demand by deliverable"
-          subtitle="Which QA outputs are being requested most often."
+          title="Generation Demand"
+          subtitle="Most requested deliverables by job count and token usage."
           items={deliverableMix}
           emptyText="No document-generation analytics are available yet."
           tone="info"
@@ -4016,15 +4019,15 @@ function AnalyticsPage({
       </div>
       <div className="grid gap-6 xl:grid-cols-2">
         <AnalyticsBarList
-          title="Knowledge base volume by project"
-          subtitle="Chunk volume created from completed ingestion jobs."
+          title="Knowledge Base Volume"
+          subtitle="Projects ranked by ingested chunk volume and processed files."
           items={knowledgeBaseVolume}
           emptyText="No completed ingestion analytics are available yet."
           tone="success"
         />
         <div className="grid gap-6">
-          <AnalyticsMiniTable title="Cost Incurred" emptyText="No token cost has been recorded yet." columns={['Pipeline', 'Jobs', 'Cost']} rows={costByPipelineRows} estimated />
-          <AnalyticsMiniTable title="Failure watchlist" emptyText="No failed backend jobs in this range." columns={['Pipeline', 'Failures', 'Latest']} rows={failureRows} />
+          <AnalyticsCostSplitPanel rows={costByPipeline} emptyText="No token cost has been recorded yet." />
+          <AnalyticsFailureWatchlist rows={failuresByPipeline} emptyText="No failed backend jobs in this range." />
         </div>
       </div>
       <div className="grid gap-6 xl:grid-cols-2">
@@ -4045,13 +4048,7 @@ function AnalyticsPage({
           emptyText={analytics ? 'No recent ingestion jobs were returned for this filter.' : 'Ingestion jobs will appear here once the analytics endpoint returns recent job data.'}
         />
       </div>
-      <AnalyticsMiniTable
-        title="Cost by project"
-        emptyText="No project-level cost has been recorded yet."
-        columns={['Project', 'Jobs', 'Tokens', 'Cost']}
-        rows={costByProjectRows}
-        estimated
-      />
+      <AnalyticsProjectCostPanel rows={costByProject} emptyText="No project-level cost has been recorded yet." />
     </section>
   )
 }
@@ -4171,18 +4168,20 @@ function AnalyticsKpiCard({
   estimated?: boolean
 }) {
   return (
-    <div className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="flex flex-wrap items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] text-on-surface-variant">
-            <span>{title}</span>
-            {estimated ? <EstimatedMetricTag /> : null}
-          </p>
+    <div className="relative overflow-hidden rounded-xl border border-outline-variant bg-surface-container-low p-4">
+      <div className="pr-10">
+        <div className="min-h-10">
+          <p className="max-w-28 text-xs font-bold uppercase tracking-[0.16em] text-on-surface-variant">{title}</p>
+          {estimated ? (
+            <span className="mt-1 inline-flex">
+              <EstimatedMetricTag />
+            </span>
+          ) : null}
           <p className="mt-3 text-3xl font-semibold text-on-surface">{value}</p>
         </div>
-        <div className={`rounded-xl p-3 ${analyticsToneClasses(tone)}`}>
-          <Icon className="h-5 w-5" />
-        </div>
+      </div>
+      <div className={`absolute right-4 top-4 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${analyticsToneClasses(tone)}`}>
+        <Icon className="h-4 w-4" />
       </div>
       <p className="mt-3 text-sm leading-6 text-on-surface-variant">{detail}</p>
     </div>
@@ -4344,7 +4343,7 @@ function AnalyticsBarList({
 }: {
   title: string
   subtitle: string
-  items: Array<{ label: string; value: number; hint?: string }>
+  items: Array<{ label: string; value: number; valueLabel?: string; hint?: string }>
   emptyText: string
   tone: StatusTone
 }) {
@@ -4360,9 +4359,13 @@ function AnalyticsBarList({
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-on-surface">{item.label}</p>
-                  {item.hint ? <p className="text-xs text-on-surface-variant">{item.hint}</p> : null}
+                  {item.hint ? (
+                    <span className="mt-1 inline-flex rounded-full bg-surface-container px-2 py-0.5 text-[11px] font-semibold text-on-surface-variant">
+                      {item.hint}
+                    </span>
+                  ) : null}
                 </div>
-                <p className="shrink-0 text-sm font-semibold text-on-surface">{formatCompactNumber(item.value)}</p>
+                <p className="shrink-0 text-sm font-semibold text-on-surface">{item.valueLabel || formatCompactNumber(item.value)}</p>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-surface-container">
                 <div className={`h-full rounded-full ${analyticsBarClasses(tone)}`} style={{ width: `${Math.max(6, (item.value / maxValue) * 100)}%` }} />
@@ -4493,6 +4496,138 @@ function AnalyticsJobStat({ label, value, mono = false, estimated = false }: { l
   )
 }
 
+function pipelineDisplayName(pipeline?: string) {
+  const value = String(pipeline || 'unknown').trim()
+  if (!value) return 'Unknown'
+  return value.charAt(0).toUpperCase() + value.slice(1).replace(/[_-]/g, ' ')
+}
+
+function AnalyticsCostSplitPanel({
+  rows,
+  emptyText,
+}: {
+  rows: Array<{ pipeline?: string; jobs: number; estimatedCostUsd: number }>
+  emptyText: string
+}) {
+  const totalCost = rows.reduce((sum, row) => sum + Number(row.estimatedCostUsd || 0), 0)
+  return (
+    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="text-base font-semibold text-on-surface">Cost By Pipeline</h3>
+        <EstimatedMetricTag />
+      </div>
+      {rows.length ? (
+        <div className="mt-4 space-y-3">
+          {rows.map((row) => {
+            const share = totalCost ? clampPercent((Number(row.estimatedCostUsd || 0) / totalCost) * 100) : 0
+            const shareLabel = share.toFixed(2)
+            return (
+              <div key={`cost-${row.pipeline || 'unknown'}`} className="rounded-lg border border-outline-variant bg-surface-container-low p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-on-surface">{pipelineDisplayName(row.pipeline)}</p>
+                    <p className="mt-1 text-xs font-medium text-on-surface-variant">{formatCompactNumber(row.jobs)} job{row.jobs === 1 ? '' : 's'}</p>
+                  </div>
+                  <p className="shrink-0 text-sm font-semibold text-on-surface">{formatCurrency(row.estimatedCostUsd, 4)}</p>
+                </div>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-container">
+                  <div className={`h-full rounded-full ${String(row.pipeline || '').toLowerCase() === 'ingestion' ? 'bg-success' : 'bg-primary'}`} style={{ width: `${Math.max(6, share)}%` }} />
+                </div>
+                <p className="mt-1 text-right text-[11px] font-semibold text-on-surface-variant">{shareLabel}% of recorded cost</p>
+              </div>
+            )
+          })}
+        </div>
+      ) : (
+        <p className="mt-4 rounded-xl border border-dashed border-outline-variant p-4 text-sm text-on-surface-variant">{emptyText}</p>
+      )}
+    </div>
+  )
+}
+
+function AnalyticsFailureWatchlist({
+  rows,
+  emptyText,
+}: {
+  rows: Array<{ pipeline: string; count: number; latestFailureAt?: string | null }>
+  emptyText: string
+}) {
+  return (
+    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+      <h3 className="text-base font-semibold text-on-surface">Failure Watchlist</h3>
+      {rows.length ? (
+        <div className="mt-4 space-y-3">
+          {rows.map((row) => (
+            <div key={`failure-${row.pipeline}`} className="rounded-lg border border-error/25 bg-error/5 p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-on-surface">{pipelineDisplayName(row.pipeline)}</p>
+                  <p className="mt-1 text-xs font-medium text-error">{formatCompactNumber(row.count)} failure{row.count === 1 ? '' : 's'}</p>
+                </div>
+                <span className="shrink-0 rounded-full bg-surface-container px-2 py-1 text-[11px] font-semibold text-on-surface-variant">
+                  Latest {row.latestFailureAt ? formatTime(row.latestFailureAt) : '-'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-4 rounded-lg border border-success/25 bg-success/10 p-4">
+          <p className="text-sm font-semibold text-success">No failed jobs in this range</p>
+          <p className="mt-1 text-xs text-on-surface-variant">{emptyText}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function AnalyticsProjectCostPanel({
+  rows,
+  emptyText,
+}: {
+  rows: Array<{ projectId?: string | null; projectName?: string; jobs: number; tokensTotal: number; estimatedCostUsd: number }>
+  emptyText: string
+}) {
+  const totalCost = rows.reduce((sum, row) => sum + Number(row.estimatedCostUsd || 0), 0)
+  return (
+    <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm">
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="text-base font-semibold text-on-surface">Cost by Project</h3>
+        <EstimatedMetricTag />
+      </div>
+      {rows.length ? (
+        <div className="mt-5 space-y-4">
+          {rows.map((row) => {
+            const projectLabel = row.projectName || row.projectId || 'Unknown project'
+            const share = totalCost ? clampPercent((Number(row.estimatedCostUsd || 0) / totalCost) * 100) : 0
+            return (
+              <div key={`project-cost-${row.projectId || projectLabel}`} className="rounded-lg border border-outline-variant bg-surface-container-low p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-on-surface">{projectLabel}</p>
+                    <p className="mt-1 text-xs font-medium text-on-surface-variant">
+                      {formatCompactNumber(row.jobs)} job{row.jobs === 1 ? '' : 's'} · {formatCompactNumber(row.tokensTotal)} tokens
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-semibold text-on-surface">{formatCurrency(row.estimatedCostUsd, 4)}</p>
+                    <p className="mt-1 text-[11px] font-semibold text-on-surface-variant">{share.toFixed(2)}%</p>
+                  </div>
+                </div>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-container">
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(6, share)}%` }} />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      ) : (
+        <p className="mt-5 rounded-xl border border-dashed border-outline-variant p-4 text-sm text-on-surface-variant">{emptyText}</p>
+      )}
+    </section>
+  )
+}
+
 function AnalyticsMiniTable({
   title,
   columns,
@@ -4507,8 +4642,8 @@ function AnalyticsMiniTable({
   estimated?: boolean
 }) {
   return (
-    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest">
-      <div className="border-b border-outline-variant p-4">
+    <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+      <div className="border-b border-outline-variant bg-surface-container-lowest p-4">
         <h3 className="flex flex-wrap items-center gap-2 text-base font-semibold">
           <span>{title}</span>
           {estimated ? <EstimatedMetricTag /> : null}
@@ -4517,18 +4652,23 @@ function AnalyticsMiniTable({
       {rows.length ? (
         <div className="overflow-x-auto">
           <table className="w-full min-w-full text-left text-sm">
-            <thead className="border-b border-outline-variant bg-surface-container-low text-xs uppercase text-on-surface-variant">
+            <thead className="border-b border-outline-variant bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
               <tr>
-                {columns.map((column) => (
-                  <th key={column} className="p-3">{column}</th>
+                {columns.map((column, columnIndex) => (
+                  <th key={column} className={`px-4 py-3 ${columnIndex === 0 ? '' : 'text-right'}`}>{column}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-outline-variant">
+            <tbody className="divide-y divide-outline-variant/70">
               {rows.map((row, index) => (
-                <tr key={`${title}-${index}`}>
+                <tr key={`${title}-${index}`} className="transition-colors hover:bg-surface-container-low">
                   {row.map((cell, cellIndex) => (
-                    <td key={`${title}-${index}-${cellIndex}`} className={cellIndex === 0 ? 'p-3 font-semibold' : 'p-3 text-on-surface-variant'}>{cell}</td>
+                    <td
+                      key={`${title}-${index}-${cellIndex}`}
+                      className={`px-4 py-3 ${cellIndex === 0 ? 'font-semibold text-on-surface' : 'text-right font-medium text-on-surface-variant'}`}
+                    >
+                      {cell}
+                    </td>
                   ))}
                 </tr>
               ))}
@@ -4536,7 +4676,7 @@ function AnalyticsMiniTable({
           </table>
         </div>
       ) : (
-        <p className="p-4 text-sm text-on-surface-variant">{emptyText}</p>
+        <p className="m-4 rounded-xl border border-dashed border-outline-variant p-4 text-sm text-on-surface-variant">{emptyText}</p>
       )}
     </div>
   )
@@ -5497,27 +5637,471 @@ function SystemStatusSettings({ services, healthStatus, connectionResult, onTest
   )
 }
 
-function DocumentationPage({ onHelp, onKnowledge, onStatus }: { onHelp: () => void; onKnowledge: () => void; onStatus: () => void }) {
+const investorFaqs: Array<{ category: string; question: string; answer: string }> = [
+  {
+    category: 'Business Value',
+    question: 'What problem does Q-Ops Agent solve?',
+    answer: 'Q-Ops Agent helps teams convert project artifacts such as BRDs, FRDs, HLDs, LLDs, transcripts, and UI designs into reusable QA knowledge and structured QA outputs. It reduces repetitive documentation effort and helps teams move from project context to test strategy, test plans, risk matrices, traceability, epics, user stories, and test cases faster.',
+  },
+  {
+    category: 'Business Value',
+    question: 'Who is the application designed for?',
+    answer: 'It is designed for QA teams, delivery managers, product owners, business analysts, engineering teams, and enterprises that need consistent QA planning, faster test documentation, and better visibility into project readiness.',
+  },
+  {
+    category: 'Business Value',
+    question: 'Does the application replace QA teams?',
+    answer: 'No. It supports QA teams by preparing structured first drafts, highlighting gaps, improving traceability, and reducing manual preparation time. Human review and approval remain important before outputs are used for delivery.',
+  },
+  {
+    category: 'Business Value',
+    question: 'How is this different from using a general AI chat tool?',
+    answer: 'The platform is workflow-driven, project-aware, integrated with Jira and Confluence, auditable, repeatable, and grounded in uploaded project artifacts. It is built around QA operations rather than one-off prompting.',
+  },
+  {
+    category: 'AI Usage',
+    question: 'How does the application use AI?',
+    answer: 'AI is used to extract context from artifacts, build searchable knowledge, reason over project-specific information, and generate structured QA and delivery outputs. Retrieval and quality checks help keep outputs tied to uploaded project context.',
+  },
+  {
+    category: 'AI Usage',
+    question: 'Which AI models does the application use?',
+    answer: 'The model layer is configurable. Different models can be used for document generation, embeddings, and vision processing depending on the desired balance of quality, speed, cost, and enterprise policy.',
+  },
+  {
+    category: 'AI Usage',
+    question: 'Can the model provider be changed later?',
+    answer: 'Yes, the architecture can support configurable model providers and model versions. Provider changes should be tested carefully because token accounting, output quality, latency, and supported features may vary.',
+  },
+  {
+    category: 'AI Usage',
+    question: 'How does the system reduce hallucinated outputs?',
+    answer: 'It uses project-specific retrieval, structured prompts, quality gates, required-section checks, traceability checks, source grounding, audit logs, and human review. These controls reduce risk, but generated outputs should still be reviewed before final use.',
+  },
+  {
+    category: 'Security',
+    question: 'How is access controlled?',
+    answer: 'Access is intended to be project-scoped. Admins manage users, projects, settings, and integrations, while registered users work only within assigned projects and see only the related artifacts, jobs, analytics, and outputs.',
+  },
+  {
+    category: 'Security',
+    question: 'What security controls are important for this application?',
+    answer: 'Important controls include authentication, role-based access, project-level authorization, secure webhooks, audit logging, encrypted storage, secret management, restricted service-role usage, and least-privilege access to external systems.',
+  },
+  {
+    category: 'Security',
+    question: 'How are API keys and third-party credentials protected?',
+    answer: 'Secrets such as Jira, Confluence, Supabase, model provider, and n8n credentials should be stored in secure environment variables or credential stores. They should never be committed to source code, logs, exported workflow files, or documentation.',
+  },
+  {
+    category: 'Security',
+    question: 'Is customer data used to train public AI models?',
+    answer: 'The application should be configured so customer data is not used to train public foundation models. This depends on the selected provider, enterprise plan, and data-processing terms.',
+  },
+  {
+    category: 'Data Storage',
+    question: 'Where is uploaded data stored?',
+    answer: 'Uploaded files, job metadata, generated outputs, audit records, and analytics are stored in configured backend systems such as the application database, object storage, and vector database. The exact location depends on deployment configuration.',
+  },
+  {
+    category: 'Data Storage',
+    question: 'What goes into the vector database?',
+    answer: 'The vector database stores searchable chunks and metadata needed for retrieval, such as project, document type, source file, chunk ID, job ID, and processing context. This allows generation workflows to retrieve relevant project knowledge.',
+  },
+  {
+    category: 'Data Storage',
+    question: 'Are original documents stored separately from embeddings?',
+    answer: 'Typically yes. Original files are stored in object storage, while extracted text, metadata, chunks, and embeddings are stored separately for retrieval and analytics.',
+  },
+  {
+    category: 'Data Storage',
+    question: 'Can data be deleted later?',
+    answer: 'A production-grade deployment should support project-level deletion, artifact deletion, vector cleanup, generated-output cleanup, and retention policies for audit data.',
+  },
+  {
+    category: 'IP Protection',
+    question: 'How is intellectual property protected?',
+    answer: 'Project documents and generated outputs remain tied to the customer workspace and assigned projects. Access controls, audit trails, secure storage, and project-scoped retrieval help protect project IP.',
+  },
+  {
+    category: 'IP Protection',
+    question: 'Can one project accidentally use another project’s context?',
+    answer: 'The retrieval layer should filter by project metadata and active knowledge-base version. This prevents generation workflows from mixing unrelated project context and protects tenant or project boundaries.',
+  },
+  {
+    category: 'Cost And Tokens',
+    question: 'How does the application control AI cost?',
+    answer: 'It tracks token usage, estimated cost, job metrics, model usage, and pipeline-level spend. Teams can monitor cost by project, pipeline, document type, and recent job activity.',
+  },
+  {
+    category: 'Cost And Tokens',
+    question: 'Are token and cost values exact?',
+    answer: 'Not always. Ingestion tokens and cost are usually estimated. Generation usage may use provider-reported token data when available, but cost should still be treated as estimated unless reconciled with final provider billing.',
+  },
+  {
+    category: 'Cost And Tokens',
+    question: 'Why are token and cost estimates useful?',
+    answer: 'They help teams forecast spend, compare project usage, identify expensive workflows, and optimize prompts, document size, chunking, retrieval, and model selection.',
+  },
+  {
+    category: 'Cost And Tokens',
+    question: 'Can the application prevent runaway AI usage?',
+    answer: 'Yes. Recommended controls include file limits, job queueing, retry limits, max-token settings, usage dashboards, budget alerts, and per-project cost monitoring.',
+  },
+  {
+    category: 'Caching',
+    question: 'Can repeated AI requests be cached?',
+    answer: 'Yes. A job can be a cache candidate when the project context, source artifacts, prompt version, model, settings, document type, and retrieval configuration have not changed.',
+  },
+  {
+    category: 'Caching',
+    question: 'Will caching affect output quality?',
+    answer: 'Caching can preserve quality for repeated requests, but it should not be used when source documents, prompts, models, or business rules have changed. Cache validation rules are essential.',
+  },
+  {
+    category: 'Workflow Reliability',
+    question: 'What happens if a job fails?',
+    answer: 'Failed jobs are tracked with status, error details, metrics, and retry options where appropriate. This allows users to review the cause and safely retry ingestion or generation when needed.',
+  },
+  {
+    category: 'Workflow Reliability',
+    question: 'Why does the platform use queued workflows?',
+    answer: 'Queueing keeps large ingestion and generation workloads controlled, prevents overload, supports retry behavior, and allows multiple jobs to be processed safely.',
+  },
+  {
+    category: 'Workflow Reliability',
+    question: 'Can users monitor long-running jobs?',
+    answer: 'Yes. Job status panels show submitted, pending, processing, completed, and failed states so users can track progress without guessing what is happening in the backend.',
+  },
+  {
+    category: 'Integrations',
+    question: 'Can the platform integrate with Jira and Confluence?',
+    answer: 'Yes. The application can generate Jira epics, user stories, and test cases, and can publish QA documents such as test strategies and test plans to Confluence.',
+  },
+  {
+    category: 'Integrations',
+    question: 'Does it support both Team-managed and Company-managed Jira projects?',
+    answer: 'This is an important scalability requirement. The creation workflow should detect the Jira project type and route epic, story, and linking logic accordingly because Team-managed and Company-managed projects differ.',
+  },
+  {
+    category: 'Governance',
+    question: 'Does the platform keep an audit trail?',
+    answer: 'Yes. Important actions such as login, project creation, artifact upload, knowledge-base creation, document generation, retries, settings changes, and integration checks should be audit logged.',
+  },
+  {
+    category: 'Governance',
+    question: 'How does the application support enterprise governance?',
+    answer: 'It supports repeatable workflows, role-based access, traceability, status tracking, usage metrics, audit events, and configurable integrations. These controls make AI-assisted QA easier to govern.',
+  },
+  {
+    category: 'Deployment',
+    question: 'Can this be deployed inside an enterprise environment?',
+    answer: 'Yes, with the right architecture. Enterprises may require private networking, dedicated databases, private storage, SSO, audit exports, data-retention controls, and approved model providers.',
+  },
+  {
+    category: 'Deployment',
+    question: 'What are the biggest risks in this kind of AI application?',
+    answer: 'The major risks are data leakage, weak access control, hallucinated outputs, uncontrolled token spend, poor prompt/version governance, weak auditability, and stale or mixed retrieval context.',
+  },
+  {
+    category: 'Deployment',
+    question: 'How are those risks mitigated?',
+    answer: 'Through secure authentication, project-level access, secret management, controlled workflows, traceability checks, cost tracking, audit logs, human review, and versioned prompts/settings.',
+  },
+  {
+    category: 'Investor Perspective',
+    question: 'Why is this valuable to leadership and investors?',
+    answer: 'It shows measurable productivity gains, reduced QA cycle time, better coverage, repeatable delivery governance, cost visibility, and scalable AI-assisted documentation across projects.',
+  },
+  {
+    category: 'Investor Perspective',
+    question: 'What is the long-term value of the platform?',
+    answer: 'It can become a QA intelligence layer across projects, helping organizations reuse knowledge, standardize QA outputs, improve governance, and reduce repeated manual effort across delivery teams.',
+  },
+]
+
+function FaqPage() {
+  const groupedFaqs = investorFaqs.reduce<Record<string, typeof investorFaqs>>((groups, item) => {
+    groups[item.category] = groups[item.category] || []
+    groups[item.category].push(item)
+    return groups
+  }, {})
+
   return (
     <section className="space-y-6">
-      <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
-        <h3 className="text-xl font-semibold">Q-Ops Agent Documentation</h3>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-on-surface-variant">Q-Ops Agent converts requirements, technical documents, transcripts, and UI designs into reusable QA intelligence and production-ready QA outputs.</p>
-        <div className="mt-5 flex gap-3">
-          <button onClick={onKnowledge} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary">Create Knowledge Base</button>
-          <button onClick={onHelp} className="rounded-lg border border-outline-variant px-4 py-2 text-sm font-bold hover:bg-surface-container">Open Help Drawer</button>
-          <button onClick={onStatus} className="rounded-lg border border-outline-variant px-4 py-2 text-sm font-bold hover:bg-surface-container">System Status</button>
+      <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Client and investor readiness</p>
+        <h3 className="mt-2 text-2xl font-semibold text-on-surface">Frequently Asked Questions</h3>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-on-surface-variant">
+          Clear answers for security, cost, data storage, IP protection, AI usage, integrations, governance, and enterprise scalability.
+        </p>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
+        <aside className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-on-surface-variant">Topics</p>
+          <div className="mt-4 flex flex-wrap gap-2 lg:flex-col">
+            {Object.entries(groupedFaqs).map(([category, items]) => (
+              <a key={category} href={`#faq-${category.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} className="rounded-full border border-outline-variant bg-surface-container-low px-3 py-1.5 text-xs font-bold text-on-surface-variant hover:border-primary hover:text-primary lg:rounded-lg">
+                {category} ({items.length})
+              </a>
+            ))}
+          </div>
+        </aside>
+
+        <div className="space-y-6">
+          {Object.entries(groupedFaqs).map(([category, items]) => (
+            <section key={category} id={`faq-${category.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm">
+              <h4 className="text-lg font-semibold text-on-surface">{category}</h4>
+              <div className="mt-4 divide-y divide-outline-variant overflow-hidden rounded-xl border border-outline-variant">
+                {items.map((item, index) => (
+                  <details key={item.question} className="group bg-surface-container-lowest open:bg-surface-container-low">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-low">
+                      <span>{index + 1}. {item.question}</span>
+                      <ChevronDown className="h-4 w-4 shrink-0 text-on-surface-variant transition-transform group-open:rotate-180" />
+                    </summary>
+                    <div className="px-4 pb-4 text-sm leading-6 text-on-surface-variant">
+                      {item.answer}
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </section>
+          ))}
         </div>
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        {helpArticles.map((article) => (
-          <article key={article.title} className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary">{article.group}</p>
-            <h4 className="mt-2 text-lg font-semibold">{article.title}</h4>
-            <p className="mt-2 text-sm leading-6 text-on-surface-variant">{article.body}</p>
-          </article>
-        ))}
+    </section>
+  )
+}
+
+function DocumentationPage({ onHelp, onKnowledge, onStatus }: { onHelp: () => void; onKnowledge: () => void; onStatus: () => void }) {
+  const productOutcomes = [
+    { label: 'Ingest', value: 'BRD, FRD, HLD, LLD, transcripts, and UI designs' },
+    { label: 'Understand', value: 'Text, images, chunks, embeddings, and project metadata' },
+    { label: 'Generate', value: 'Strategies, plans, risks, traceability, Jira backlog, and test cases' },
+    { label: 'Govern', value: 'Status, audit logs, analytics, cost visibility, and retries' },
+  ]
+  const e2eSteps = ['Upload artifacts', 'Create jobs', 'Extract context', 'Chunk and embed', 'Store knowledge', 'Generate outputs', 'Publish results', 'Track analytics']
+  const architectureNodes = [
+    { title: 'Frontend', detail: 'Role-aware workspace, job panels, analytics, documentation, and settings.' },
+    { title: 'n8n Workflows', detail: 'Upload, worker, generation, status, analytics, and integration orchestration.' },
+    { title: 'Supabase', detail: 'Auth, projects, artifacts, job metrics, audit records, and storage.' },
+    { title: 'Extractor Service', detail: 'Document text and image extraction through /process-document-v2.' },
+    { title: 'ChromaDB', detail: 'Project-scoped chunks, embeddings, and retrieval metadata.' },
+    { title: 'LLM Layer', detail: 'Generation, embeddings, and vision usage where configured.' },
+    { title: 'Jira / Confluence', detail: 'Backlog issues and documentation publishing destinations.' },
+  ]
+  const moduleCards = [
+    { icon: LayoutDashboard, title: 'Dashboard', detail: 'Monitor active work, jump to key workflows, and review operational status.' },
+    { icon: UploadCloud, title: 'Create Knowledge Base', detail: 'Upload artifacts and create per-file ingestion jobs with visible progress.' },
+    { icon: FileText, title: 'Generate Documents', detail: 'Create QA deliverables from retrieval-ready project context.' },
+    { icon: Archive, title: 'Artifacts', detail: 'Review source files, processing outcomes, and reprocess candidates.' },
+    { icon: BarChart3, title: 'Analytics', detail: 'Track jobs, success rate, estimated cost, token usage, and failures.' },
+    { icon: Settings, title: 'Settings', detail: 'Manage users, integrations, defaults, health checks, and runtime routing.' },
+  ]
+  const deliverables = [
+    ['Test Strategy', 'Confluence-ready strategic QA coverage and approach.'],
+    ['Test Plan', 'Execution-focused scope, entry, exit, schedule, and risk detail.'],
+    ['Risk Matrix', 'Risk identification, impact, probability, and mitigation planning.'],
+    ['Traceability Matrix', 'Requirement-to-test coverage mapping.'],
+    ['Epics & User Stories', 'Jira-ready backlog creation from project context.'],
+    ['Story Test Cases', 'Jira test cases linked back to generated stories.'],
+  ]
+  const runbookItems = [
+    ['Job failed', 'Open Error Details, inspect the backend message, then retry only when the cause is clear.'],
+    ['No chunks returned', 'Check Chroma metadata, project name, collection, and ingestion completion for the selected project.'],
+    ['Supabase auth issue', 'Refresh the session, verify JWT shape, and avoid sending malformed local-storage tokens.'],
+    ['n8n timeout or memory issue', 'Check extractor runtime, file size, image volume, workflow timeout, and worker logs.'],
+    ['Jira creation failed', 'Validate project type, issue type mapping, parent linking, and credential scope.'],
+    ['Cost looks high', 'Review token-heavy jobs, prompt size, retrieved chunks, document size, and cache candidates.'],
+  ]
+  const roadmap = [
+    'Reintroduce advanced extractor features with bounded memory and page/image limits.',
+    'Add cache eligibility checks for repeated generation requests.',
+    'Support Jira Team-managed and Company-managed project routing.',
+    'Introduce knowledge-base versioning for cleaner retrieval isolation.',
+    'Move toward billing-grade provider usage capture for every model call.',
+  ]
+
+  return (
+    <section className="space-y-8">
+      <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+        <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:p-8">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Product guide</p>
+            <h3 className="mt-3 text-3xl font-semibold leading-tight text-on-surface">Q-Ops Agent turns project artifacts into governed QA intelligence.</h3>
+            <p className="mt-4 max-w-3xl text-sm leading-6 text-on-surface-variant">
+              This page explains how the application ingests source documents, builds project knowledge, generates QA deliverables, publishes to delivery tools, and tracks operational analytics.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button onClick={onKnowledge} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary">Create Knowledge Base</button>
+              <button onClick={onStatus} className="rounded-lg border border-outline-variant px-4 py-2 text-sm font-bold hover:bg-surface-container">System Status</button>
+              <button onClick={onHelp} className="rounded-lg border border-outline-variant px-4 py-2 text-sm font-bold hover:bg-surface-container">Open Help Drawer</button>
+            </div>
+          </div>
+          <div className="rounded-xl border border-outline-variant bg-surface-container-low p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-on-surface-variant">Operating model</p>
+            <div className="mt-4 space-y-3">
+              {productOutcomes.map((item) => (
+                <div key={item.label} className="rounded-lg bg-surface-container-lowest p-3">
+                  <p className="text-sm font-bold text-primary">{item.label}</p>
+                  <p className="mt-1 text-xs leading-5 text-on-surface-variant">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
+
+      <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">End-to-end flow</p>
+            <h4 className="mt-2 text-xl font-semibold text-on-surface">From source files to QA outputs</h4>
+          </div>
+          <StatusBadge status="info" label="Workflow guided" />
+        </div>
+        <div className="mt-6 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+          {e2eSteps.map((step, index) => (
+            <div key={step} className="relative rounded-xl border border-outline-variant bg-surface-container-low p-4 text-center">
+              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary">{index + 1}</div>
+              <p className="mt-3 text-sm font-semibold text-on-surface">{step}</p>
+              {index < e2eSteps.length - 1 ? <span className="absolute -right-2 top-1/2 hidden -translate-y-1/2 text-primary xl:block">-&gt;</span> : null}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-2">
+        <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Application modules</p>
+          <h4 className="mt-2 text-xl font-semibold text-on-surface">What each screen is for</h4>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            {moduleCards.map((item) => {
+              const Icon = item.icon
+              return (
+                <article key={item.title} className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-lg bg-primary/10 p-2 text-primary"><Icon className="h-4 w-4" /></div>
+                    <div>
+                      <h5 className="font-semibold text-on-surface">{item.title}</h5>
+                      <p className="mt-1 text-xs leading-5 text-on-surface-variant">{item.detail}</p>
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Integration architecture</p>
+          <h4 className="mt-2 text-xl font-semibold text-on-surface">How the platform pieces connect</h4>
+          <div className="mt-5 space-y-3">
+            {architectureNodes.map((node, index) => (
+              <div key={node.title} className="flex gap-3">
+                <div className="flex flex-col items-center">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-on-primary">{index + 1}</div>
+                  {index < architectureNodes.length - 1 ? <div className="h-full min-h-6 w-px bg-outline-variant" /> : null}
+                </div>
+                <div className="flex-1 rounded-lg border border-outline-variant bg-surface-container-low p-3">
+                  <p className="text-sm font-semibold text-on-surface">{node.title}</p>
+                  <p className="mt-1 text-xs leading-5 text-on-surface-variant">{node.detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-2">
+        <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-success">Ingestion pipeline</p>
+          <h4 className="mt-2 text-xl font-semibold text-on-surface">Create Knowledge Base</h4>
+          <p className="mt-2 text-sm leading-6 text-on-surface-variant">
+            Ingestion creates jobs, extracts text and image context, chunks source content, writes vectors, and updates project readiness.
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            {['Per-file job creation', 'Text and embedded image extraction', 'Vision enrichment when images exist', 'Chunking and ChromaDB storage', 'Job status polling and retry', 'Estimated token and cost analytics'].map((item) => (
+              <div key={item} className="rounded-lg bg-surface-container-low p-3 text-sm font-semibold text-on-surface">{item}</div>
+            ))}
+          </div>
+          <p className="mt-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs leading-5 text-warning">
+            Token and cost values in ingestion are estimates because embeddings and vision usage may not always expose provider billing data.
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Generation pipeline</p>
+          <h4 className="mt-2 text-xl font-semibold text-on-surface">Generate Documents</h4>
+          <p className="mt-2 text-sm leading-6 text-on-surface-variant">
+            Generation retrieves project knowledge, prompts the configured model, validates output quality, and publishes documents or Jira issues.
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            {deliverables.map(([title, detail]) => (
+              <div key={title} className="rounded-lg border border-outline-variant bg-surface-container-low p-3">
+                <p className="text-sm font-semibold text-on-surface">{title}</p>
+                <p className="mt-1 text-xs leading-5 text-on-surface-variant">{detail}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 rounded-lg border border-primary/20 bg-primary/10 p-3 text-xs leading-5 text-primary">
+            Generation token usage uses provider data when available and falls back to estimates when workflow nodes do not expose usage.
+          </p>
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Security, governance, and cost</p>
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          <article className="rounded-xl bg-surface-container-low p-4">
+            <ShieldCheck className="h-6 w-6 text-primary" />
+            <h5 className="mt-3 font-semibold text-on-surface">Access And IP Protection</h5>
+            <p className="mt-2 text-sm leading-6 text-on-surface-variant">Users work within assigned projects. Secrets belong in backend credentials or environment variables, not source code or documentation.</p>
+          </article>
+          <article className="rounded-xl bg-surface-container-low p-4">
+            <History className="h-6 w-6 text-primary" />
+            <h5 className="mt-3 font-semibold text-on-surface">Auditability</h5>
+            <p className="mt-2 text-sm leading-6 text-on-surface-variant">Uploads, generation requests, retries, settings changes, and backend events are tracked for operational transparency.</p>
+          </article>
+          <article className="rounded-xl bg-surface-container-low p-4">
+            <Gauge className="h-6 w-6 text-primary" />
+            <h5 className="mt-3 font-semibold text-on-surface">Cost Visibility</h5>
+            <p className="mt-2 text-sm leading-6 text-on-surface-variant">Analytics show cost by pipeline, project, job type, and recent activity so teams can understand and optimize AI usage.</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-2">
+        <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-warning">Operational runbook</p>
+          <h4 className="mt-2 text-xl font-semibold text-on-surface">Common situations to investigate</h4>
+          <div className="mt-5 divide-y divide-outline-variant overflow-hidden rounded-xl border border-outline-variant">
+            {runbookItems.map(([title, detail]) => (
+              <details key={title} className="group bg-surface-container-lowest open:bg-surface-container-low">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 text-sm font-semibold text-on-surface hover:bg-surface-container-low">
+                  <span>{title}</span>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-on-surface-variant transition-transform group-open:rotate-180" />
+                </summary>
+                <p className="px-4 pb-4 text-sm leading-6 text-on-surface-variant">{detail}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Phase 2 roadmap</p>
+          <h4 className="mt-2 text-xl font-semibold text-on-surface">Planned scalability upgrades</h4>
+          <div className="mt-5 space-y-3">
+            {roadmap.map((item, index) => (
+              <div key={item} className="flex gap-3 rounded-lg bg-surface-container-low p-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-on-primary">{index + 1}</span>
+                <p className="text-sm leading-6 text-on-surface-variant">{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </section>
   )
 }
@@ -5531,6 +6115,7 @@ function SearchPalette({ projects, artifacts, outputs, jobs, onClose, setView, o
       ...artifacts.map((item) => ({ group: 'Artifacts', title: item.fileName, meta: item.projectName, view: 'artifacts' as View })),
       ...jobs.filter((job) => job.jobId).map((job) => ({ group: 'Jobs', title: job.jobId || '', meta: job.status, view: 'overview' as View })),
       ...outputs.map((item) => ({ group: 'Generated Outputs', title: item.artifactLabel, meta: item.projectName, view: 'documents' as View })),
+      { group: 'Resources', title: 'FAQs', meta: 'Security, cost, storage, IP, usage, and investor questions', view: 'faqs' as View },
       { group: 'Delivery Intelligence', title: 'Delivery Intelligence Overview', meta: 'Extract reusable SDLC intelligence', view: 'di-overview' as View },
       { group: 'Delivery Intelligence', title: 'Project Profile', meta: 'Read synthesized internal project signals', view: 'di-profile' as View },
       { group: 'Delivery Intelligence', title: 'Onboarding Guide', meta: 'Open the generated team ramp-up guide', view: 'di-onboarding' as View },
