@@ -1,0 +1,1404 @@
+{
+  "updatedAt": "2026-04-16T10:14:26.000Z",
+  "createdAt": "2025-11-26T12:57:39.215Z",
+  "id": "QA1M2UVADLckZYi0",
+  "name": "Test Strategy Generator - Text + OpenAI Vision Extractor (Final Version)",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "brd",
+        "options": {}
+      },
+      "id": "1280b5f1-e20a-4c36-a746-74478dbca2dc",
+      "name": "Extract BRD Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -4304,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "frd",
+        "options": {}
+      },
+      "id": "4e594631-1c3d-429c-a9b9-4f556239e78a",
+      "name": "Extract FRD Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -4304,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "hld",
+        "options": {}
+      },
+      "id": "bb619cfb-5366-46f1-ad2e-c8df93c83ada",
+      "name": "Extract HLD Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -4304,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "lld",
+        "options": {}
+      },
+      "id": "f3447a23-a783-4629-b14e-fe583bb697fd",
+      "name": "Extract LLD Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -4304,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize and tag Grooming Transcript\nlet combinedText = '';\n\nfor (const item of items) {\n  // after extraction, text is inside item.json.data\n  const text = item.json?.data?.toString().trim();\n  if (text) combinedText += '\\n' + text;\n}\n\n// cleanup formatting\ncombinedText = combinedText\n  .replace(/\\r/g, '')\n  .replace(/\\n{3,}/g, '\\n\\n')\n  .replace(/[ \\t]{2,}/g, ' ')\n  .trim();\n\nreturn [\n  {\n    json: {\n      sourceName: \"Grooming Transcript\",\n      sourceType: \"TRANSCRIPT\",\n      text: `### Source: GROOMING TRANSCRIPT\\n${combinedText}`,\n      timestamp: new Date().toISOString()\n    }\n  }\n];\n"
+      },
+      "id": "78bf3cb9-ec56-4265-ad3e-807b183c7d4d",
+      "name": "Normalize Transcript Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3408,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: {}, binary: { data: { data: Buffer.from($input.first().json.output[0].content[0].text, 'utf8'), mimeType: 'text/markdown', fileName: 'Merged-Test-Plan.md' } } }];"
+      },
+      "id": "ba58bc87-da67-4ee4-87c8-32fb810dadec",
+      "name": "Prepare Markdown Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1120,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/convert",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "markdown",
+              "value": "={{ $('OpenAI - Generate Test Strategy').item.json.output[0].content[0].text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d70dfacb-303e-4a06-9ed9-36da5eb354b7",
+      "name": "Convert md to docx",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -720,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge all normalized document + transcript text into one large context\nlet allTexts = [];\n\nfor (const item of items) {\n  const src = item.json.sourceType || item.json.sourceName || item.json.source || \"Unknown Source\";\n  const txt = item.json.text || item.json.normalizedVisionText || \"\";\n\n  if (txt.trim()) {\n    allTexts.push(txt); // already has Source: tags\n  }\n}\n\n// Optional: Insert separator between sources\nconst merged = allTexts.join(\"\\n\\n---\\n\\n\");\n\nreturn [{\n  json: {\n    mergedContext: merged,\n    contextCount: allTexts.length\n  }\n}];\n"
+      },
+      "id": "8aeb9ada-9e22-476c-bd2e-57c2dc1441ac",
+      "name": "Merged Context for OpenAI",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1856,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get text safely from previous node (supports both JSON and binary markdown)\nlet md = \"\";\n\n// Case 1: Markdown came as text field in JSON\nif (items[0]?.json?.output?.[0]?.content?.[0]?.text) {\n  md = items[0].json.output[0].content[0].text;\n}\n\n// Case 2: Markdown came as binary file\nelse if (items[0]?.binary?.data) {\n  md = Buffer.from(items[0].binary.data.data, 'base64').toString('utf8');\n}\n\n// Case 3: Markdown as plain text field\nelse if (items[0]?.json?.data) {\n  md = items[0].json.data;\n}\n\nelse {\n  return [{ json: { error: \"No markdown input found for cleaning\" } }];\n}\n\n// Clean and format Markdown\nlet cleaned = md\n  .replace(/#+\\s+/g, match => `\\n\\n${match}`) // add spacing before headings\n  .replace(/-{3,}/g, '\\n\\n\\\\page\\n\\n')         // convert --- to page breaks\n  .replace(/\\n{3,}/g, '\\n\\n')                  // collapse extra newlines\n  .trim();\n\nreturn [{\n  json: {\n    cleanedMarkdown: cleaned\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        -160
+      ],
+      "id": "9afffc0f-3dec-4ac1-a202-3149f0580b8d",
+      "name": "Clean Markdown Formatting"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/upload-test-docs",
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "id": "e9df2782-e847-4731-924d-8736e3e34338",
+      "name": "Webhook - Upload Test Docs",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -8048,
+        -192
+      ],
+      "webhookId": "b136638c-fd1c-4ac4-a35c-1e0aeabe2f76",
+      "alwaysOutputData": false,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const binKey = Object.keys(item.binary || {})[0]; // get current binary key\n  if (binKey) {\n    item.binary.lld = item.binary[binKey]; // rename to brd\n    delete item.binary[binKey]; // clean up old key (optional)\n  }\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4528,
+        208
+      ],
+      "id": "8fd55335-3baf-4a0d-bf29-c7608aaac023",
+      "name": "Rename binary key - LLD"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const binKey = Object.keys(item.binary || {})[0]; // get current binary key\n  if (binKey) {\n    item.binary.hld = item.binary[binKey]; // rename to brd\n    delete item.binary[binKey]; // clean up old key (optional)\n  }\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4528,
+        16
+      ],
+      "id": "21ddae33-3372-428d-a308-0d7bc29c0af0",
+      "name": "Rename binary key - HLD"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const binKey = Object.keys(item.binary || {})[0]; // get current binary key\n  if (binKey) {\n    item.binary.frd = item.binary[binKey]; // rename to brd\n    delete item.binary[binKey]; // clean up old key (optional)\n  }\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4528,
+        -176
+      ],
+      "id": "0bb87bd4-de43-4637-a0a2-8de7f9d69022",
+      "name": "Rename binary key - FRD"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const binKey = Object.keys(item.binary || {})[0]; // get current binary key\n  if (binKey) {\n    item.binary.brd = item.binary[binKey]; // rename to brd\n    delete item.binary[binKey]; // clean up old key (optional)\n  }\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4528,
+        -416
+      ],
+      "id": "102d9470-5ac9-4744-a57c-e7672f5d2f47",
+      "name": "Rename binary key - BRD"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "id": "c1b88223-6880-4d5a-b87a-a9b9fa4474d8",
+      "name": "Extract Transcript Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -4304,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "text": "=You are analyzing visual content from a software document ({{ $json.docType }}).\nExtract and summarize:\n1. Any readable text in the image.\n2. Describe diagrams or flows in simple sentences.\n3. Identify if it shows requirements, features, user flows, or architecture.\nReturn a clean, structured text summary suitable for inclusion in a test plan document.\n",
+        "inputType": "base64",
+        "binaryPropertyName": "=data",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        -3456,
+        -976
+      ],
+      "id": "48bd13ff-460c-49a2-9d0e-0f7d8914d83e",
+      "name": "Open AI - Vision Extractor",
+      "alwaysOutputData": false,
+      "credentials": {
+        "openAiApi": {
+          "id": "rdVg2Kks1mUCJf4R",
+          "name": "OpenAi Paid Account (Aonu)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c1ae99e2-4534-4205-8930-e7a422d34718",
+                    "leftValue": "={{ $json.contentType }}",
+                    "rightValue": "image-only",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c4a66703-d399-44a8-8758-cadbc5092ce5",
+                    "leftValue": "={{ $json.contentType }}",
+                    "rightValue": "mixed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "691a0fc4-19bb-4a2d-b9d6-ff30a96ef53b",
+                    "leftValue": "={{ $json.contentType }}",
+                    "rightValue": "plain-text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -7376,
+        -208
+      ],
+      "id": "e53b1430-694c-4aff-9f64-800692199d3b",
+      "name": "Switch - Find Extractor"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Normalize text extracted by OpenAI Vision or similar models.\n * Cleans and standardizes Vision output while preserving metadata (e.g. fileName, docType).\n * Works for OpenAI \"Analyze Image\" output or other message-based formats.\n */\n\nconst newItems = [];\n\nfor (const outer of items) {\n  const meta = outer.json || {};\n\n  // Some OpenAI Vision responses are nested message arrays or structured responses\n  const messageArray = Array.isArray(meta) ? meta\n    : meta.content ? [meta]\n    : Array.isArray(outer) ? outer\n    : [outer];\n\n  for (const msg of messageArray) {\n    let text = '';\n\n    // --- Extract text safely from common OpenAI output formats ---\n    if (msg?.json?.text) {\n      text = msg.json.text;\n    } else if (msg?.text) {\n      text = msg.text;\n    } else if (msg?.content && Array.isArray(msg.content)) {\n      const contentText = msg.content.find(c => c.type === 'output_text');\n      if (contentText?.text) text = contentText.text;\n    } else if (typeof msg === 'string') {\n      text = msg;\n    }\n\n    if (typeof text !== 'string') text = String(text || '');\n\n    // --- Step 1: Basic cleanup ---\n    text = text\n      .replace(/\\r\\n/g, '\\n')\n      .replace(/[ \\t]+/g, ' ')\n      .replace(/\\n{2,}/g, '\\n\\n')\n      .replace(/\\f/g, ' ')\n      .trim();\n\n    // --- Step 2: Remove repeated or noisy labels ---\n    const lines = text.split('\\n');\n    const seen = new Set();\n    const filtered = lines.filter(line => {\n      const l = line.trim().toLowerCase();\n      if (!l || seen.has(l)) return false;\n      seen.add(l);\n      if (/^(diagram|figure|screenshot|ui|image|architecture|flow|mockup)/i.test(l)) return false;\n      return true;\n    });\n    text = filtered.join('\\n').trim();\n\n    // --- Step 3: Normalize punctuation ---\n    text = text\n      .replace(/\\s+([.,;:!?])/g, '$1')\n      .replace(/([.,;:!?])([^\\s])/g, '$1 $2')\n      .replace(/\\s{2,}/g, ' ');\n\n    // --- Step 4: Capitalize sentence starts ---\n    text = text.replace(/(^|[.!?]\\s+)([a-z])/g, (_, prefix, c) => prefix + c.toUpperCase());\n\n    // --- Step 5: Truncate if Vision returns long structured dumps ---\n    if (text.length > 5000) {\n      text = text.slice(0, 5000) + '... [truncated for processing]';\n    }\n\n    // --- Step 6: Attach metadata for merging later ---\n    const normalized = {\n      normalizedVisionText: text,\n      source: 'Vision',\n      cleaningStatus: 'normalized',\n      fileName: $('Switch - Find Extractor').first().json.fileName || 'Unknown_File',\n      fileType: $('Switch - Find Extractor').first().json.fileType || 'Unknown',\n      docType: $('Switch - Find Extractor').first().json.docType || 'Unknown',\n      requiresVision: $('Switch - Find Extractor').first().json.requiresVision ?? true,\n      contentType: $('Switch - Find Extractor').first().json.contentType || 'image',\n    };\n\n    newItems.push({ json: normalized });\n  }\n}\n\nreturn newItems;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3216,
+        -976
+      ],
+      "id": "669b5b1e-7407-4f59-9065-b65ecbd6f0b1",
+      "name": "Normalize Image Vision Text"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize and tag each document extract with type headers\nconst cleanedDocs = [];\n\nfor (const item of items) {\n  const d = item.json || {};\n  const text = d.text || \"\";\n\n  // Identify document type\n  const type =\n    d.fileName?.match(/BRD|FRD|HLD|LLD/i)?.[0]?.toUpperCase() || \"DOCUMENT\";\n\n  // Basic cleaning: remove extra spaces, page numbers, headers/footers\n  const cleaned = text\n    .replace(/\\bPage\\s+\\d+\\b/gi, \"\") // remove page numbers\n    .replace(/\\n\\s*\\n\\s*\\n+/g, \"\\n\\n\") // collapse multiple newlines\n    .replace(/[ \\t]{2,}/g, \" \") // remove excessive spaces\n    .trim();\n\n  cleanedDocs.push({\n    json: {\n      sourceName: d.fileName || \"Unknown Document\",\n      sourceType: type,\n      text: `### Source: ${type}\\n${cleaned}`,\n      timestamp: new Date().toISOString(),\n    },\n  });\n}\n\nreturn cleanedDocs;\n"
+      },
+      "id": "d88bbee0-b76b-483b-bc27-299793c42252",
+      "name": "Normalize Documents Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3552,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2048,
+        -176
+      ],
+      "id": "2459f630-acac-4cda-b891-7386dbc164f5",
+      "name": "Merge Normalized Image + Docs + Transcript Text"
+    },
+    {
+      "parameters": {
+        "executeOnce": false,
+        "command": "=python \"C:\\\\Users\\\\anujalhans01\\\\DOCUMENT-PARSER\\\\extract_images.py\" {{ $json.fileName }}"
+      },
+      "id": "3cae80f4-9bec-4c82-b924-b0420203349c",
+      "name": "Run Python Extractor to extract images",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -6048,
+        -80
+      ],
+      "executeOnce": false,
+      "notesInFlow": true,
+      "notes": "Python file responsible to extract images from documents"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.isExtractedImage }}",
+                    "rightValue": "brd",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "6531d6fe-de15-4121-b8fe-ce053cbf9af5"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "23c97bf0-d89b-47f8-80eb-0daa733b2a56",
+                    "leftValue": "={{ $json.docType }}",
+                    "rightValue": "brd",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d14bf545-fe2e-431e-af66-5d7ff5a964a6",
+                    "leftValue": "={{ $json.docType }}",
+                    "rightValue": "frd",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "73dd074b-78f0-4c06-b110-7c6208be4455",
+                    "leftValue": "={{ $json.docType }}",
+                    "rightValue": "hld",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c0e1edfb-e09d-46f0-91e7-b3eaa0be4d7d",
+                    "leftValue": "={{ $json.docType }}",
+                    "rightValue": "lld",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -5168,
+        -224
+      ],
+      "id": "e83e0f21-374d-49c6-bd46-de5ba570bf2c",
+      "name": "Switch - docs Extractor route"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -5840,
+        -176
+      ],
+      "id": "cea63ed9-84f9-46ff-9370-152f7b14fb59",
+      "name": "Merge JSON Outputs"
+    },
+    {
+      "parameters": {
+        "jsCode": "let output = [];\n\nfor (const item of items) {\n\n  const out = item.json.stdout;\n  if (!out) throw new Error(\"No stdout returned from Python script.\");\n\n  let parsed;\n  try {\n    parsed = JSON.parse(out);\n  } catch (err) {\n    throw new Error(\"Invalid JSON in stdout: \" + out);\n  }\n\n  const arr = Array.isArray(parsed) ? parsed : [parsed];\n\n  // Main PDF entry (not extracted images)\n  const docInfo = arr.find(p => !p.isExtractedImage) || arr[0];\n\n  //\n  // 1️⃣  Create MAIN PDF ITEM\n  //\n  const pdfItem = {\n    json: {\n      ...item.json,\n      parsedRaw: arr,\n      parsedContainsImage: docInfo.containsImage,\n      parsedImageCount: docInfo.imageCount,\n      parsedImageFiles: docInfo.imageFiles\n    },\n    binary: item.binary || {}\n  };\n\n  output.push(pdfItem);\n\n  //\n  // 2️⃣  If extracted images exist → create separate items\n  //\n  const extractedImages = arr.filter(p => p.isExtractedImage);\n\n  for (const img of extractedImages) {\n    const imgItem = {\n      json: {\n        sourceDoc: img.sourceDoc || item.json.fileName,\n        imageFile: img.file,\n        isExtractedImage: true,\n        imageCount: img.imageCount,\n        imageFiles: img.imageFiles\n      },\n      binary: {}     // keep empty now — can attach actual binary later if required\n    };\n\n    output.push(imgItem);\n  }\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5616,
+        -176
+      ],
+      "id": "2fa7965d-c9ed-4d40-b271-bc588b0a5fcb",
+      "name": "Flatten & Parse Extractor Output"
+    },
+    {
+      "parameters": {
+        "command": "=powershell -NoProfile -Command \"Get-Item -LiteralPath '{{ $json.imageFiles[0] }}' | Select-Object -ExpandProperty FullName\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -4752,
+        -704
+      ],
+      "id": "d21f4ab5-3647-43b1-bbdb-1be07f295e5c",
+      "name": "Expand Short Path"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d1284ae-8f0e-4f42-af0d-205d99fe68bc",
+              "name": "imagePathExpanded",
+              "value": "={{ $node[\"Expand Short Path\"].json.stdout.trim().replace(/^\"|\"$/g, '') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4528,
+        -704
+      ],
+      "id": "ae555575-b3ff-4159-a644-f6f31005570d",
+      "name": "Store Expanded Path"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -3696,
+        -976
+      ],
+      "id": "682334e4-baf2-4418-b539-494e92d5c290",
+      "name": "Merge Images from 2 Sources"
+    },
+    {
+      "parameters": {
+        "command": "=powershell -NoProfile -Command \"[System.Convert]::ToBase64String([IO.File]::ReadAllBytes('{{ $json.imagePathExpanded }}'))\"\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -4320,
+        -704
+      ],
+      "id": "02fec503-086d-49d0-a68a-e6fe3d433d42",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -3776,
+        -192
+      ],
+      "id": "cedb057d-ca35-4be1-94c8-240acee33abf",
+      "name": "Merge extracted text from all docs"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "54be1329-6e9d-4766-ace0-78721924af62",
+              "name": "fileName",
+              "value": "={{ 'ExtractedImage_' + $itemIndex  + '.jpeg' }}",
+              "type": "string"
+            },
+            {
+              "id": "d370a8f0-8c71-4f03-bb5b-196797558aab",
+              "name": "fileType",
+              "value": "image",
+              "type": "string"
+            },
+            {
+              "id": "4fd43b90-f664-4f74-8edc-6130a0adc22b",
+              "name": "docType",
+              "value": "image",
+              "type": "string"
+            },
+            {
+              "id": "1384bb48-afaf-4f8c-ab96-356973c4e8a3",
+              "name": "containsText",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "4f54779d-0932-4ae4-bb18-3f9b33e06d51",
+              "name": "containsImages",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "0202b8be-161a-4363-8ee5-b79bc4f624cf",
+              "name": "contentType",
+              "value": "image-only",
+              "type": "string"
+            },
+            {
+              "id": "290844f3-7e01-42be-bd18-f814c7a7284b",
+              "name": "fileKey",
+              "value": "data",
+              "type": "string"
+            },
+            {
+              "id": "b8a8a8f8-19a1-4676-9af6-fd6b35f0fc8d",
+              "name": "data",
+              "value": "data",
+              "type": "binary"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3904,
+        -704
+      ],
+      "id": "61436f6b-1fd1-4342-a3b0-9c98deda662c",
+      "name": "Add Metadata to Image File"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3008,
+        -976
+      ],
+      "id": "c3654889-86eb-4629-b544-4a5d5f977fec",
+      "name": "Wait",
+      "webhookId": "4445b716-3152-49cb-9597-4a2eee3a461b"
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3008,
+        -160
+      ],
+      "id": "f3d58761-7c19-45da-8571-c45e0807095d",
+      "name": "Wait1",
+      "webhookId": "d6daf506-0a87-4895-b33d-cf8fde9cc0b0"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3008,
+        544
+      ],
+      "id": "378d2a52-67dc-4f04-83be-f23ec10535b1",
+      "name": "Wait2",
+      "webhookId": "f1b22de4-3f65-478a-90b3-722dfb551029"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Detect File Type + Content Analyzer ---\n// Purpose: Segregate uploaded files based on file type, doc type, and content composition.\n\nconst newItems = [];\n\n// --- Advanced Lightweight analyzer for text/image detection ---\nasync function analyzeDocumentContent(fileType, base64Data) {\n  const buffer = Buffer.from(base64Data, 'base64');\n  let containsText = false;\n  let containsImages = false;\n\n  // Read only part of file to avoid memory overload\n  const sampleText = buffer.toString('utf8', 0, 50000);\n\n  switch (fileType) {\n    case 'pdf':\n      if (/BT|ET|\\/Font|\\/Text/i.test(sampleText)) containsText = true;\n      if (/\\/Image|\\/Subtype\\s*\\/Image/i.test(sampleText)) containsImages = true;\n      break;\n\n    case 'doc':\n      // DOCX/DOC internal relationships (text & images)\n      if (/<w:t>.*?<\\/w:t>/i.test(sampleText)) containsText = true;\n      if (/word\\/media\\//i.test(sampleText)) containsImages = true;\n      break;\n\n    case 'ppt':\n      if (/<a:t>.*?<\\/a:t>/i.test(sampleText)) containsText = true;\n      if (/ppt\\/media\\//i.test(sampleText)) containsImages = true;\n      break;\n  }\n\n  // Fallback: detect if it’s probably text\n  if (!containsText && !containsImages) {\n    const textChars = sampleText.replace(/[^A-Za-z0-9\\s]/g, '');\n    if (textChars.length > 50) containsText = true;\n  }\n\n  return { containsText, containsImages };\n}\n\n// --- Main logic (must be async wrapper in n8n Code Node) ---\nreturn (async () => {\n  for (const item of items) {\n    const binaries = item.binary || {};\n\n    for (const [key, bin] of Object.entries(binaries)) {\n      if (!bin?.data) continue;\n\n      const fileName = (bin.fileName || key || '').toString();\n      const mime = (bin.mimeType || '').toLowerCase();\n      const lower = fileName.toLowerCase();\n\n      let fileType = 'unknown';\n      let docType = 'unknown';\n      let containsText = false;\n      let containsImages = false;\n\n      // --- Basic file type detection ---\n      if (mime.startsWith('image/') || /\\.(png|jpg|jpeg|gif|svg|webp)$/i.test(lower)) {\n        fileType = 'image';\n        containsImages = true;\n      } else if (/\\.(txt)$/i.test(lower)) {\n        fileType = 'text';\n        containsText = true;\n      } else if (/\\.(pdf)$/i.test(lower)) {\n        fileType = 'pdf';\n      } else if (/\\.(docx|doc)$/i.test(lower)) {\n        fileType = 'doc';\n      } else if (/\\.(pptx|ppt)$/i.test(lower)) {\n        fileType = 'ppt';\n      }\n\n      // --- docType classification ---\n      if (/brd/i.test(fileName)) docType = 'brd';\n      else if (/frd/i.test(fileName)) docType = 'frd';\n      else if (/hld/i.test(fileName)) docType = 'hld';\n      else if (/lld/i.test(fileName)) docType = 'lld';\n      else if (/transcript|grooming|meeting|discussion/i.test(fileName)) docType = 'transcript';\n      else if (fileType === 'ppt') docType = 'supporting';\n      else if (fileType === 'image') docType = 'image';\n      else docType = 'unknown';\n\n      // --- Analyze for content composition ---\n      if (['pdf', 'doc', 'ppt'].includes(fileType)) {\n        const result = await analyzeDocumentContent(fileType, bin.data);\n        containsText = result.containsText;\n        containsImages = result.containsImages;\n      }\n\n      // --- Determine contentType ---\n      let contentType = 'unknown';\n      if (containsText && !containsImages) contentType = 'plain-text';\n      else if (!containsText && containsImages) contentType = 'image-only';\n      else if (containsText && containsImages) contentType = 'mixed';\n\n      console.log(`Analyzed ${fileName} → ${contentType}`);\n\n      // --- Push result ---\n      newItems.push({\n        json: {\n          fileName,\n          fileType,\n          docType,\n          containsText,\n          containsImages,\n          contentType,\n          fileKey: key,\n        },\n        binary: {\n          [key]: bin,\n        },\n      });\n    }\n  }\n\n  return newItems;\n})();\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7824,
+        -192
+      ],
+      "id": "b474a556-20e9-4f3a-b0d2-1b56f62352f1",
+      "name": "Detect File Type + Identify Text and/or Images",
+      "notesInFlow": true,
+      "notes": "read item.binary keys (mimeType / fileName) and tag each item with fileType: pdf-text, pdf-image (PDF containing images), image (png/jpg/svg), pptx, diagram (if named flow, diagram, arch), text (plain txt), or unknown."
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript) - Preprocessor + Balanced Summarizer + Token Estimator\n// Input expected: items = [{ json: { mergedContext: \"....\", contextCount: N } }, ...]\n// Outputs: mergedContextCleaned, originalChars, cleanedChars, originalTokens, cleanedTokens, summaryTokens, summary, sections[]\n\nconst STOPWORDS = new Set([\n  \"the\",\"and\",\"is\",\"in\",\"it\",\"of\",\"to\",\"a\",\"for\",\"with\",\"on\",\"that\",\"as\",\"are\",\"be\",\"this\",\"by\",\"or\",\"an\",\"from\",\n  \"at\",\"we\",\"will\",\"should\",\"can\",\"which\",\"their\",\"have\",\"has\",\"not\",\"but\",\"if\",\"they\",\"these\",\"such\",\"may\",\"also\"\n]);\n\nfunction estimateTokensFromChars(chars) {\n  // Practical approximation: 1 token ~= 4 characters\n  // Adjust factor if you want more conservative estimate\n  return Math.max(1, Math.ceil(chars / 4));\n}\n\nfunction splitToSentences(text) {\n  // Simple sentence splitter - handles ., ?, !\n  // Keep short sentences intact\n  return text\n    .replace(/\\r\\n/g, \"\\n\")\n    .replace(/\\n+/g, \"\\n\")\n    .split(/(?<=[.?!])\\s+(?=[A-Z0-9\"'\\(\\[])/g)\n    .map(s => s.trim())\n    .filter(Boolean);\n}\n\nfunction scoreSentences(sentences, topNwords=120) {\n  // Simple frequency-based scoring (extractive)\n  const freq = {};\n  for (const s of sentences) {\n    const words = s.toLowerCase().replace(/[^a-z0-9\\s]/g, \" \").split(/\\s+/).filter(Boolean);\n    for (const w of words) {\n      if (STOPWORDS.has(w)) continue;\n      freq[w] = (freq[w] || 0) + 1;\n    }\n  }\n  // normalize and score\n  const scores = sentences.map(s => {\n    const words = s.toLowerCase().replace(/[^a-z0-9\\s]/g, \" \").split(/\\s+/).filter(Boolean);\n    let sc = 0;\n    for (const w of words) {\n      if (freq[w]) sc += freq[w];\n    }\n    // length-normalize a bit\n    sc = sc / Math.sqrt(Math.max(1, words.length));\n    return sc;\n  });\n  return scores;\n}\n\nfunction dedupeParagraphs(paragraphs) {\n  // Exact + lightweight fuzzy using trigram set Jaccard\n  const seen = [];\n  const out = [];\n  function ngrams(text, n=3){\n    const s = text.toLowerCase().replace(/\\s+/g, \" \").trim();\n    const out = [];\n    for (let i=0;i<s.length-(n-1);i++){\n      out.push(s.slice(i,i+n));\n    }\n    return new Set(out);\n  }\n  for (const p of paragraphs) {\n    const pnorm = p.trim();\n    if (!pnorm) continue;\n    let isDup = false;\n    for (const s of seen) {\n      if (pnorm === s.raw) { isDup = true; break; }\n      // jaccard of char ngrams\n      const a = ngrams(pnorm), b = s.ng;\n      const inter = [...a].filter(x => b.has(x)).length;\n      const union = new Set([...a, ...b]).size;\n      const j = union === 0 ? 0 : inter/union;\n      if (j > 0.85) { isDup = true; break; } // high threshold to avoid false positives\n    }\n    if (!isDup) {\n      seen.push({ raw: pnorm, ng: ngrams(pnorm) });\n      out.push(pnorm);\n    }\n  }\n  return out;\n}\n\nfunction normalizeHeadingsAndRemoveUndefined(md) {\n  // Remove \"## undefined\", orphan code fences; normalize \\page markers\n  let s = md.replace(/```(?:markdown)?/gi, \"\\n\"); // remove code fences markers\n  s = s.replace(/\\\\page/g, \"\\n\\n---\\n\\n\"); // unify page breaks\n  // remove headings that are just 'undefined' or blank\n  s = s.replace(/^(#{1,6})\\s*(undefined)\\s*$/gim, \"\");\n  // collapse excessive newlines\n  s = s.replace(/\\n{3,}/g, \"\\n\\n\");\n  return s.trim();\n}\n\nfunction splitIntoSections(text) {\n  // If markdown headings exist (h2/h3), split by them; otherwise return single section\n  const lines = text.split(\"\\n\");\n  const sections = [];\n  let curTitle = \"Document\";\n  let curBuf = [];\n\n  const headingRe = /^(#{1,6})\\s*(.+)$/;\n  for (let line of lines) {\n    const m = line.match(headingRe);\n    if (m) {\n      // flush\n      if (curBuf.length) {\n        sections.push({ sectionName: curTitle, text: curBuf.join(\"\\n\").trim() });\n      }\n      curTitle = m[2].trim();\n      curBuf = [];\n    } else {\n      curBuf.push(line);\n    }\n  }\n  if (curBuf.length) sections.push({ sectionName: curTitle, text: curBuf.join(\"\\n\").trim() });\n  return sections;\n}\n\nfunction summarizeExtractive(text, tokenBudget, mode=\"balanced\") {\n  // mode: 'concise' (more aggressive), 'balanced', 'detailed' (less aggressive)\n  if (!text || !text.trim()) return { summary: \"\", tokens: 0, chars: 0 };\n\n  const sentences = splitToSentences(text);\n  if (sentences.length === 0) return { summary: \"\", tokens: 0, chars: 0 };\n\n  const scores = scoreSentences(sentences);\n  // pair and sort\n  const pairs = sentences.map((s,i)=>({s, score: scores[i], idx:i, chars: s.length}));\n  pairs.sort((a,b)=>b.score - a.score);\n\n  // select sentences until tokenBudget reached (estimate)\n  const chosen = [];\n  let charsCount = 0;\n  for (const p of pairs) {\n    const estTokens = estimateTokensFromChars(p.chars);\n    const currentTokens = estimateTokensFromChars(charsCount);\n    if (currentTokens + estTokens > tokenBudget) continue;\n    // Keep ordering by original index for readability\n    chosen.push(p);\n    charsCount += p.chars;\n  }\n\n  // If nothing selected (budget too small), pick top 1 sentence\n  if (chosen.length === 0) {\n    const top = pairs[0];\n    chosen.push(top);\n    charsCount = top.chars;\n  }\n\n  // Order chosen sentences by original order\n  chosen.sort((a,b)=>a.idx - b.idx);\n  const summary = chosen.map(x=>x.s).join(\" \");\n\n  return { summary: summary.trim(), tokens: estimateTokensFromChars(charsCount), chars: charsCount };\n}\n\n// -------------------- Main Node Logic --------------------\n\nconst inputs = items.map(i=>i.json);\nconst mergedRaw = inputs.map(i=>i.mergedContext || \"\").join(\"\\n\\n---\\n\\n\");\nconst contextCount = inputs.reduce((acc,i)=> acc + (i.contextCount || 0), 0);\n\n// 1) Normalize and remove obvious garbage\nlet cleaned = normalizeHeadingsAndRemoveUndefined(mergedRaw);\n\n// 2) Break into paragraphs and dedupe\nconst paragraphs = cleaned.split(/\\n{2,}/).map(p=>p.trim()).filter(Boolean);\nconst dedupedParas = dedupeParagraphs(paragraphs);\n\n// rebuild cleaned context\ncleaned = dedupedParas.join(\"\\n\\n\");\n\n// 3) Split into sections (by headings if any)\nconst sections = splitIntoSections(cleaned);\n\n// If sections are just single 'Document' and very long, optionally try to chunk by length\n// But for balanced mode we will still summarize\n\n// 4) Compute sizes and token estimates\nconst originalChars = mergedRaw.length;\nconst cleanedChars = cleaned.length;\nconst originalTokens = estimateTokensFromChars(originalChars);\nconst cleanedTokens = estimateTokensFromChars(cleanedChars);\n\n// 5) Summarize: balanced mode target\nconst TARGET_TOKENS_FOR_LLM = 6500; // <--- tune this to control LLM cost\n// If cleanedTokens already less than target, return full cleaned text as summary-friendly\nlet summaryText = \"\";\nlet summaryTokens = 0;\n\n// Option B = Balanced summarization: summarize per-section but preserve sections until budget\nif (cleanedTokens <= TARGET_TOKENS_FOR_LLM) {\n  summaryText = cleaned;\n  summaryTokens = cleanedTokens;\n} else {\n  // Distribute budget across sections proportional to section size\n  const sectionsInfo = sections.map(sec=>{\n    const chars = sec.text.length;\n    const tokens = estimateTokensFromChars(chars);\n    return { sectionName: sec.sectionName, text: sec.text, chars, tokens };\n  });\n\n  const totalTokensSection = sectionsInfo.reduce((a,b)=>a + b.tokens, 0) || 1;\n  const perSectionSummaries = [];\n  let tokensUsed = 0;\n\n  for (const s of sectionsInfo) {\n    // allocate proportional budget but at least 80 tokens for small sections\n    const alloc = Math.max(120, Math.floor((s.tokens / totalTokensSection) * (TARGET_TOKENS_FOR_LLM - 200)));\n    const summ = summarizeExtractive(s.text, alloc, \"detailed\");\n    perSectionSummaries.push({ sectionName: s.sectionName, summary: summ.summary, chars: summ.chars, tokens: summ.tokens });\n    tokensUsed += summ.tokens;\n  }\n\n  // Build final summary text by joining section summaries\n  summaryText = perSectionSummaries.map(s=> `## ${s.sectionName}\\n\\n${s.summary}`).join(\"\\n\\n\");\n  summaryTokens = tokensUsed;\n}\n\n// 6) Prepare section-level summaries for output (use smaller local budgets)\nconst sectionOutputs = sections.map(sec => {\n  const secTokens = estimateTokensFromChars(sec.text.length);\n  const budget = Math.max(60, Math.floor(Math.min(secTokens, 300))); // small budget per section\n  const summ = summarizeExtractive(sec.text, budget, \"detailed\");\n  return {\n    sectionName: sec.sectionName,\n    text: sec.text,\n    chars: sec.text.length,\n    tokens: estimateTokensFromChars(sec.text.length),\n    summary: summ.summary,\n    summaryChars: summ.chars,\n    summaryTokens: summ.tokens\n  };\n});\n\n// return single output item\nreturn [\n  {\n    json: {\n      mergedContextCleaned: cleaned,\n      contextCount: contextCount,\n      originalChars,\n      cleanedChars,\n      originalTokens,\n      cleanedTokens,\n      targetTokensForLLM: TARGET_TOKENS_FOR_LLM,\n      summaryTokens,\n      summary: summaryText,\n      sections: sectionOutputs\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1648,
+        -160
+      ],
+      "id": "347e45cf-fe1e-477f-be26-e55ba61eb7e3",
+      "name": "Pre-Processor + Summarizer + Token Estimator"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  // Just ensure it has a single binary key called \"data\"\n  const binaries = item.binary || {};\n  const keys = Object.keys(binaries);\n  if (keys.length === 0) return item;\n\n  const firstKey = keys[0];\n  const bin = binaries[firstKey];\n  // Keep structure intact\n  return {\n    json: item.json,\n    binary: { data: bin },\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7600,
+        -192
+      ],
+      "id": "093a94ba-5397-48bf-8945-aaf7ba22a81b",
+      "name": "Rename Binary File Keys"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=C:\\\\Users\\\\anujalhans01\\\\n8n-temp-files\\\\{{$json.fileName}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -6288,
+        -192
+      ],
+      "id": "1b3f5cd8-05ec-41b5-9dcb-29809f3c34b9",
+      "name": "Save Binary Files to local Disk"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  // Just ensure it has a single binary key called \"data\"\n  const binaries = item.binary || {};\n  const keys = Object.keys(binaries);\n  if (keys.length === 0) return item;\n\n  const firstKey = keys[0];\n  const bin = binaries[firstKey];\n  // Keep structure intact\n  return {\n    json: item.json,\n    binary: { data: bin },\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5392,
+        -176
+      ],
+      "id": "e87cb3af-7f03-404e-b24a-5c9be2445a1d",
+      "name": "Again Rename Binary Keys"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "stdout",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -4112,
+        -704
+      ],
+      "id": "05c71371-c34e-43c0-b594-ba920edcf83a",
+      "name": "Convert Base64 to Binary File of image type",
+      "notesInFlow": true,
+      "notes": "Converting Base64 to Binary File of image type"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a Senior QA Test Manager and Enterprise Test Strategy Consultant with more than 15 years of experience defining testing standards, quality governance frameworks, and automation-first transformation programs. \n\nYou specialize in:\n- Shift-Left & Shift-Right quality engineering approaches\n- CI/CD-integrated automated testing pipelines\n- Scalable test architecture across UI, API, performance, and security layers\n- Risk-based and metrics-driven software delivery governance\n\nYou excel at interpreting and synthesizing:\n- Business Requirement Documents (BRD)\n- Functional Requirement Documents (FRD)\n- Low-Level and High-Level Designs (LLD & HLD)\n- Grooming transcripts and stakeholder discussions\n\nYour outputs must demonstrate:\n- Strategic reasoning supported by traceable statements from the provided context\n- A strong linkage between **business intent → architecture/design implications → test strategy → automation enablement → risk mitigation**\n- A structured, enterprise-grade quality strategy suitable for CXO/leadership consumption\n- Deep elaboration, beyond basic bullet points, showing practical execution methodologies, governance layers, and measurable KPIs\n\nYour writing style should reflect:\n- Professional tone suitable for board-level review\n- Detailed, actionable, and solution-oriented content with clear justification\n- Balanced technical and managerial viewpoint\n"
+            },
+            {
+              "content": "You are provided with a merged context that combines information from BRD, FRD, HLD, LLD, UI/UX specifications, and grooming session transcripts. \nThis content includes requirements, workflows, data flows, system architecture, constraints, dependencies, and stakeholder expectations.\n\nYour task is to analyze the context and generate a **comprehensive and production-grade Test Strategy document**, aligned with **Shift-Left**, **Automation-First**, and **Quality Engineering** principles.\n\n=========================\nINSTRUCTIONS (MUST FOLLOW)\n=========================\n\n1. Use direct excerpts or paraphrased statements from the source materials where relevant.\n   - Quote key statements in italics or blockquotes to maintain authenticity.\n   - Cite origin using “As mentioned in BRD…”, “According to HLD…”, etc.\n2. Provide deep explanation instead of generic bullet lists — elaborate how and why decisions are made.\n3. Demonstrate end-to-end traceability between:\n   **business requirements → test strategy → automation enablement → quality metrics → risk & mitigation**\n4. Include frameworks, methodology, and governance recommendations.\n5. Use tables, matrices, and hierarchical bullet structures where beneficial.\n6. Minimum expected length per major section: **900 – 1500 words**.\n7. The output must be detailed enough to be presented to engineering leadership and auditors.\n\n====================\nDOCUMENT STRUCTURE\n====================\n\n### Test Strategy Document Structure\n\n1. **Introduction & Context**\n   - Problem statement & business need\n   - Strategic objectives of testing\n   - Alignment with enterprise quality vision and success criteria\n\n2. **Testing Scope**\n   - In-scope functional & non-functional areas (with references)\n   - Out-of-scope items & rationale\n\n3. **Strategic Testing Approach**\n   - Shift-Left adoption strategy\n   - Shift-Right validation strategy (where applicable)\n   - Testing model (Agile / DevOps / CI-CD-based)\n   - Test levels: Unit, Component, API, UI, E2E, UAT, NFR\n   - Governance and quality gates\n\n4. **Automation Strategy & Roadmap**\n   - Automation pyramid model alignment\n   - Tools, frameworks, CI/CD orchestration\n   - Prioritization matrix & ROI considerations\n   - In-sprint automation approach\n   - Resilience & maintainability standards\n\n5. **Test Environment & Infrastructure Strategy**\n   - Environment model & provisioning\n   - Service virtualization & mocks\n   - Data refresh, versioning & cloning strategies\n\n6. **Test Data Management Strategy**\n   - Data sourcing (synthetic, masked, production-like)\n   - Boundary / negative / chaos data\n   - Automation-driven data pipeline\n\n7. **Quality Metrics & Reporting Framework**\n   - KPIs, KRAs, SLAs (Defect density, leakage rate, DRE %, automation coverage etc.)\n   - Dashboards & transparency mechanisms\n\n8. **Risk-Based Testing & Mitigation Strategy**\n   - Identified risks + corresponding mitigation & contingency mapping\n   - Priority-based testing means: risk × impact × likelihood scoring\n\n9. **Roles, Collaboration & RACI Model**\n\n10. **Compliance, Security & Regulatory Considerations**\n    - OWASP, data privacy, audit logs, adherence requirements\n\n11. **Tooling & Integration Landscape**\n    - CI/CD, test frameworks, monitoring & observability\n\n12. **Communication & Governance Model**\n\n13. **Appendix / Traceability Matrix**\n    | Source Document | Key Insight | Test Strategy Implication | Automation Feasibility |\n\n======================\nMerged Context (cleaned)\n======================\n{{$json[\"summary\"]}}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "maxTokens": 6000,
+          "temperature": 0.5
+        }
+      },
+      "id": "248715c6-e304-4b35-8fcf-cbbeb259bd92",
+      "name": "OpenAI - Generate Test Strategy",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        -1456,
+        -160
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "rdVg2Kks1mUCJf4R",
+          "name": "OpenAi Paid Account (Aonu)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "C:\\\\Users\\\\anujalhans01\\\\Downloads\\\\Generated-Test-Strategy-{{$now}}.docx",
+        "options": {}
+      },
+      "id": "c4e2890f-d7c2-4744-a205-9e4fb483d845",
+      "name": "Write Final Test Strategy File",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        -160
+      ]
+    }
+  ],
+  "connections": {
+    "Extract BRD Text": {
+      "main": [
+        [
+          {
+            "node": "Merge extracted text from all docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract FRD Text": {
+      "main": [
+        [
+          {
+            "node": "Merge extracted text from all docs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract HLD Text": {
+      "main": [
+        [
+          {
+            "node": "Merge extracted text from all docs",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Extract LLD Text": {
+      "main": [
+        [
+          {
+            "node": "Merge extracted text from all docs",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Normalize Transcript Text": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Markdown Content": {
+      "main": [
+        [
+          {
+            "node": "Clean Markdown Formatting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert md to docx": {
+      "main": [
+        [
+          {
+            "node": "Write Final Test Strategy File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merged Context for OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Pre-Processor + Summarizer + Token Estimator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Markdown Formatting": {
+      "main": [
+        [
+          {
+            "node": "Convert md to docx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Upload Test Docs": {
+      "main": [
+        [
+          {
+            "node": "Detect File Type + Identify Text and/or Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename binary key - LLD": {
+      "main": [
+        [
+          {
+            "node": "Extract LLD Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename binary key - HLD": {
+      "main": [
+        [
+          {
+            "node": "Extract HLD Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename binary key - FRD": {
+      "main": [
+        [
+          {
+            "node": "Extract FRD Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename binary key - BRD": {
+      "main": [
+        [
+          {
+            "node": "Extract BRD Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Transcript Text": {
+      "main": [
+        [
+          {
+            "node": "Normalize Transcript Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Open AI - Vision Extractor": {
+      "main": [
+        [
+          {
+            "node": "Normalize Image Vision Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch - Find Extractor": {
+      "main": [
+        [
+          {
+            "node": "Merge Images from 2 Sources",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save Binary Files to local Disk",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Transcript Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Image Vision Text": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Documents Text": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Normalized Image + Docs + Transcript Text": {
+      "main": [
+        [
+          {
+            "node": "Merged Context for OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Python Extractor to extract images": {
+      "main": [
+        [
+          {
+            "node": "Merge JSON Outputs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Switch - docs Extractor route": {
+      "main": [
+        [
+          {
+            "node": "Expand Short Path",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rename binary key - BRD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rename binary key - FRD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rename binary key - HLD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rename binary key - LLD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge JSON Outputs": {
+      "main": [
+        [
+          {
+            "node": "Flatten & Parse Extractor Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten & Parse Extractor Output": {
+      "main": [
+        [
+          {
+            "node": "Again Rename Binary Keys",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expand Short Path": {
+      "main": [
+        [
+          {
+            "node": "Store Expanded Path",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Expanded Path": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Images from 2 Sources": {
+      "main": [
+        [
+          {
+            "node": "Open AI - Vision Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Convert Base64 to Binary File of image type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge extracted text from all docs": {
+      "main": [
+        [
+          {
+            "node": "Normalize Documents Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Metadata to Image File": {
+      "main": [
+        [
+          {
+            "node": "Merge Images from 2 Sources",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Merge Normalized Image + Docs + Transcript Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Merge Normalized Image + Docs + Transcript Text",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Merge Normalized Image + Docs + Transcript Text",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Detect File Type + Identify Text and/or Images": {
+      "main": [
+        [
+          {
+            "node": "Rename Binary File Keys",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre-Processor + Summarizer + Token Estimator": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - Generate Test Strategy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename Binary File Keys": {
+      "main": [
+        [
+          {
+            "node": "Switch - Find Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Binary Files to local Disk": {
+      "main": [
+        [
+          {
+            "node": "Run Python Extractor to extract images",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge JSON Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Again Rename Binary Keys": {
+      "main": [
+        [
+          {
+            "node": "Switch - docs Extractor route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Base64 to Binary File of image type": {
+      "main": [
+        [
+          {
+            "node": "Add Metadata to Image File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - Generate Test Strategy": {
+      "main": [
+        [
+          {
+            "node": "Prepare Markdown Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "96b61fcc-50f8-41fa-873b-06703b679b7f",
+  "activeVersionId": null,
+  "versionCounter": 3,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-11-26T12:57:39.223Z",
+      "createdAt": "2025-11-26T12:57:39.223Z",
+      "role": "workflow:owner",
+      "workflowId": "QA1M2UVADLckZYi0",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

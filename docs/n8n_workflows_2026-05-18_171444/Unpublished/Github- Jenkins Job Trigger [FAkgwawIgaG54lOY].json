@@ -1,0 +1,388 @@
+{
+  "updatedAt": "2026-03-10T12:37:24.964Z",
+  "createdAt": "2025-10-03T17:31:37.799Z",
+  "id": "FAkgwawIgaG54lOY",
+  "name": "Github->Jenkins Job Trigger",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/github-webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        -272
+      ],
+      "id": "75a690f5-0781-4bf0-9483-6f9971004624",
+      "name": "Git-Push WebHook",
+      "webhookId": "3801d8f0-f85f-4e9e-a27b-433aff04f798"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8080/job/Selenium-Automation-Tests/build?11aae15c077290bdeb52fb322cd0849bba",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        336,
+        -272
+      ],
+      "id": "e3acbe2b-f192-4bb3-9801-3bd26c15dd15",
+      "name": "Trigger Jenkins Job",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "jafTB364O8QBqOzJ",
+          "name": "Jenkins"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst ref = items[0].json.body?.ref; // e.g., \"refs/heads/main\"\nconst branch = ref ? ref.split('/').pop() : '';\n\nif (branch === 'main') {\n  // ✅ Return all input items as output\n  return items;\n} else {\n  console.log(`Push detected on non-main branch: ${branch}. Skipping Jenkins trigger.`);\n  // 🛑 Return empty array to stop workflow\n  return [];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        -272
+      ],
+      "id": "95e9fa14-b17a-43bb-bc10-a39cf75bc64b",
+      "name": "Check Target Branch",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:8080/job/Selenium-Automation-Tests/{{$json[\"number\"]}}/api/json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        992,
+        -272
+      ],
+      "id": "43241da3-1e1c-4d93-815c-56ccd7a785e3",
+      "name": "Poll Jenkins Build Status",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "jafTB364O8QBqOzJ",
+          "name": "Jenkins"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3a12a5b9-743d-48c6-9dc5-02e92ecb4a57",
+              "leftValue": "={{ $json[\"building\"] }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        -336
+      ],
+      "id": "d59e6c19-6e62-4693-b727-a49c3fbb1cf6",
+      "name": "Check If Build In Progress"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        -176
+      ],
+      "id": "5f4d496c-c120-4d72-a2a3-82c975bb8a27",
+      "name": "Wait",
+      "webhookId": "f057f400-5802-4432-bf5c-15dd8bf4b404"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "00aead07-7d8e-48d4-80f9-fea59e2e7569",
+              "leftValue": "={{ $json[\"result\"] }}",
+              "rightValue": "SUCCESS",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        -384
+      ],
+      "id": "c1d205c2-7fe6-48de-9c8b-926bf7784362",
+      "name": "Check Build Result"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8080/job/Selenium-Automation-Tests/lastSuccessfulBuild/artifact/reports/extent-report.html",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1664,
+        -400
+      ],
+      "id": "59a4f05e-5681-462e-85b4-377e50c6cea1",
+      "name": "Generate the Extent Report",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "jafTB364O8QBqOzJ",
+          "name": "Jenkins"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8080/job/Selenium-Automation-Tests/lastBuild/api/json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        768,
+        -272
+      ],
+      "id": "7050adf8-8102-4cfe-9493-c539fee8fdeb",
+      "name": "Get Last Build Info",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "jafTB364O8QBqOzJ",
+          "name": "Jenkins"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        544,
+        -272
+      ],
+      "id": "5e867f54-6fd1-4fe4-a612-084290d202ee",
+      "name": "Wait for Jenkins Build to Start",
+      "webhookId": "1209fdb0-27f1-4971-9560-6e2c9d359e6c"
+    }
+  ],
+  "connections": {
+    "Git-Push WebHook": {
+      "main": [
+        [
+          {
+            "node": "Check Target Branch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Jenkins Job": {
+      "main": [
+        [
+          {
+            "node": "Wait for Jenkins Build to Start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Target Branch": {
+      "main": [
+        [
+          {
+            "node": "Trigger Jenkins Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Poll Jenkins Build Status": {
+      "main": [
+        [
+          {
+            "node": "Check If Build In Progress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Build In Progress": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Build Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Poll Jenkins Build Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Build Result": {
+      "main": [
+        [
+          {
+            "node": "Generate the Extent Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Last Build Info": {
+      "main": [
+        [
+          {
+            "node": "Poll Jenkins Build Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Jenkins Build to Start": {
+      "main": [
+        [
+          {
+            "node": "Get Last Build Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "40c2b55a-404f-4371-b08d-86546f26dc08",
+  "activeVersionId": null,
+  "versionCounter": 18,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-10-03T17:31:37.822Z",
+      "createdAt": "2025-10-03T17:31:37.822Z",
+      "role": "workflow:owner",
+      "workflowId": "FAkgwawIgaG54lOY",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

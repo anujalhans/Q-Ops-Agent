@@ -2,14 +2,20 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
+  ArrowRight,
   Bolt,
-  BookOpen,
+  CheckCircle2,
+  Database,
   FileText,
+  Gauge,
   LineChart,
   Moon,
+  ScanSearch,
   Shield,
   ShieldCheck,
   Sun,
+  UploadCloud,
+  Users,
   Workflow,
   X,
 } from 'lucide-react'
@@ -23,17 +29,9 @@ type Props = {
 }
 
 const heroImage =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuAHo1jYgjhGlEuj_dPP3or7_ewNDREHmwb3Xce0eKj8AExnPYUT68ZcqvWrBtrU38gPmwiLBpxdbDz0TL1kfdhgfNWEdJxAri6Na-5hUffU9O2jqpLtIEyarQDK7ZlY4u1jSkCeSL5DvkPPRw7ZiLqYwVnpTeUdJlJg_72b5chjNvpaWVFq4G7bu1sh-98Lv_zOCpL3b8iAvH-4CeuEEvPmmjHLwKnXuQpwPUurF7Ad7cuwBselHkJCQgGKiSFCP2nl1CaWgFFtSAsK'
+  '/assets/qops-hero-composite.png'
 const artifactImage =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuD2qejnk-805HhJUsNJfoJHZHkkodK7x6af0gLxP3ae4ES_7u0-JKECrX8Yc3zn5baHJgsSo72qtOKzL3hHDqq4gSVNURI9bzAOqN5Xn5AEf3EBQlhDFoewNHCyqDB8P20H0HTeUQQYoPcJuN5ylgkuAT-JyTKUywu43_RbcSwApQS5PWjS_dcxrSFpNaH6LW9N3tjh6XjlPeq5Ci79qdYu69MNN7Fr8oZtUgLcsSmCZLWixcsd29q-gdJYnYYK-b0xr4m2FRnIJ8f2'
-
-const logos = [
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuAVj38RrivA7HxkNW_EmQGERLpCaHA4nwMGeW_aK8q3VYZ6shTe2d3Ny9bRnzM-7vgkDvl13uTaTXnRts-9rF_WRJKXbWl52OGo27R6G8C5H_ZE3nFYzhptsGHeZsZOv8GR56C_haCcjvwHacTRTW4aejJQmaEKkjPRh_KRNTmqfsrBECDTuMnXP1-vOWmqtAZf11lm-n0P269HN3JF0oC67VDPSDgSAuXPy8OVQ0KeSmyIQVkj8b4XQhAb0RPTMnLadW5rvzy8IPqG',
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuC5n3-9ag9Cxm5L1HyaaTnEQWplwz4V1CkqF9HARw1GXk5ky0bhGISB-W9FoxIeGNxd8rXFGQ9fBWatTVz3EBdEeu2BsHVzYrPgDGAKZql7Od6wAE1pLVJ2lvkk1cjuwwurgskfxYsSGgO8cktWs5ht2i3w24fgPBVMotVtMEayJ8a1xqBeccqm4Q_NPYO5yNqTkwK6I6xYUtK3tHAoCL7hik-gKG3tTtX5-TK3vqLJy6tYdebeBky3zhEb0UGA-QCZfVvz_hGhsT_2',
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuDNaDzpxsoTmbzKu_Rwsrhw_AnI_gAPNuO3MDgxrjEh-2_aOjsgQeT70Xr-gcbIl6Y_g_Fb2O2QMSDlAE7dGkUGGEdYIbhgtjCjVU9y-mGgRUCGbybvPSA6Ia0bjpGbHw1gOxrJH6nlmKQFEzFQv7lakN-jOzVfZPabQShWRUEnkoGWuUcI_SbstbgzyCqMMopHdPJ3pZAbh7rswWGZXr26GbiIQWZpFUNacNXv_Sp0BOT-_nzvZkTMxG7voAnNZjNvWGKCd_vDGCgu',
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuCcak8DEMLkYLxwPEwZNz3AGlA7r7FBqlIrbbHweV27cYolDP-GToqSyGRLNfUGeIel92j_aj8i-QYuZBFIDrNylVdrjQOrBZoTuLDV5jTkWm6Gik2IgwMHTQH2FIe0f3uAHcBiOKp6i_5bk-KPl7cExzvWl_jgvfAL31ZcLqcemOI0vaFJEaWXovYiUYCEzUwVLdTmaGSwgcZ-Xx_6Z03OylFllRFOFWa9n2fWZi7H9rJaYCEL0VxR9DkMfRUl6AVjCwYjsRxL6lKt',
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuBe2wkVeGqCM_R229Axt1z7SDLBER4qvGHy_OHcvXk_zrKMRieYEAVcY4211OwuPBK4GWEB9bgFpfKSAVpK5xLbgO6UlUn5HFuxiC3ZuVcYgDqe4vL6yd849oUIGbYYqhoAP3E4mVGLTX3SPb4OG_UeLXMlvWl9xy7REp5AiOXYArDKH5ZIDrMpyHDfKYfH3tWcZD9HAobRuNAecR-s4FgER9bduwAXlN26KiJAOEFepVyYMYooWH_1Pw0yFK-zdvqoARRRf6lzHAyp',
-]
 
 function LoginModal({
   open,
@@ -233,7 +231,22 @@ export default function LoginPage({ onSuccess, addToast, authReady = true }: Pro
   const { theme, toggle } = useTheme()
   const [showLogin, setShowLogin] = useState(false)
   const [showForgot, setShowForgot] = useState(false)
-  const [infoModal, setInfoModal] = useState<'docs' | 'privacy' | 'terms' | 'status' | null>(null)
+  const [infoModal, setInfoModal] = useState<'privacy' | 'terms' | 'status' | null>(null)
+  const workflow = [
+    [UploadCloud, 'Ingest source artifacts', 'Upload project evidence and let Q-Ops extract text, visuals, tables, warnings, and metrics.'],
+    [Database, 'Build project knowledge', 'Store project-scoped chunks and retrieval metadata so generated outputs are grounded.'],
+    [FileText, 'Generate QA deliverables', 'Create strategies, plans, risk matrices, Jira backlog, story test cases, and RTM outputs.'],
+    [ScanSearch, 'Review coverage', 'Resolve coverage warnings, stale updates, retry-ready work, and readiness blockers.'],
+  ] as const
+  const valueCards = [
+    [FileText, 'From artifacts to outputs', 'Generate Confluence-ready QA documents and Jira-ready backlog items from the same source context.'],
+    [LineChart, 'Operational intelligence', 'Measure throughput, cost, failures, active work, and recovered jobs across projects.'],
+    [Shield, 'Governed by design', 'Keep project access, integration settings, audit trails, and service credentials controlled.'],
+    [Workflow, 'Update-aware workflows', 'Detect when a Knowledge Base or upstream Jira output changed and guide users to update only what needs refresh.'],
+  ] as const
+  const elevatedCard = 'transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:bg-surface-container-low hover:shadow-xl hover:shadow-primary/10'
+  const metricCard = 'transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:bg-surface-container-lowest hover:shadow-lg hover:shadow-primary/10'
+  const softCard = 'bg-surface-container-lowest shadow-sm'
 
   const handleLogin = async (email: string, password: string) => {
     try {
@@ -250,61 +263,114 @@ export default function LoginPage({ onSuccess, addToast, authReady = true }: Pro
 
   return (
     <div className="min-h-screen bg-background font-sans text-on-surface">
-      <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-outline-variant bg-surface-container-lowest px-4 shadow-sm sm:px-6">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-base font-bold text-on-primary">Q</div>
-          <span className="font-display text-base font-black tracking-tight text-on-surface sm:text-lg">Q-Ops Agent</span>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button type="button" onClick={toggle} className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="Toggle theme">
-            {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+      <header className="sticky top-0 z-40 border-b border-outline-variant bg-surface-container-lowest/95 px-4 shadow-sm backdrop-blur sm:px-6">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between">
+          <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-3 text-left">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-base font-black text-on-primary">Q</div>
+            <div>
+              <span className="block font-display text-base font-black tracking-tight text-on-surface sm:text-lg">Q-Ops Agent</span>
+              <span className="hidden text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant sm:block">AI quality operations</span>
+            </div>
           </button>
-          <button onClick={() => setShowLogin(true)} disabled={!authReady} className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">
-            {authReady ? 'Login' : 'Checking session'}
-          </button>
+          <nav className="hidden items-center gap-6 text-sm font-semibold text-on-surface-variant lg:flex">
+            <a href="#outcomes" className="hover:text-primary">Outcomes</a>
+            <a href="#workflow" className="hover:text-primary">Workflow</a>
+            <a href="#capabilities" className="hover:text-primary">Capabilities</a>
+          </nav>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button type="button" onClick={toggle} className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="Toggle theme">
+              {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+            </button>
+            <button onClick={() => setShowLogin(true)} disabled={!authReady} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">
+              {authReady ? 'Login' : 'Checking session'}
+            </button>
+          </div>
         </div>
       </header>
 
       <main>
-        <section className="relative overflow-hidden bg-surface-container-lowest px-4 py-12 sm:px-6 sm:py-16">
-          <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
-            <div className="space-y-5">
-              <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
-                <Bolt className="h-3.5 w-3.5" /> AI-Powered
+        <section className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
+          <img src={heroImage} alt="Q-Ops operations dashboard" className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,6,18,0.82)_0%,rgba(18,13,43,0.72)_42%,rgba(23,16,58,0.58)_100%)]" />
+          <div className="absolute inset-0 bg-primary/10 mix-blend-color" />
+          <div className="relative flex min-h-[calc(100vh-4rem)] items-center px-6 py-10 text-white sm:px-8 sm:py-14 lg:px-12 xl:px-16 2xl:px-20">
+            <div className="max-w-[40rem]">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/12 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-lg shadow-black/25 backdrop-blur-md">
+                <Bolt className="h-3.5 w-3.5" /> AI-powered QA operations
               </span>
-              <h1 className="font-display text-4xl font-black leading-tight tracking-tight text-on-surface sm:text-5xl lg:text-6xl">
-                Build QA That Starts <br className="hidden sm:block" />
-                <span className="text-primary">Before Code Exists</span>.
-              </h1>
-              <p className="max-w-xl text-base leading-6 text-on-surface-variant">
-                Transform requirements, designs, and conversations into a complete QA foundation instantly.
+              <h1 className="mt-5 font-display text-4xl font-black leading-tight tracking-tight sm:text-5xl">Q-Ops Agent</h1>
+              <p className="mt-4 max-w-xl text-lg font-semibold leading-7 text-white sm:text-xl">Turn project evidence into governed QA deliverables, Jira backlog, test coverage, and operational insight.</p>
+              <p className="mt-4 max-w-xl text-sm leading-6 text-white/72">
+                Built for QA leaders, product owners, delivery teams, and workspace admins who need traceable coverage from requirements to tests without losing control of cost, state, or source context.
               </p>
-              <p className="max-w-xl text-lg font-bold text-on-surface">Q-Ops Agent doesn't assist QA. It builds it.</p>
-              <p className="max-w-xl text-sm text-on-surface-variant">From scattered artifacts to structured QA ready in minutes.</p>
-              <div className="flex flex-wrap gap-3 pt-2">
-                <button onClick={() => navigate('/explore')} className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition-all hover:shadow-lg sm:px-8">
+              <div className="mt-7 flex flex-wrap gap-3">
+                <button onClick={() => setShowLogin(true)} className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-bold text-on-primary shadow-lg transition hover:opacity-90">
+                  Login to workspace <ArrowRight className="h-4 w-4" />
+                </button>
+                <button onClick={() => navigate('/explore')} className="inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur transition hover:bg-white/20">
                   Explore More
                 </button>
-                <button onClick={() => setShowLogin(true)} className="rounded-xl border border-outline px-6 py-3 text-sm font-semibold text-on-surface transition-all hover:bg-surface-container-high sm:px-8">
-                  Login to Dashboard
-                </button>
               </div>
-            </div>
-            <div className="relative">
-              <div className="absolute -right-12 -top-12 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
-              <img src={heroImage} alt="Modern enterprise dashboard interface" className="relative z-10 aspect-video w-full rounded-xl border border-outline-variant object-cover shadow-2xl" />
             </div>
           </div>
         </section>
 
-        <section className="border-y border-outline-variant bg-surface-container-lowest py-6">
+        <section id="outcomes" className="border-y border-outline-variant bg-surface-container-lowest py-5">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <p className="mb-4 text-center text-xs font-semibold uppercase tracking-wider text-on-surface-variant opacity-60">
-              Trusted by innovative engineering teams
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-8 opacity-70 grayscale sm:gap-12">
-              {logos.map((src) => (
-                <img key={src} src={src} alt="Corporate partner logo" className="h-6 object-contain sm:h-8" />
+            <div className="grid gap-4 text-center sm:grid-cols-3">
+              {[
+                ['75%', 'less QA planning time'],
+                ['40%', 'coverage improvement'],
+                ['50+', 'hours saved per project'],
+              ].map(([value, label]) => (
+                <div key={label} className={`rounded-lg border border-outline-variant bg-surface-container-low p-4 ${metricCard}`}>
+                  <p className="text-3xl font-black text-on-surface">{value}</p>
+                  <p className="mt-1 text-xs font-bold uppercase tracking-wide text-on-surface-variant">{label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="workflow" className="bg-surface px-4 py-12 sm:px-6 sm:py-16">
+          <div className="mx-auto max-w-7xl">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Operating workflow</p>
+                <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-on-surface">One system from source context to delivery confidence</h2>
+              </div>
+              <button onClick={() => navigate('/explore')} className="inline-flex items-center gap-2 rounded-lg border border-outline-variant px-4 py-2 text-sm font-bold hover:bg-surface-container">
+                Explore platform <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {workflow.map(([Icon, title, detail], index) => (
+                <article key={title} className={`group relative rounded-lg border border-outline-variant ${softCard} p-5 ${elevatedCard}`}>
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary text-on-primary transition-transform duration-200 group-hover:scale-110"><Icon className="h-5 w-5" /></span>
+                  <p className="mt-4 text-xs font-bold uppercase tracking-wide text-primary">Step {index + 1}</p>
+                  <h3 className="mt-1 text-lg font-bold text-on-surface">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-on-surface-variant">{detail}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="capabilities" className="bg-surface-container-low px-4 py-12 sm:px-6 sm:py-16">
+          <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)]">
+            <div className={`rounded-lg border border-outline-variant ${softCard} p-6 ${elevatedCard}`}>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">What teams get</p>
+              <h2 className="mt-2 text-2xl font-bold leading-tight text-on-surface">QA output generation with review, freshness, and cost controls built in.</h2>
+              <p className="mt-3 text-sm leading-6 text-on-surface-variant">Q-Ops helps teams move from project evidence to structured QA artifacts while preserving visibility into quality gates and operational spend.</p>
+              <img src={artifactImage} alt="Generated QA document interface" className="mt-6 aspect-video w-full rounded-lg border border-outline-variant object-cover shadow-sm" />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {valueCards.map(([Icon, title, detail]) => (
+                <article key={title} className={`group rounded-lg border border-outline-variant ${softCard} p-5 ${elevatedCard}`}>
+                  <Icon className="h-9 w-9 rounded-lg bg-primary/10 p-2 text-primary transition-transform duration-200 group-hover:scale-110" />
+                  <h3 className="mt-4 text-base font-bold text-on-surface">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-on-surface-variant">{detail}</p>
+                </article>
               ))}
             </div>
           </div>
@@ -312,66 +378,44 @@ export default function LoginPage({ onSuccess, addToast, authReady = true }: Pro
 
         <section className="bg-surface px-4 py-12 sm:px-6 sm:py-16">
           <div className="mx-auto max-w-7xl">
-            <div className="mb-10 text-center sm:mb-12">
-              <h2 className="font-display text-2xl font-semibold tracking-tight text-on-surface">Core Capabilities</h2>
-              <p className="mt-2 text-base text-on-surface-variant">Purpose-built features that integrate into QA workflows and accelerate delivery.</p>
-            </div>
-            <div className="grid gap-5 md:grid-cols-3 md:gap-6">
-              <div className="rounded-xl border border-primary bg-surface-container-lowest p-8 md:col-span-2 md:p-10">
-                <div className="flex h-full flex-col justify-between gap-6">
-                  <div>
-                    <FileText className="mb-5 h-12 w-12 rounded-lg bg-primary/10 p-3 text-primary" />
-                    <h3 className="mb-2 text-lg font-semibold text-on-surface">AI Test Strategy & Planning</h3>
-                    <p className="mb-5 text-sm leading-5 text-on-surface-variant">
-                      Generate detailed test strategies and plans using semantic analysis of requirements.
-                    </p>
-                  </div>
-                  <img src={artifactImage} alt="Document generation interface" className="h-40 w-full rounded-lg border border-outline-variant object-cover shadow-sm sm:h-48" />
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,0.65fr)_minmax(18rem,0.35fr)]">
+              <div className={`rounded-lg border border-outline-variant ${softCard} p-6 ${elevatedCard}`}>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Generated outputs</p>
+                <h2 className="mt-2 text-2xl font-bold text-on-surface">Built for the artifacts delivery teams actually use</h2>
+                <div className="mt-6 overflow-hidden rounded-lg border border-outline-variant">
+                  {[
+                    ['Confluence', 'Test Strategy, Test Plan, Risk Matrix, RTM'],
+                    ['Jira', 'Epics, User Stories, Story Test Cases'],
+                    ['Dashboard', 'Readiness, coverage review, stale updates, retries'],
+                    ['Analytics', 'Cost, token usage, throughput, failure spend'],
+                  ].map(([destination, output]) => (
+                    <div key={destination} className="grid gap-2 border-b border-outline-variant bg-surface-container-lowest px-4 py-3 transition-colors hover:bg-primary/5 last:border-b-0 sm:grid-cols-[9rem_minmax(0,1fr)]">
+                      <p className="font-bold text-on-surface">{destination}</p>
+                      <p className="text-sm leading-6 text-on-surface-variant">{output}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="flex flex-col rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center md:p-10">
-                <LineChart className="mx-auto mb-5 h-12 w-12 rounded-lg bg-primary/10 p-3 text-primary" />
-                <h3 className="mb-2 text-lg font-semibold text-on-surface">Automated Risk Analysis</h3>
-                <p className="text-sm leading-5 text-on-surface-variant">Identify and prioritize risks automatically across all project artifacts.</p>
-                <div className="mt-auto pt-6">
-                  <div className="flex h-28 items-end justify-between rounded border border-dashed border-outline-variant bg-surface-container-low px-4 pb-2 sm:h-32 sm:px-6 sm:pb-3">
-                    <div className="h-2/5 w-3 rounded-t-sm bg-primary sm:w-4" />
-                    <div className="h-3/5 w-3 rounded-t-sm bg-primary sm:w-4" />
-                    <div className="h-1/2 w-3 rounded-t-sm bg-primary sm:w-4" />
-                    <div className="h-5/6 w-3 rounded-t-sm bg-primary sm:w-4" />
-                  </div>
+              <div className={`rounded-lg border border-outline-variant ${softCard} p-6 ${elevatedCard}`}>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-success">For every role</p>
+                <div className="mt-5 space-y-3">
+                  {[
+                    [Users, 'QA and product teams align on coverage.'],
+                    [Gauge, 'Delivery leads see reliability and cost.'],
+                    [ShieldCheck, 'Admins control access and integrations.'],
+                    [CheckCircle2, 'Reviewers know what needs sign-off.'],
+                  ].map(([Icon, text]) => {
+                    const TypedIcon = Icon as typeof Users
+                    return (
+                      <div key={text as string} className="flex items-start gap-3 rounded-lg border border-transparent bg-surface-container-low p-3 transition-all duration-200 hover:border-success/30 hover:bg-success/5 hover:shadow-sm">
+                        <TypedIcon className="mt-0.5 h-5 w-5 shrink-0 text-success" />
+                        <p className="text-sm leading-6 text-on-surface-variant">{text as string}</p>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
-              {[
-                [BookOpen, 'Intelligent Knowledge Base', 'Build searchable knowledge bases with vector embeddings for contextual QA insights.'],
-                [Workflow, 'JIRA-Ready Artifacts', 'Create production-ready epics, user stories, and test cases ready for development.'],
-                [Shield, 'Enterprise Security', 'Your data is protected with enterprise-grade privacy controls.'],
-              ].map(([Icon, title, text]) => {
-                const TypedIcon = Icon as typeof BookOpen
-                return (
-                  <div key={title as string} className="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 md:p-10">
-                    <TypedIcon className="mb-5 h-12 w-12 rounded-lg bg-primary/10 p-3 text-primary" />
-                    <h3 className="mb-2 text-lg font-semibold text-on-surface">{title as string}</h3>
-                    <p className="text-sm leading-5 text-on-surface-variant">{text as string}</p>
-                  </div>
-                )
-              })}
             </div>
-          </div>
-        </section>
-
-        <section className="bg-primary px-4 py-12 text-on-primary sm:px-6 sm:py-16">
-          <div className="mx-auto grid max-w-7xl gap-10 text-center md:grid-cols-3 md:gap-12">
-            {[
-              ['75%', 'Reduction in QA planning time'],
-              ['40%', 'Improvement in test coverage'],
-              ['50+', 'Hours saved per project'],
-            ].map(([value, label]) => (
-              <div key={label} className="space-y-2">
-                <div className="font-display text-5xl font-black leading-none tracking-tight sm:text-6xl">{value}</div>
-                <p className="text-xs font-bold uppercase tracking-widest text-on-primary/80">{label}</p>
-              </div>
-            ))}
           </div>
         </section>
 
@@ -391,17 +435,16 @@ export default function LoginPage({ onSuccess, addToast, authReady = true }: Pro
 
         <section className="bg-surface-container-lowest px-4 py-12 sm:px-6 sm:py-16">
           <div className="mx-auto max-w-7xl">
-            <div className="relative overflow-hidden rounded-xl bg-[#1b1b24] p-8 text-center text-white sm:p-12 md:p-16">
-              <div className="absolute inset-0 opacity-10 [background-image:radial-gradient(circle_at_2px_2px,white_1px,transparent_0)] [background-size:24px_24px]" />
+            <div className="relative overflow-hidden rounded-lg bg-[#1b1b24] p-8 text-center text-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/20 sm:p-12 md:p-16">
               <div className="relative z-10 space-y-5">
-                <h2 className="font-display text-2xl font-semibold tracking-tight">Start shipping reliable tests faster</h2>
-                <p className="mx-auto max-w-xl text-base text-white/70">Join teams that reduced manual QA effort and improved confidence.</p>
+                <h2 className="font-display text-3xl font-bold tracking-tight">Start with one project. Scale to every QA delivery stream.</h2>
+                <p className="mx-auto max-w-2xl text-base leading-7 text-white/70">Login to run Q-Ops against your assigned projects, or explore the platform story before entering the workspace.</p>
                 <div className="flex flex-wrap justify-center gap-3 pt-2">
+                  <button onClick={() => setShowLogin(true)} className="rounded-lg bg-primary px-6 py-3 text-sm font-bold text-on-primary transition hover:opacity-90 sm:px-8">
+                    Login to workspace
+                  </button>
                   <button onClick={() => navigate('/explore')} className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition-transform hover:scale-105 sm:px-8">
                     Explore Q-Ops Agent
-                  </button>
-                  <button onClick={() => setInfoModal('docs')} className="rounded-xl bg-white/10 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-white/20 sm:px-8">
-                    Documentation
                   </button>
                 </div>
               </div>
@@ -413,7 +456,6 @@ export default function LoginPage({ onSuccess, addToast, authReady = true }: Pro
       <footer className="flex w-full flex-col items-center justify-between gap-3 border-t border-outline-variant bg-surface-container-lowest px-6 py-6 text-xs text-on-surface-variant sm:flex-row sm:py-8">
         <div>&copy; 2024 Q-Ops Agent. AI-Powered Enterprise Solutions.</div>
         <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-          <button onClick={() => setInfoModal('docs')} className="hover:text-on-surface">Documentation</button>
           <button onClick={() => setInfoModal('privacy')} className="hover:text-on-surface">Privacy Policy</button>
           <button onClick={() => setInfoModal('terms')} className="hover:text-on-surface">Terms of Service</button>
           <button onClick={() => setInfoModal('status')} className="hover:text-on-surface">System Status</button>
@@ -453,7 +495,7 @@ export default function LoginPage({ onSuccess, addToast, authReady = true }: Pro
   )
 }
 
-function InfoModal({ kind, onClose }: { kind: 'docs' | 'privacy' | 'terms' | 'status' | null; onClose: () => void }) {
+function InfoModal({ kind, onClose }: { kind: 'privacy' | 'terms' | 'status' | null; onClose: () => void }) {
   useEffect(() => {
     if (!kind) return
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
@@ -466,15 +508,6 @@ function InfoModal({ kind, onClose }: { kind: 'docs' | 'privacy' | 'terms' | 'st
   if (!kind) return null
 
   const content = {
-    docs: {
-      title: 'Documentation',
-      rows: [
-        ['Create a project', 'Open the dashboard, use New Project, then upload BRD, FRD, HLD, LLD, transcripts, and UI designs.'],
-        ['Build a knowledge base', 'Artifacts are submitted to the n8n upload webhook and tracked as a long-running job.'],
-        ['Generate QA outputs', 'Choose test strategy, test plan, risk matrix, test cases, traceability matrix, or Jira-ready epics and stories.'],
-        ['Troubleshoot backend', 'Confirm the local n8n backend is running at http://localhost:5678 and the webhooks are active.'],
-      ],
-    },
     privacy: {
       title: 'Privacy Policy',
       rows: [
@@ -515,7 +548,7 @@ function InfoModal({ kind, onClose }: { kind: 'docs' | 'privacy' | 'terms' | 'st
         </div>
         <div className="space-y-3">
           {content.rows.map(([title, text]) => (
-            <section key={title} className="rounded-lg border border-outline-variant bg-surface-container-low p-4">
+            <section key={title} className="rounded-lg border border-outline-variant bg-surface-container-low p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-surface-container-lowest hover:shadow-md hover:shadow-primary/10">
               <h3 className="font-semibold text-on-surface">{title}</h3>
               <p className="mt-1 text-sm leading-6 text-on-surface-variant">{text}</p>
             </section>

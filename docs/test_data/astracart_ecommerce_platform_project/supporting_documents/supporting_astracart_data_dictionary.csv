@@ -1,0 +1,10 @@
+entity,field,type,required,description,quality_rule
+customer_account,account_id,uuid,yes,Primary customer identifier,Unique and immutable
+customer_account,email_hash,text,yes,Hashed normalized email,No raw email in analytics
+checkout_quote,quote_id,text,yes,Checkout quote identifier,Stable during payment retry
+checkout_quote,price_lock_until,timestamp,yes,Quote expiry,Must be future when payment starts
+payment_order,gateway_order_id,text,yes,Gateway side order id,Unique per quote retry cycle
+payment_event,signature_valid,boolean,yes,Webhook signature status,Invalid signature blocks status update
+customer_order,fulfillment_status,enum,yes,Order fulfillment lifecycle,Allowed state transition only
+order_event,event_time,timestamp,yes,Timeline event time,Monotonic per order when possible
+refund,refund_status,enum,conditional,Refund lifecycle,Visible after return/refund request

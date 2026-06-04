@@ -1,0 +1,521 @@
+{
+  "updatedAt": "2026-05-07T05:15:37.764Z",
+  "createdAt": "2026-04-14T09:41:25.246Z",
+  "id": "iKOec9hKQmR2KgHs",
+  "name": "INGEST Worker Engine (Queue Processor)",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 20
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1888,
+        -128
+      ],
+      "id": "d37d2d2a-88f1-4abb-bda8-8272151477e3",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs?job_id=eq.{{ $json.job_id }}&status=eq.pending",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \n  \"Content-Type\": \"application/json\",\n  \"Prefer\": \"return=representation\" \n}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "processing"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1120,
+        -144
+      ],
+      "id": "3ceda994-bd77-4200-b894-223a4000dde8",
+      "name": "Lock Pending Job picked for processing",
+      "retryOnFail": false,
+      "waitBetweenTries": 2000,
+      "alwaysOutputData": false,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "W6PsBv4SlXFSR6Kk",
+          "name": "supabase-anon-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c2905e12-f1ce-4d8b-84c5-8dd919a56d90",
+              "leftValue": "={{ Object.keys($json).length}}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -880,
+        -144
+      ],
+      "id": "9ead1d9a-79a3-4ca9-bf74-c0c86610f7a2",
+      "name": "Status = Processing Updated?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const job = Array.isArray($json) ? $json[0] : $json;\n\nreturn [{\n  json: {\n    jobId: job.job_id,\n    projectName: job.input.projectName,\n    status: job.status,\n    files: job.input.files\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        -160
+      ],
+      "id": "3fc647d5-62c2-4155-84e7-fab5fb253adc",
+      "name": "Prepare Job Input"
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs?status=eq.pending&order=created_at.asc&limit=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1648,
+        -128
+      ],
+      "id": "0fd20ca7-7789-4110-b209-281d1b14a2f5",
+      "name": "Get Pending Jobs",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "W6PsBv4SlXFSR6Kk",
+          "name": "supabase-anon-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c0314ece-605e-45a9-acb9-860fc2d11e56",
+              "leftValue": "={{Object.keys($json).length}}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1376,
+        -128
+      ],
+      "id": "519015c1-00e9-4084-92fe-c21eea8b42bf",
+      "name": "Pending Job Exists?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const files = $json.files;\n\nreturn Object.entries(files).map(([key, url]) => {\n  return {\n    json: {\n      fileKey: key,\n      fileUrl: url,\n      projectName: $json.projectName,\n      status: $json.status,\n      jobId: $json.jobId\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        -144
+      ],
+      "id": "99a8844b-3ecf-4552-9961-afdaf097ddc0",
+      "name": "Convert Files Object → Array"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.fileUrl }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"x-upsert\": \"true\", \n  \"Content-Type\": \"application/octet-stream\"  \n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        592,
+        -144
+      ],
+      "id": "3f2c02ba-81ca-42da-83cc-fb5a1aa5f900",
+      "name": "Download Files (Convert URL → Binary)",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "n0fvS28StF5iMZvG",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/n0fvS28StF5iMZvG",
+          "cachedResultName": "Multimodal Knowledge Ingestion & Vectorization Engine"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        -144
+      ],
+      "id": "f0c5be32-7206-4f31-9b92-c128cbf81848",
+      "name": "Call 'Multimodal Knowledge Ingestion & Vectorization Engine'"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allItems = $input.all();\n\nlet combinedBinary = {};\nlet combinedJson = [];\n\nallItems.forEach((item, index) => {\n  // Collect JSON\n  combinedJson.push(item.json);\n\n  // Collect binary\n  if (item.binary && item.binary.data) {\n    combinedBinary[`data${index}`] = item.binary.data;\n  }\n});\n\nreturn [\n  {\n    json: {\n      files: combinedJson,\n      jobId: allItems[0].json.jobId,\n      projectName: allItems[0].json.projectName,\n      status: allItems[0].json.status\n    },\n    binary: combinedBinary\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        -144
+      ],
+      "id": "39ea961d-3f2c-48ea-a7ab-78949dd4f6a0",
+      "name": "Convert ALL binaries inside ONE item"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\n// ✅ Extract keys from files object\nconst fileKeys = Object.keys(data.files || {});\nconst totalFiles = fileKeys.length;\n\nconsole.log(\"🚀 PROCESSING STARTED:\", {\n  jobId: data.jobId,\n  projectName: data.projectName,\n  totalFiles,\n  fileKeys\n});\n\nreturn [\n  {\n    json: {\n      jobId: data.jobId,\n      projectName: data.projectName,\n      totalFiles,\n      fileKeys,\n      logType: \"PROCESSING_STARTED\"\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        64
+      ],
+      "id": "ebd672f4-30b6-416c-8c9e-aa204691eb13",
+      "name": "LOG"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_queuecreator_logs?job_id=eq.{{ $json.jobId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \n  \"Content-Type\": \"application/json\",\n  \"Prefer\": \"return=minimal\" \n}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "total_files",
+              "value": "={{ $json.totalFiles }}"
+            },
+            {
+              "name": "file_keys",
+              "value": "={{ $json.fileKeys }}"
+            },
+            {
+              "name": "log_type",
+              "value": "={{ $json.logType }}"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -96,
+        64
+      ],
+      "id": "37a773e6-8be3-4102-9415-9e0657ea727a",
+      "name": "Store LOGS in Supabase",
+      "retryOnFail": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "W6PsBv4SlXFSR6Kk",
+          "name": "supabase-anon-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        128,
+        -144
+      ],
+      "id": "0d80e71e-991a-4c88-8dce-2b89b8be9c43",
+      "name": "Merge"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Pending Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lock Pending Job picked for processing": {
+      "main": [
+        [
+          {
+            "node": "Status = Processing Updated?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status = Processing Updated?": {
+      "main": [
+        [
+          {
+            "node": "Prepare Job Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Job Input": {
+      "main": [
+        [
+          {
+            "node": "LOG",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Pending Jobs": {
+      "main": [
+        [
+          {
+            "node": "Pending Job Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pending Job Exists?": {
+      "main": [
+        [
+          {
+            "node": "Lock Pending Job picked for processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Files Object → Array": {
+      "main": [
+        [
+          {
+            "node": "Download Files (Convert URL → Binary)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Files (Convert URL → Binary)": {
+      "main": [
+        [
+          {
+            "node": "Convert ALL binaries inside ONE item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert ALL binaries inside ONE item": {
+      "main": [
+        [
+          {
+            "node": "Call 'Multimodal Knowledge Ingestion & Vectorization Engine'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOG": {
+      "main": [
+        [
+          {
+            "node": "Store LOGS in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Convert Files Object → Array",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store LOGS in Supabase": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "0cddc39a-8dfa-426e-8371-7e8c198a40e3",
+  "activeVersionId": null,
+  "versionCounter": 171,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-04-14T09:41:25.246Z",
+      "createdAt": "2026-04-14T09:41:25.246Z",
+      "role": "workflow:owner",
+      "workflowId": "iKOec9hKQmR2KgHs",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 0cddc39a",
+    "description": ""
+  }
+}

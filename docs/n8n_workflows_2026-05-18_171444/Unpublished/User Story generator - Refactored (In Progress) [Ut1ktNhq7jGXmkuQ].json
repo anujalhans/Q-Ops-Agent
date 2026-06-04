@@ -1,0 +1,998 @@
+{
+  "updatedAt": "2026-04-16T10:15:49.000Z",
+  "createdAt": "2025-12-01T12:50:33.329Z",
+  "id": "Ut1ktNhq7jGXmkuQ",
+  "name": "User Story generator - Refactored (In Progress)",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "return [{ json: {}, binary: { data: { data: Buffer.from($input.first().json.output[0].content[0].text, 'utf8'), mimeType: 'text/markdown', fileName: 'Merged-Test-Plan.md' } } }];"
+      },
+      "id": "2d73b30b-3f09-4f48-8f62-733bdbaa5348",
+      "name": "Prepare Markdown Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2384,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/convert",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "markdown",
+              "value": "={{ $json.markdown }}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3041278f-4056-43cc-937b-589ea3963972",
+      "name": "Convert md to docx",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3232,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge all normalized document + transcript text into one large context\nlet allTexts = [];\n\nfor (const item of items) {\n  const src = item.json.sourceType || item.json.sourceName || item.json.source || \"Unknown Source\";\n  const txt = item.json.text || item.json.normalizedVisionText || \"\";\n\n  if (txt.trim()) {\n    allTexts.push(txt); // already has Source: tags\n  }\n}\n\n// Optional: Insert separator between sources\nconst merged = allTexts.join(\"\\n\\n---\\n\\n\");\n\nreturn [{\n  json: {\n    mergedContext: merged,\n    contextCount: allTexts.length\n  }\n}];\n"
+      },
+      "id": "1b648802-620d-448b-bda7-17203202d349",
+      "name": "Merged Context for OpenAI",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get text safely from previous node (supports both JSON and binary markdown)\nlet md = \"\";\n\n// Case 1: Markdown came as text field in JSON\nif (items[0]?.json?.output?.[0]?.content?.[0]?.text) {\n  md = items[0].json.output[0].content[0].text;\n}\n\n// Case 2: Markdown came as binary file\nelse if (items[0]?.binary?.data) {\n  md = Buffer.from(items[0].binary.data.data, 'base64').toString('utf8');\n}\n\n// Case 3: Markdown as plain text field\nelse if (items[0]?.json?.data) {\n  md = items[0].json.data;\n}\n\nelse {\n  return [{ json: { error: \"No markdown input found for cleaning\" } }];\n}\n\n// Clean and format Markdown\nlet cleaned = md\n  .replace(/#+\\s+/g, match => `\\n\\n${match}`) // add spacing before headings\n  .replace(/-{3,}/g, '\\n\\n\\\\page\\n\\n')         // convert --- to page breaks\n  .replace(/\\n{3,}/g, '\\n\\n')                  // collapse extra newlines\n  .trim();\n\nreturn [{\n  json: {\n    cleanedMarkdown: cleaned\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2576,
+        736
+      ],
+      "id": "714c585a-192b-489b-8db9-2f2747f122e5",
+      "name": "Clean Markdown Formatting"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/upload-test-docs",
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "id": "1c31f7bd-3d0b-4941-894f-b8ea6cd96a26",
+      "name": "Webhook - Upload Test Docs",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -4752,
+        704
+      ],
+      "webhookId": "85185b50-5bfd-4bc8-820a-680864270665",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c1ae99e2-4534-4205-8930-e7a422d34718",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "extract-images",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c4a66703-d399-44a8-8758-cadbc5092ce5",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "no-extract",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "691a0fc4-19bb-4a2d-b9d6-ff30a96ef53b",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "unsupported",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -3552,
+        304
+      ],
+      "id": "c6e6edb8-4cb5-490f-bb3d-f8dcad7adaae",
+      "name": "Switch - Find Extractor"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1456,
+        720
+      ],
+      "id": "6fe9e5ee-54ab-44a4-a8a0-f1d9224ac8d6",
+      "name": "Merge Normalized Image + Docs + Transcript Text"
+    },
+    {
+      "parameters": {
+        "executeOnce": false,
+        "command": "=python \"C:\\\\Users\\\\anujalhans01\\\\DOCUMENT-PARSER\\\\extract_images.py\" {{ $json.fileName }}"
+      },
+      "id": "0fc7708c-9e0b-4af9-9bd5-0d50762c3ff2",
+      "name": "Run Python Extractor to extract images",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -2544,
+        816
+      ],
+      "executeOnce": false,
+      "notesInFlow": true,
+      "notes": "Python file responsible to extract images from documents"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2336,
+        720
+      ],
+      "id": "cbe7eab8-8d7f-499d-82c5-f8474f7a6f34",
+      "name": "Merge JSON Outputs"
+    },
+    {
+      "parameters": {
+        "jsCode": "let output = [];\n\nfor (const item of items) {\n\n  const out = item.json.stdout;\n  if (!out) throw new Error(\"No stdout returned from Python script.\");\n\n  let parsed;\n  try {\n    parsed = JSON.parse(out);\n  } catch (err) {\n    throw new Error(\"Invalid JSON in stdout: \" + out);\n  }\n\n  const arr = Array.isArray(parsed) ? parsed : [parsed];\n\n  // Main PDF entry (not extracted images)\n  const docInfo = arr.find(p => !p.isExtractedImage) || arr[0];\n\n  //\n  // 1️⃣  Create MAIN PDF ITEM\n  //\n  const pdfItem = {\n    json: {\n      ...item.json,\n      parsedRaw: arr,\n      parsedContainsImage: docInfo.containsImage,\n      parsedImageCount: docInfo.imageCount,\n      parsedImageFiles: docInfo.imageFiles\n    },\n    binary: item.binary || {}\n  };\n\n  output.push(pdfItem);\n\n  //\n  // 2️⃣  If extracted images exist → create separate items\n  //\n  const extractedImages = arr.filter(p => p.isExtractedImage);\n\n  for (const img of extractedImages) {\n    const imgItem = {\n      json: {\n        sourceDoc: img.sourceDoc || item.json.fileName,\n        imageFile: img.file,\n        isExtractedImage: true,\n        imageCount: img.imageCount,\n        imageFiles: img.imageFiles\n      },\n      binary: {}     // keep empty now — can attach actual binary later if required\n    };\n\n    output.push(imgItem);\n  }\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2112,
+        720
+      ],
+      "id": "86cd0ea5-f493-42b6-b025-5e010e6842ee",
+      "name": "Flatten & Parse Extractor Output"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -192,
+        -80
+      ],
+      "id": "91b7bc5b-f560-4bbb-8474-1d12ec776fa3",
+      "name": "Merge Images from 2 Sources"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript) - Preprocessor + Balanced Summarizer + Token Estimator\n// Input expected: items = [{ json: { mergedContext: \"....\", contextCount: N } }, ...]\n// Outputs: mergedContextCleaned, originalChars, cleanedChars, originalTokens, cleanedTokens, summaryTokens, summary, sections[]\n\nconst STOPWORDS = new Set([\n  \"the\",\"and\",\"is\",\"in\",\"it\",\"of\",\"to\",\"a\",\"for\",\"with\",\"on\",\"that\",\"as\",\"are\",\"be\",\"this\",\"by\",\"or\",\"an\",\"from\",\n  \"at\",\"we\",\"will\",\"should\",\"can\",\"which\",\"their\",\"have\",\"has\",\"not\",\"but\",\"if\",\"they\",\"these\",\"such\",\"may\",\"also\"\n]);\n\nfunction estimateTokensFromChars(chars) {\n  // Practical approximation: 1 token ~= 4 characters\n  // Adjust factor if you want more conservative estimate\n  return Math.max(1, Math.ceil(chars / 4));\n}\n\nfunction splitToSentences(text) {\n  // Simple sentence splitter - handles ., ?, !\n  // Keep short sentences intact\n  return text\n    .replace(/\\r\\n/g, \"\\n\")\n    .replace(/\\n+/g, \"\\n\")\n    .split(/(?<=[.?!])\\s+(?=[A-Z0-9\"'\\(\\[])/g)\n    .map(s => s.trim())\n    .filter(Boolean);\n}\n\nfunction scoreSentences(sentences, topNwords=120) {\n  // Simple frequency-based scoring (extractive)\n  const freq = {};\n  for (const s of sentences) {\n    const words = s.toLowerCase().replace(/[^a-z0-9\\s]/g, \" \").split(/\\s+/).filter(Boolean);\n    for (const w of words) {\n      if (STOPWORDS.has(w)) continue;\n      freq[w] = (freq[w] || 0) + 1;\n    }\n  }\n  // normalize and score\n  const scores = sentences.map(s => {\n    const words = s.toLowerCase().replace(/[^a-z0-9\\s]/g, \" \").split(/\\s+/).filter(Boolean);\n    let sc = 0;\n    for (const w of words) {\n      if (freq[w]) sc += freq[w];\n    }\n    // length-normalize a bit\n    sc = sc / Math.sqrt(Math.max(1, words.length));\n    return sc;\n  });\n  return scores;\n}\n\nfunction dedupeParagraphs(paragraphs) {\n  // Exact + lightweight fuzzy using trigram set Jaccard\n  const seen = [];\n  const out = [];\n  function ngrams(text, n=3){\n    const s = text.toLowerCase().replace(/\\s+/g, \" \").trim();\n    const out = [];\n    for (let i=0;i<s.length-(n-1);i++){\n      out.push(s.slice(i,i+n));\n    }\n    return new Set(out);\n  }\n  for (const p of paragraphs) {\n    const pnorm = p.trim();\n    if (!pnorm) continue;\n    let isDup = false;\n    for (const s of seen) {\n      if (pnorm === s.raw) { isDup = true; break; }\n      // jaccard of char ngrams\n      const a = ngrams(pnorm), b = s.ng;\n      const inter = [...a].filter(x => b.has(x)).length;\n      const union = new Set([...a, ...b]).size;\n      const j = union === 0 ? 0 : inter/union;\n      if (j > 0.85) { isDup = true; break; } // high threshold to avoid false positives\n    }\n    if (!isDup) {\n      seen.push({ raw: pnorm, ng: ngrams(pnorm) });\n      out.push(pnorm);\n    }\n  }\n  return out;\n}\n\nfunction normalizeHeadingsAndRemoveUndefined(md) {\n  // Remove \"## undefined\", orphan code fences; normalize \\page markers\n  let s = md.replace(/```(?:markdown)?/gi, \"\\n\"); // remove code fences markers\n  s = s.replace(/\\\\page/g, \"\\n\\n---\\n\\n\"); // unify page breaks\n  // remove headings that are just 'undefined' or blank\n  s = s.replace(/^(#{1,6})\\s*(undefined)\\s*$/gim, \"\");\n  // collapse excessive newlines\n  s = s.replace(/\\n{3,}/g, \"\\n\\n\");\n  return s.trim();\n}\n\nfunction splitIntoSections(text) {\n  // If markdown headings exist (h2/h3), split by them; otherwise return single section\n  const lines = text.split(\"\\n\");\n  const sections = [];\n  let curTitle = \"Document\";\n  let curBuf = [];\n\n  const headingRe = /^(#{1,6})\\s*(.+)$/;\n  for (let line of lines) {\n    const m = line.match(headingRe);\n    if (m) {\n      // flush\n      if (curBuf.length) {\n        sections.push({ sectionName: curTitle, text: curBuf.join(\"\\n\").trim() });\n      }\n      curTitle = m[2].trim();\n      curBuf = [];\n    } else {\n      curBuf.push(line);\n    }\n  }\n  if (curBuf.length) sections.push({ sectionName: curTitle, text: curBuf.join(\"\\n\").trim() });\n  return sections;\n}\n\nfunction summarizeExtractive(text, tokenBudget, mode=\"balanced\") {\n  // mode: 'concise' (more aggressive), 'balanced', 'detailed' (less aggressive)\n  if (!text || !text.trim()) return { summary: \"\", tokens: 0, chars: 0 };\n\n  const sentences = splitToSentences(text);\n  if (sentences.length === 0) return { summary: \"\", tokens: 0, chars: 0 };\n\n  const scores = scoreSentences(sentences);\n  // pair and sort\n  const pairs = sentences.map((s,i)=>({s, score: scores[i], idx:i, chars: s.length}));\n  pairs.sort((a,b)=>b.score - a.score);\n\n  // select sentences until tokenBudget reached (estimate)\n  const chosen = [];\n  let charsCount = 0;\n  for (const p of pairs) {\n    const estTokens = estimateTokensFromChars(p.chars);\n    const currentTokens = estimateTokensFromChars(charsCount);\n    if (currentTokens + estTokens > tokenBudget) continue;\n    // Keep ordering by original index for readability\n    chosen.push(p);\n    charsCount += p.chars;\n  }\n\n  // If nothing selected (budget too small), pick top 1 sentence\n  if (chosen.length === 0) {\n    const top = pairs[0];\n    chosen.push(top);\n    charsCount = top.chars;\n  }\n\n  // Order chosen sentences by original order\n  chosen.sort((a,b)=>a.idx - b.idx);\n  const summary = chosen.map(x=>x.s).join(\" \");\n\n  return { summary: summary.trim(), tokens: estimateTokensFromChars(charsCount), chars: charsCount };\n}\n\n// -------------------- Main Node Logic --------------------\n\nconst inputs = items.map(i=>i.json);\nconst mergedRaw = inputs.map(i=>i.mergedContext || \"\").join(\"\\n\\n---\\n\\n\");\nconst contextCount = inputs.reduce((acc,i)=> acc + (i.contextCount || 0), 0);\n\n// 1) Normalize and remove obvious garbage\nlet cleaned = normalizeHeadingsAndRemoveUndefined(mergedRaw);\n\n// 2) Break into paragraphs and dedupe\nconst paragraphs = cleaned.split(/\\n{2,}/).map(p=>p.trim()).filter(Boolean);\nconst dedupedParas = dedupeParagraphs(paragraphs);\n\n// rebuild cleaned context\ncleaned = dedupedParas.join(\"\\n\\n\");\n\n// 3) Split into sections (by headings if any)\nconst sections = splitIntoSections(cleaned);\n\n// If sections are just single 'Document' and very long, optionally try to chunk by length\n// But for balanced mode we will still summarize\n\n// 4) Compute sizes and token estimates\nconst originalChars = mergedRaw.length;\nconst cleanedChars = cleaned.length;\nconst originalTokens = estimateTokensFromChars(originalChars);\nconst cleanedTokens = estimateTokensFromChars(cleanedChars);\n\n// 5) Summarize: balanced mode target\nconst TARGET_TOKENS_FOR_LLM = 6500; // <--- tune this to control LLM cost\n// If cleanedTokens already less than target, return full cleaned text as summary-friendly\nlet summaryText = \"\";\nlet summaryTokens = 0;\n\n// Option B = Balanced summarization: summarize per-section but preserve sections until budget\nif (cleanedTokens <= TARGET_TOKENS_FOR_LLM) {\n  summaryText = cleaned;\n  summaryTokens = cleanedTokens;\n} else {\n  // Distribute budget across sections proportional to section size\n  const sectionsInfo = sections.map(sec=>{\n    const chars = sec.text.length;\n    const tokens = estimateTokensFromChars(chars);\n    return { sectionName: sec.sectionName, text: sec.text, chars, tokens };\n  });\n\n  const totalTokensSection = sectionsInfo.reduce((a,b)=>a + b.tokens, 0) || 1;\n  const perSectionSummaries = [];\n  let tokensUsed = 0;\n\n  for (const s of sectionsInfo) {\n    // allocate proportional budget but at least 80 tokens for small sections\n    const alloc = Math.max(120, Math.floor((s.tokens / totalTokensSection) * (TARGET_TOKENS_FOR_LLM - 200)));\n    const summ = summarizeExtractive(s.text, alloc, \"detailed\");\n    perSectionSummaries.push({ sectionName: s.sectionName, summary: summ.summary, chars: summ.chars, tokens: summ.tokens });\n    tokensUsed += summ.tokens;\n  }\n\n  // Build final summary text by joining section summaries\n  summaryText = perSectionSummaries.map(s=> `## ${s.sectionName}\\n\\n${s.summary}`).join(\"\\n\\n\");\n  summaryTokens = tokensUsed;\n}\n\n// 6) Prepare section-level summaries for output (use smaller local budgets)\nconst sectionOutputs = sections.map(sec => {\n  const secTokens = estimateTokensFromChars(sec.text.length);\n  const budget = Math.max(60, Math.floor(Math.min(secTokens, 300))); // small budget per section\n  const summ = summarizeExtractive(sec.text, budget, \"detailed\");\n  return {\n    sectionName: sec.sectionName,\n    text: sec.text,\n    chars: sec.text.length,\n    tokens: estimateTokensFromChars(sec.text.length),\n    summary: summ.summary,\n    summaryChars: summ.chars,\n    summaryTokens: summ.tokens\n  };\n});\n\n// return single output item\nreturn [\n  {\n    json: {\n      mergedContextCleaned: cleaned,\n      contextCount: contextCount,\n      originalChars,\n      cleanedChars,\n      originalTokens,\n      cleanedTokens,\n      targetTokensForLLM: TARGET_TOKENS_FOR_LLM,\n      summaryTokens,\n      summary: summaryText,\n      sections: sectionOutputs\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1824,
+        592
+      ],
+      "id": "5daf664a-8707-43a5-bdde-3c5dbcff3e7b",
+      "name": "Pre-Processor + Summarizer + Token Estimator"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=C:\\\\Users\\\\anujalhans01\\\\n8n-temp-files\\\\{{$json.fileName}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -2784,
+        704
+      ],
+      "id": "f1444f51-59d8-45cc-8b7f-8e162f3f2099",
+      "name": "Save Binary Files to local Disk"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  // Just ensure it has a single binary key called \"data\"\n  const binaries = item.binary || {};\n  const keys = Object.keys(binaries);\n  if (keys.length === 0) return item;\n\n  const firstKey = keys[0];\n  const bin = binaries[firstKey];\n  // Keep structure intact\n  return {\n    json: item.json,\n    binary: { data: bin },\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1888,
+        720
+      ],
+      "id": "2f224997-528a-497f-b407-5bd46d66df8c",
+      "name": "Again Rename Binary Keys"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=C:\\\\Users\\\\anujalhans01\\\\Downloads\\\\Generated-User-Story-{{$now.toFormat('yyyyLLdd_HHmmss_SSS')}}-{{ $json.storyIndex }}.docx",
+        "options": {}
+      },
+      "id": "bd5c6b63-f6c6-4003-94ee-4f944aeb01a4",
+      "name": "Write Final Test Strategy File",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        3408,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a Senior Product Owner and Business Analyst with 15+ years of experience defining enterprise-scale product requirements using Agile and Scrum frameworks. \nYou specialize in translating BRD, FRD, HLD, LLD, and stakeholder discussions into detailed INVEST-compliant Agile User Stories, Acceptance Criteria, Alternate Flows, and Test Scenarios.\n\nRules & Expectations:\n- Generate production-grade, implementation-ready user stories suitable for Jira/Azure DevOps.\n- Structure stories with high clarity, depth, and traceability back to source requirement intent.\n- Do not summarize or compress; instead expand details, UI/UX behavior, data handling, validations, error cases, integrations, and constraints.\n- Ensure each story stands independently and includes realistic examples and edge cases.\n- After every story block, insert the delimiter exactly as:\n--- USER_STORY_BREAK ---\n- Do not stop after the first story — continue until all extracted features are covered.\n\nTone: expert, precise, clear, solution-oriented.\n"
+            },
+            {
+              "content": "=You are provided with merged business and technical context extracted from BRD, FRD, HLD, LLD, workflows, and transcripts.\n\n========================\nMerged Requirements Context\n========================\n{{ $json[\"mergedContext\"] }}\n========================\n\n### Task\nStep 1 — **Extract high-level features** from the provided context. \nPresent only a bullet list named **\"Identified Features\"**.\n\nStep 2 — For **each identified feature**, generate a separate **highly detailed Agile User Story** following the structure below (one story per feature).\n\n### Required Story Structure\n# User Story ID: US-XXX\n## **Feature**\n## **User Story**\n## **Business Context & Narrative** (3–5 paragraphs)\n## **Primary Flow** (detailed step sequence)\n## **Alternate Flows**\n## **Exception / Error Handling**\n## **Acceptance Criteria – Gherkin** (min 8–12 lines)\n## **UI / UX Requirements**\n## **Field-level Validation Rules**\n| Field | Rule | Error Message | Example |\n## **Data & Integration Requirements**\n## **Performance / NFRs**\n## **Test Scenarios** (8–15 realistic cases)\n## **Dependencies**\n## **Assumptions**\n## **Source Traceability**\n## **Automation Feasibility**\n\n### Constraints\n- Each story must contain 800–1200 words\n- Each story must deeply elaborate functional behavior, background logic, UI, validations, alternate flows, data needs, and corner cases\n- Use realistic example values and personas\n- Include the delimiter at end of each story:\n--- USER_STORY_BREAK ---\n\nGenerate multiple stories (not just one) — **one story per feature** extracted in Step 1.\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "maxTokens": 12000,
+          "temperature": 0.5
+        }
+      },
+      "id": "d9b2250e-6646-4c6e-9ad6-d00514852f62",
+      "name": "OpenAI - Generate User Stories",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        2048,
+        736
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "rdVg2Kks1mUCJf4R",
+          "name": "OpenAi Paid Account (Aonu)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const md = items[0].json.cleanedMarkdown;\n\n// regex that matches variations like whitespace, dashes, etc.\nconst stories = md.split(/\\s*-*\\s*USER_STORY_BREAK\\s*-*\\s*/g).map((block, i) => ({\n  json: {\n    storyIndex: i + 1,\n    markdown: block.trim()\n  }\n}));\n\nreturn stories;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2784,
+        736
+      ],
+      "id": "f7a185ab-9173-4d1f-9586-7876698d73e2",
+      "name": "Split into Multiple User Stories"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2992,
+        736
+      ],
+      "id": "cbd26f74-1215-49e9-bf10-83de59aadb36",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -4288,
+        464
+      ],
+      "id": "f87a9a38-bb90-4905-b196-356eae117060",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "rdVg2Kks1mUCJf4R",
+          "name": "OpenAi Paid Account (Aonu)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = [];\n\nitems.forEach((item, index) => {\n  const binaries = item.binary || {};\n  const keys = Object.keys(binaries);\n\n  if (keys.length === 0) {\n    output.push({ json: { error: \"No binary received\" }});\n    return;\n  }\n\n  keys.forEach(key => {\n    const file = binaries[key];\n    const base64 = file.data || file.fileData || \"\";\n\n    let sampleText = \"\";\n\n    try {\n      // If file is an image, skip sample text extraction\n      if ((file.mimeType || \"\").startsWith(\"image/\")) {\n        sampleText = \"\";  // Prevent junk output for images\n      } else {\n        const buffer = Buffer.from(base64, \"base64\");\n        sampleText = buffer.toString(\"utf8\", 0, 20000);\n      }\n    } catch (e) {\n      sampleText = \"\";\n    }\n\n    output.push({\n      json: {\n        id: index,\n        fileName: file.fileName || key,\n        mimeType: file.mimeType || \"\",\n        sampleText\n      },\n      binary: { data: file }\n    });\n  });\n});\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4624,
+        304
+      ],
+      "id": "e0ebff2f-23ec-4f2d-99de-de49819fff3c",
+      "name": "Convert Binaries to json"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the agent output and attach the single binary object to all items\n\nreturn items.map((item,index) => {\n  let parsed = {};\n  try {\n    parsed = JSON.parse(item.json.output);\n  } catch (e) {\n    parsed = { error: \"Invalid JSON returned\", raw: item.json.output };\n  }\n\n // Directly access matching binary from Convert Binaries to json output\n  const source = $items(\"Convert Binaries to json\")[index];\n  const originalBinary = source?.binary || {};\n\n  return {\n    json: {\n      ...parsed,\n      id: index\n    },\n    binary: originalBinary\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3824,
+        320
+      ],
+      "id": "1f4848da-43c4-4ce3-a6a3-b9dbfe87bdb6",
+      "name": "Parse the output JSON into actual objects"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1680,
+        720
+      ],
+      "id": "879c214d-a7a6-46c8-ab76-bd9d4bd46659",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        -1472,
+        864
+      ],
+      "id": "2e3c544c-ff74-46c6-be32-f2ee0b716437"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are a senior BA + QA hybrid.\n\nInput may include:\n- BRD, FRD, HLD, LLD text\n- Grooming transcripts\n- UI / architecture images\n\nYour task:\n1. Extract functional requirements\n2. Extract business rules\n3. Extract user flows\n4. Extract non-functional requirements\n5. Preserve source type and confidence\n\nOutput STRICT JSON:\n{\n  sourceType,\n  extractedRequirements[],\n  assumptions[],\n  ambiguities[],\n  dependencies[]\n}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        64,
+        -32
+      ],
+      "id": "c479948b-a5d1-4df3-b13c-d7b32d90fe87",
+      "name": "Requirement Content Extractor"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "data"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -4128,
+        464
+      ],
+      "id": "70563bb8-8deb-40f2-b5de-c16402c3a07b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -4368,
+        912
+      ],
+      "id": "63cb1ee9-7d72-4940-9901-4b0a3f572d35",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "rdVg2Kks1mUCJf4R",
+          "name": "OpenAi Paid Account (Aonu)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a document routing and analysis agent.\nInput:\nfileName: {{$json[\"fileName\"]}}\nmimeType: {{$json[\"mimeType\"]}}\nsampleText: {{$json[\"sampleText\"]}}\n\nClassify and return JSON ONLY in this exact format:\n{\n  \"fileName\": \"{{$json[\"fileName\"]}}\",\n  \"fileType\": \"pdf|doc|ppt|image|text\",\n  \"docType\": \"brd|frd|hld|lld|transcript|jpeg-image|png-image|ppt-text|ppt-image\",\n  \"contentType\": \"plain-text|image-only|mixed\",\n  \"needImageExtraction\": true|false,\n  \"route\": \"extract-images|no-extract|unsupported\"\n}\n\nDo not include any explanation or markdown. If unsure, use 'unsupported' for route.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -4240,
+        304
+      ],
+      "id": "693cdb23-bec4-41f7-b867-1e72b50def35",
+      "name": "File Detector + Content Extractor Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a document ingestion and deep content extraction engine.\n\nInput:\n- Binary file\n- File metadata (fileName, mimeType)\n\nYour tasks:\n1. Detect file type and document type\n2. Extract ALL readable content in FULL DETAIL\n3. Preserve structure, wording, and intent\n4. Do NOT summarize\n5. Do NOT shorten\n6. Do NOT invent missing content\n\nExtraction rules:\n- Extract complete paragraphs, not snippets\n- Include headings, subheadings, bullet points, and descriptions\n- If tables exist, describe their contents fully in text\n- The extractedText field MUST be detailed enough to act as a knowledge base\n\nReturn STRICT JSON ONLY:\n\n{\n  \"fileName\": \"{{ $json.fileName }}\",\n  \"fileType\": \"pdf|doc|ppt|image|text|unknown\",\n  \"docType\": \"brd|frd|hld|lld|transcript|image|unknown\",\n  \"contentType\": \"plain-text|image-only|mixed\",\n  \"extractionType\": \"text|vision|mixed\",\n  \"extractedText\": \"FULL detailed extracted content\",\n  \"sections\": [\n    {\n      \"title\": \"Exact heading from document\",\n      \"content\": \"Complete text under this heading\"\n    }\n  ],\n  \"tables\": [],\n  \"lists\": [],\n  \"confidence\": 0.0\n}\n\nCRITICAL RULES:\n- extractedText must be long and detailed\n- Never return placeholder or example text\n- Never fabricate content\n- Always return valid JSON\n- No markdown\n- No explanations\n- The \"fileName\" field MUST be exactly the same as the input fileName.\n- NEVER invent or modify file names.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -4224,
+        704
+      ],
+      "id": "9909e548-0334-42b2-a330-879d3bbb98ff",
+      "name": "File Detector + Content Extractor Agent1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = [];\n\nfor (const item of items) {\n  const binaries = item.binary || {};\n\n  for (const [key, binary] of Object.entries(binaries)) {\n    output.push({\n      json: {\n        fileName: binary.fileName || key,\n        mimeType: binary.mimeType || '',\n      },\n      binary: {\n        data: binary\n      }\n    });\n  }\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4512,
+        704
+      ],
+      "id": "abff93a7-9a15-40cc-92f0-7dc1ca6f518c",
+      "name": "Split Uploaded Binaries"
+    },
+    {
+      "parameters": {
+        "jsCode": "const documents = items.map(item => ({\n  fileName: item.json.fileName,\n  fileType: item.json.fileType,\n  docType: item.json.docType,\n  contentType: item.json.contentType,\n  extractionType: item.json.extractionType,\n\n  extractedText: item.json.extractedText,\n\n  sections: item.json.sections,\n  tables: item.json.tables,\n  lists: item.json.lists,\n\n  confidence: item.json.confidence\n}));\n\nreturn [\n  {\n    json: {\n      documentCount: documents.length,\n      documents\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3664,
+        704
+      ],
+      "id": "fdc9b7d7-be0c-464f-85f1-b857640cff7c",
+      "name": "Prepare Context Inputs"
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\n\nfor (const inputItem of $input.all()) {\n  if (!inputItem.json.output) {\n    throw new Error(\"Missing 'output' field from extractor agent\");\n  }\n\n  let parsed;\n\n  // Case 1: Agent already returned an object\n  if (typeof inputItem.json.output === \"object\") {\n    parsed = inputItem.json.output;\n  }\n\n  // Case 2: Agent returned JSON as string\n  else if (typeof inputItem.json.output === \"string\") {\n    try {\n      parsed = JSON.parse(inputItem.json.output.trim());\n    } catch (e) {\n      throw new Error(\n        `Invalid JSON from extractor agent for one item. Raw output:\\n${inputItem.json.output}`\n      );\n    }\n  }\n\n  else {\n    throw new Error(\"Unsupported output type from extractor agent\");\n  }\n\n  results.push({\n    json: {\n      fileName: parsed.fileName,\n      fileType: parsed.fileType,\n      docType: parsed.docType,\n      contentType: parsed.contentType,\n      extractionType: parsed.extractionType,\n\n      extractedText: parsed.extractedText,\n      sections: parsed.sections || [],\n      tables: parsed.tables || [],\n      lists: parsed.lists || [],\n\n      confidence: parsed.confidence || 0\n    }\n  });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3872,
+        704
+      ],
+      "id": "43e9ee00-6870-4cf8-90e6-34ce0bf8b0ad",
+      "name": "Parse Agent Extracted Content"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are a Senior QA Architect and Business Analyst.\nYour task is to build a structured, test-ready context from multiple uploaded documents such as BRD, FRD, HLD, LLD, transcripts, and images.\nYou are not a summarizer.\nYou must normalize, prioritize, and consolidate information so it can be directly used to generate:\n - User Stories\n - Test Plans\n - Test Strategies\n\nYour output must be strictly valid JSON and must follow the schema below.\n\n🔍 Input Characteristics\n       - You will receive multiple documents as an array.\n       - Each document may contain:\n          - extractedText\n          - sections\n          - tables\n          - lists\n          - confidence score\n\n       - Documents may overlap, contradict, or be incomplete.\n       - Some documents may be irrelevant or low quality.\n\n🧩 Responsibilities\nClassify and prioritize documents\n - Identify document type: BRD, FRD, HLD, LLD, Transcript, Image\n - Apply confidence-based weighting\n\nExtract test-relevant knowledge\n - Functional capabilities\n - Non-functional requirements\n - Actors and user roles\n - Architecture and integration details\n - Data entities\n\nNormalize and de-duplicate\n - Merge overlapping content\n - Remove repetition\n - Resolve conflicts using priority rules\n\nPreserve traceability\n - Every capability or requirement must reference its source document type\n\nIdentify risks and gaps\n - Ambiguous or non-testable statements\n - Missing requirements\n - Conflicting definitions\n\nPrepare downstream agents\n - Output must be immediately consumable by User Story, Test Plan, and Test Strategy generators\n\n🧠 Mandatory Document Priority Rules\nWhen conflicts exist, resolve them in this order:\n\nBRD – business scope and intent\nFRD – functional behavior\nHLD – system architecture\nLLD – technical and data design\nTranscript – supporting context only\nImage – UI hints only\nDocuments with low confidence must be down-weighted or ignored.\n\nOUTPUT FORMAT (JSON ONLY):\n{\n  \"productContext\": {\n    \"productName\": \"\",\n    \"domain\": \"\",\n    \"primaryGoals\": []\n  },\n  \"actors\": [],\n  \"functionalCapabilities\": [\n    {\n      \"capability\": \"\",\n      \"details\": \"\",\n      \"priority\": \"\",\n      \"source\": []\n    }\n  ],\n  \"nonFunctionalRequirements\": {\n    \"performance\": [],\n    \"security\": [],\n    \"scalability\": [],\n    \"usability\": [],\n    \"compliance\": []\n  },\n  \"architectureContext\": {\n    \"architectureType\": \"\",\n    \"frontend\": \"\",\n    \"backend\": [],\n    \"database\": \"\",\n    \"integrations\": []\n  },\n  \"dataEntities\": [],\n  \"testableRisks\": [\n    {\n      \"risk\": \"\",\n      \"impact\": \"\",\n      \"source\": \"\"\n    }\n  ],\n  \"knownGapsAndAmbiguities\": [],\n  \"documentTraceability\": {\n    \"BRD\": [],\n    \"FRD\": [],\n    \"HLD\": [],\n    \"LLD\": [],\n    \"Transcript\": [],\n    \"Image\": []\n  }\n}\n\n\nHARD RULES:\nOutput ONLY valid JSON\nNo explanations, no markdown, no commentary\nDo not invent information\nIf data is missing, explicitly record it under knownGapsAndAmbiguities\n\\Ignore irrelevant or non-product content",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -3456,
+        704
+      ],
+      "id": "0f57b582-c750-4a9d-8015-d891f061cf34",
+      "name": "Context Builder Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -3600,
+        912
+      ],
+      "id": "110cc3be-e0ca-48ac-86e9-20e08f2dfc50",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "rdVg2Kks1mUCJf4R",
+          "name": "OpenAi Paid Account (Aonu)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Prepare Markdown Content": {
+      "main": [
+        [
+          {
+            "node": "Clean Markdown Formatting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert md to docx": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merged Context for OpenAI": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - Generate User Stories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Markdown Formatting": {
+      "main": [
+        [
+          {
+            "node": "Split into Multiple User Stories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Upload Test Docs": {
+      "main": [
+        [
+          {
+            "node": "Split Uploaded Binaries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch - Find Extractor": {
+      "main": [
+        [],
+        [],
+        []
+      ]
+    },
+    "Merge Normalized Image + Docs + Transcript Text": {
+      "main": [
+        [
+          {
+            "node": "Merged Context for OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Python Extractor to extract images": {
+      "main": [
+        [
+          {
+            "node": "Merge JSON Outputs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge JSON Outputs": {
+      "main": [
+        [
+          {
+            "node": "Flatten & Parse Extractor Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten & Parse Extractor Output": {
+      "main": [
+        [
+          {
+            "node": "Again Rename Binary Keys",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Images from 2 Sources": {
+      "main": [
+        []
+      ]
+    },
+    "Save Binary Files to local Disk": {
+      "main": [
+        [
+          {
+            "node": "Run Python Extractor to extract images",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge JSON Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Again Rename Binary Keys": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - Generate User Stories": {
+      "main": [
+        [
+          {
+            "node": "Prepare Markdown Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split into Multiple User Stories": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Write Final Test Strategy File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert md to docx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "File Detector + Content Extractor Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Binaries to json": {
+      "main": [
+        [
+          {
+            "node": "File Detector + Content Extractor Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse the output JSON into actual objects": {
+      "main": [
+        [
+          {
+            "node": "Switch - Find Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "File Detector + Content Extractor Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "File Detector + Content Extractor Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File Detector + Content Extractor Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse the output JSON into actual objects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Uploaded Binaries": {
+      "main": [
+        [
+          {
+            "node": "File Detector + Content Extractor Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File Detector + Content Extractor Agent1": {
+      "main": [
+        [
+          {
+            "node": "Parse Agent Extracted Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Agent Extracted Content": {
+      "main": [
+        [
+          {
+            "node": "Prepare Context Inputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Context Inputs": {
+      "main": [
+        [
+          {
+            "node": "Context Builder Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Context Builder Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "File Detector + Content Extractor Agent1": [
+      {
+        "json": {
+          "output": "{\n  \"fileName\": \"ShopSmart_FRD.pdf\",\n  \"fileType\": \"pdf\",\n  \"docType\": \"frd\",\n  \"contentType\": \"plain-text\",\n  \"extractionType\": \"text\",\n  \"extractedText\": \"This document outlines the Functional Requirements Document (FRD) for the ShopSmart application. It provides a comprehensive definition of the application's functionality, features, and requirements as agreed upon by stakeholders. \\n\\n1. Introduction\\n   The introduction section explains the purpose of the document, the intended audience, and the project overview. \\n   - Purpose: To specify the functional requirements of ShopSmart. \\n   - Audience: Project managers, developers, testers, and stakeholders. \\n   - Overview: This FRD will serve as a guide for the development and testing phases. \\n\\n2. Business Requirements\\n   This section details the high-level business requirements that the ShopSmart application must fulfill. \\n   - Requirement 1: The application must allow users to create an account. \\n   - Requirement 2: The application must facilitate product searches. \\n   - Requirement 3: Users should be able to view product details. \\n\\n3. Functional Requirements\\n   Here we describe the specific functionalities of the application. \\n   - User Registration: Users must provide an email and password to create an account. Upon registration, a confirmation email is sent. \\n   - Product Search: Users should be able to search for products using keywords, categories, and filters. The search results will display product names, images, prices, and ratings. \\n   - Shopping Cart: Users can add items to their shopping cart, adjust quantities, and view total costs. \\n\\n4. User Interface Requirements\\n   This section outlines the expected user interface elements for different application views, including login, registration, product listings, and checkout. \\n   - Login Screen: Fields for email and password input, with 'Forgot Password?' link. \\n   - Product Listing Page: Products displayed in a grid format with filtering options on the side. \\n\\n5. Non-Functional Requirements\\n   Discusses the application’s performance, scalability, and security aspects. \\n   - Performance: The system must handle up to 10,000 simultaneous users. \\n   - Security: User data must be protected using encryption during transmission. \\n\\n6. Appendices\\n   Contains additional information relevant to the document. \\n   - Glossary of Terms: Definitions of terms used throughout the document. \\n   - References: Links to resources and documents used in the development of this FRD.\",\n  \"sections\": [\n    {\n      \"title\": \"Introduction\",\n      \"content\": \"The introduction section explains the purpose of the document, the intended audience, and the project overview. - Purpose: To specify the functional requirements of ShopSmart. - Audience: Project managers, developers, testers, and stakeholders. - Overview: This FRD will serve as a guide for the development and testing phases.\"\n    },\n    {\n      \"title\": \"Business Requirements\",\n      \"content\": \"This section details the high-level business requirements that the ShopSmart application must fulfill. - Requirement 1: The application must allow users to create an account. - Requirement 2: The application must facilitate product searches. - Requirement 3: Users should be able to view product details.\"\n    },\n    {\n      \"title\": \"Functional Requirements\",\n      \"content\": \"Here we describe the specific functionalities of the application. - User Registration: Users must provide an email and password to create an account. Upon registration, a confirmation email is sent. - Product Search: Users should be able to search for products using keywords, categories, and filters. The search results will display product names, images, prices, and ratings. - Shopping Cart: Users can add items to their shopping cart, adjust quantities, and view total costs.\"\n    },\n    {\n      \"title\": \"User Interface Requirements\",\n      \"content\": \"This section outlines the expected user interface elements for different application views, including login, registration, product listings, and checkout. - Login Screen: Fields for email and password input, with 'Forgot Password?' link. - Product Listing Page: Products displayed in a grid format with filtering options on the side.\"\n    },\n    {\n      \"title\": \"Non-Functional Requirements\",\n      \"content\": \"Discusses the application’s performance, scalability, and security aspects. - Performance: The system must handle up to 10,000 simultaneous users. - Security: User data must be protected using encryption during transmission.\"\n    },\n    {\n      \"title\": \"Appendices\",\n      \"content\": \"Contains additional information relevant to the document. - Glossary of Terms: Definitions of terms used throughout the document. - References: Links to resources and documents used in the development of this FRD.\"\n    }\n  ],\n  \"tables\": [],\n  \"lists\": [],\n  \"confidence\": 0.0\n}"
+        }
+      },
+      {
+        "json": {
+          "output": "{\n  \"fileName\": \"ShopSmart_HLD.pdf\",\n  \"fileType\": \"pdf\",\n  \"docType\": \"hld\",\n  \"contentType\": \"plain-text\",\n  \"extractionType\": \"text\",\n  \"extractedText\": \"The ShopSmart High-Level Design (HLD) document outlines the architecture and design specifications of the ShopSmart application. This document is intended for stakeholders interested in understanding the structural framework and the technical approach taken in the project. \\n\\n1. Introduction\\n   The purpose of this HLD is to provide a comprehensive overview of the system architecture and design considerations. This document will detail the components, their interactions, and the rationale behind technical decisions. \\n\\n2. System Architecture\\n   The architecture of the ShopSmart application follows a microservices model, ensuring scalability and modularity. The application consists of the following key components:\\n   - User Interface (UI): A web-based interface through which users interact with the application.\\n   - API Gateway: Serves as a single entry point for client requests, routing them to appropriate microservices.\\n   - Microservices: Independent services that handle specific business functionalities such as product management, user accounts, and order processing.\\n   - Database: A centralized database for persistent data storage.\\n\\n3. Component Design\\n   The design of each component is outlined below:\\n   - User Interface: Built using ReactJS for dynamic rendering and a responsive design. The UI is structured into several main pages:\\n     * Home Page: Displays featured products and categories.\\n     * Product Page: Contains detailed descriptions of individual products.\\n     * Cart Page: Allows users to review selected items before purchase.\\n   - API Gateway: Built using Node.js and Express, handling authentication, logging, and request validation.\\n   - Microservices: Each microservice operates independently and communicates through RESTful APIs. Key microservices include:\\n     * Product Service: Manages product information, availability, and pricing.\\n     * User Service: Handles user registrations, logins, and account settings.\\n     * Order Service: Processes orders, manages transactions, and tracks orders.\\n   - Database: Utilizes PostgreSQL for relational data management.\\n\\n4. Design Diagrams\\n   The following design diagrams illustrate the overall architecture:\\n   - Component Diagram: Provides a high-level view of the system components and their interactions.\\n   - Sequence Diagrams: Demonstrate the flow of requests and responses between services. \\n\\n5. Security Considerations\\n   Security is a paramount consideration in the design of the ShopSmart application. Key security aspects include:\\n   - Authentication: All API calls require user authentication using JWT tokens.\\n   - Data Encryption: Sensitive data, such as user information and order details, are encrypted both in transit and at rest.\\n   - Input Validation: All user inputs are validated to prevent SQL injection and other forms of attacks.\\n\\n6. Conclusion\\n   This High-Level Design document provides a blueprint for developing the ShopSmart application. The design emphasizes strong architectural principles, security measures, and component independence, setting the foundation for subsequent phases of development and implementation.\",\n  \"sections\": [\n    {\n      \"title\": \"Introduction\",\n      \"content\": \"The purpose of this HLD is to provide a comprehensive overview of the system architecture and design considerations. This document will detail the components, their interactions, and the rationale behind technical decisions.\"\n    },\n    {\n      \"title\": \"System Architecture\",\n      \"content\": \"The architecture of the ShopSmart application follows a microservices model, ensuring scalability and modularity. The application consists of the following key components: User Interface (UI), API Gateway, Microservices, Database.\"\n    },\n    {\n      \"title\": \"Component Design\",\n      \"content\": \"The design of each component is outlined below: User Interface, API Gateway, Microservices, Database. Detailed descriptions of each component's specific functionalities and structures are provided.\"\n    },\n    {\n      \"title\": \"Design Diagrams\",\n      \"content\": \"The following design diagrams illustrate the overall architecture: Component Diagram, Sequence Diagrams.\"\n    },\n    {\n      \"title\": \"Security Considerations\",\n      \"content\": \"Security is a paramount consideration in the design of the ShopSmart application. Key security aspects include Authentication, Data Encryption, Input Validation.\"\n    },\n    {\n      \"title\": \"Conclusion\",\n      \"content\": \"This High-Level Design document provides a blueprint for developing the ShopSmart application. The design emphasizes strong architectural principles, security measures, and component independence.\"\n    }\n  ],\n  \"tables\": [],\n  \"lists\": [],\n  \"confidence\": 1.0\n}"
+        }
+      },
+      {
+        "json": {
+          "output": "{\n  \"fileName\": \"ShopSmart_LLD.pdf\",\n  \"fileType\": \"pdf\",\n  \"docType\": \"lld\",\n  \"contentType\": \"plain-text\",\n  \"extractionType\": \"text\",\n  \"extractedText\": \"This document is the Low-Level Design (LLD) for the ShopSmart application. It details the technical design of the systems involved, focusing on database architecture, system interfaces, and user interactions. \\n\\n1. Introduction\\nThe purpose of this document is to provide a comprehensive overview of the technical architecture for the ShopSmart application. It serves as a guide to developers and stakeholders involved in the implementation phase.\\n\\n2. System Overview\\nThe ShopSmart application will be composed of various components including a web interface, mobile applications, and backend services. Each component will interact seamlessly to allow users to browse products, make purchases, and manage their profiles.\\n\\n3. Database Design\\nThe database schema consists of the following key entities:\\n   - User\\n       - userID (Primary Key)\\n       - username\\n       - passwordHash\\n       - email\\n       - createdAt\\n   - Product\\n       - productID (Primary Key)\\n       - name\\n       - description\\n       - price\\n       - stockQuantity\\n   - Order\\n       - orderID (Primary Key)\\n       - userID (Foreign Key)\\n       - orderDate\\n       - totalAmount\\n\\n4. User Interface Design\\nThe user interface has been designed with user experience in mind. Key features include:\\n   - Responsive design for various screen sizes\\n   - Intuitive navigation for easy access to products\\n   - A robust search function to help users find items quickly\\n\\n5. System Interfaces\\nThe ShopSmart application will interface with several external systems, including payment gateways and shipping services.\\n   - Payment Gateway API\\n   - Shipping Service API\\n\\n6. Security Considerations\\nSecurity measures are pivotal for protecting user data. The application will utilize:\\n   - HTTPS for all network communication\\n   - Password hashing using bcrypt\\n   - Regular security audits and penetration testing\\n\\n7. Performance Considerations\\nThe application is designed to scale effectively with growing user numbers. Performance optimization techniques include caching, database indexing, and load balancing.\\n\\n8. Conclusion\\nThis Low-Level Design document provides the necessary groundwork for the development of the ShopSmart application. It outlines key design principles that developers should adhere to for a successful implementation.\",\n  \"sections\": [\n    {\n      \"title\": \"Introduction\",\n      \"content\": \"The purpose of this document is to provide a comprehensive overview of the technical architecture for the ShopSmart application. It serves as a guide to developers and stakeholders involved in the implementation phase.\"\n    },\n    {\n      \"title\": \"System Overview\",\n      \"content\": \"The ShopSmart application will be composed of various components including a web interface, mobile applications, and backend services. Each component will interact seamlessly to allow users to browse products, make purchases, and manage their profiles.\"\n    },\n    {\n      \"title\": \"Database Design\",\n      \"content\": \"The database schema consists of the following key entities:\\n   - User\\n       - userID (Primary Key)\\n       - username\\n       - passwordHash\\n       - email\\n       - createdAt\\n   - Product\\n       - productID (Primary Key)\\n       - name\\n       - description\\n       - price\\n       - stockQuantity\\n   - Order\\n       - orderID (Primary Key)\\n       - userID (Foreign Key)\\n       - orderDate\\n       - totalAmount\"\n    },\n    {\n      \"title\": \"User Interface Design\",\n      \"content\": \"The user interface has been designed with user experience in mind. Key features include:\\n   - Responsive design for various screen sizes\\n   - Intuitive navigation for easy access to products\\n   - A robust search function to help users find items quickly\"\n    },\n    {\n      \"title\": \"System Interfaces\",\n      \"content\": \"The ShopSmart application will interface with several external systems, including payment gateways and shipping services.\\n   - Payment Gateway API\\n   - Shipping Service API\"\n    },\n    {\n      \"title\": \"Security Considerations\",\n      \"content\": \"Security measures are pivotal for protecting user data. The application will utilize:\\n   - HTTPS for all network communication\\n   - Password hashing using bcrypt\\n   - Regular security audits and penetration testing\"\n    },\n    {\n      \"title\": \"Performance Considerations\",\n      \"content\": \"The application is designed to scale effectively with growing user numbers. Performance optimization techniques include caching, database indexing, and load balancing.\"\n    },\n    {\n      \"title\": \"Conclusion\",\n      \"content\": \"This Low-Level Design document provides the necessary groundwork for the development of the ShopSmart application. It outlines key design principles that developers should adhere to for a successful implementation.\"\n    }\n  ],\n  \"tables\": [],\n  \"lists\": [],\n  \"confidence\": 1.0\n}"
+        }
+      },
+      {
+        "json": {
+          "output": "{\n  \"fileName\": \"ShopSmart_Grooming_Transcript.txt\",\n  \"fileType\": \"unknown\",\n  \"docType\": \"transcript\",\n  \"contentType\": \"plain-text\",\n  \"extractionType\": \"text\",\n  \"extractedText\": \"This is a detailed transcript of the Grooming session held by ShopSmart. The transcript captures various interactions between the groomer and the pet owners, outlining techniques, advice, and pet care tips discussed during the session.\\n\\nIntroduction:\\nIn this grooming session, we addressed the importance of regular grooming for pets, and the best practices to keep their coats healthy.\\n\\nKey Highlights:\\n1. Importance of Grooming:\\n   - Regular grooming helps prevent matting and tangling of hair.\\n   - It allows for early detection of skin issues and parasites.\\n\\n2. Tools and Products:\\n   - Recommended brushes for different coat types:\\n     - Slicker brushes for long-haired breeds.\\n     - Bristle brushes for short-haired breeds.\\n   - Discussed the use of shampoos suitable for various skin sensitivities.\\n\\n3. Bathing Techniques:\\n   - The session included a live demonstration of bathing techniques including:\\n     - Correct water temperature – lukewarm is best.\\n     - Rinsing thoroughly to avoid residue from shampoos.\\n   - Tips shared on how to make bathing less stressful for pets.\\n\\n4. Nail Care:\\n   - The groomer emphasized the significance of regular nail trimming.\\n   - Detailed the various tools used for nail clipping and grinding.\\n\\n5. Final Q&A:\\n   - Attendees asked about maintaining a grooming schedule, with answers highlighting the variations by breed and coat type.\\n   - Discussed specific concerns about older pets and their grooming needs.\\n\\nConclusion:\\nThe workshop concluded with a summary of best practices and the importance of creating a calm environment for pets during grooming. Pet owners were encouraged to ask further questions or seek personal consultations with the groomers.\\n\\nEnd of Transcript.\",\n  \"sections\": [\n    {\n      \"title\": \"Introduction\",\n      \"content\": \"In this grooming session, we addressed the importance of regular grooming for pets, and the best practices to keep their coats healthy.\"\n    },\n    {\n      \"title\": \"Key Highlights\",\n      \"content\": \"1. Importance of Grooming:\\n   - Regular grooming helps prevent matting and tangling of hair.\\n   - It allows for early detection of skin issues and parasites.\\n\\n2. Tools and Products:\\n   - Recommended brushes for different coat types:\\n     - Slicker brushes for long-haired breeds.\\n     - Bristle brushes for short-haired breeds.\\n   - Discussed the use of shampoos suitable for various skin sensitivities.\\n\\n3. Bathing Techniques:\\n   - The session included a live demonstration of bathing techniques including:\\n     - Correct water temperature – lukewarm is best.\\n     - Rinsing thoroughly to avoid residue from shampoos.\\n   - Tips shared on how to make bathing less stressful for pets.\\n\\n4. Nail Care:\\n   - The groomer emphasized the significance of regular nail trimming.\\n   - Detailed the various tools used for nail clipping and grinding.\\n\\n5. Final Q&A:\\n   - Attendees asked about maintaining a grooming schedule, with answers highlighting the variations by breed and coat type.\\n   - Discussed specific concerns about older pets and their grooming needs.\"\n    },\n    {\n      \"title\": \"Conclusion\",\n      \"content\": \"The workshop concluded with a summary of best practices and the importance of creating a calm environment for pets during grooming. Pet owners were encouraged to ask further questions or seek personal consultations with the groomers.\"\n    }\n  ],\n  \"tables\": [],\n  \"lists\": [],\n  \"confidence\": 1.0\n}"
+        }
+      },
+      {
+        "json": {
+          "output": "{\n  \"fileName\": \"UI Image.jpg\",\n  \"fileType\": \"image\",\n  \"docType\": \"unknown\",\n  \"contentType\": \"image-only\",\n  \"extractionType\": \"vision\",\n  \"extractedText\": \"Full visual content from the image cannot be directly extracted in text form.\",\n  \"sections\": [],\n  \"tables\": [],\n  \"lists\": [],\n  \"confidence\": 0.0\n}"
+        }
+      },
+      {
+        "json": {
+          "output": "{\n  \"fileName\": \"ShopSmart_BRD_with_image.pdf\",\n  \"fileType\": \"pdf\",\n  \"docType\": \"brd\",\n  \"contentType\": \"mixed\",\n  \"extractionType\": \"mixed\",\n  \"extractedText\": \"This document is the Business Requirements Document (BRD) for the ShopSmart project. It outlines the detailed business requirements necessary for the development of the ShopSmart application which enables users to easily compare prices and products from various retailers. The document includes sections detailing the project overview, business objectives, user requirements, and functional specifications. \\n\\n1. Project Overview:\\n   The ShopSmart application is designed to provide users with a seamless shopping experience that includes features such as product comparison, price tracking, and coupons. The application aims to support users in making informed purchasing decisions based on real-time data. \\n\\n2. Business Objectives:\\n   - Increase customer engagement by offering personalized shopping experiences.\\n   - Enhance revenue streams through affiliate partnerships with retailers.\\n   - Provide a platform for users to find the best deals on products they are interested in.\\n\\n3. User Requirements:\\n   - Users must be able to create and manage their accounts, including setting preferences for product categories.\\n   - The application should provide search functionality to allow users to find products across multiple retailers.\\n   - Users must have a notification system that alerts them to price drops or new coupon availability for their saved products.\\n\\n4. Functional Specifications:\\n   - The application will support various payment methods to accommodate different user preferences.\\n   - User interface will be responsive and accessible on both desktop and mobile devices.\\n   - The system will utilize a robust backend that integrates with various retailer APIs for real-time data sourcing.\\n\\n5. Images and Visuals:\\n   The document includes several images highlighting the user interface design and key features of the ShopSmart application. These visuals illustrate the layout of the application and enhance understanding of user navigation and experience.\\n\\n6. Appendices:\\n   Additional appendices can be found at the end of this document, which include detailed wireframes, flow diagrams, and additional user feedback collected through surveys.\",\n  \"sections\": [\n    {\n      \"title\": \"Project Overview\",\n      \"content\": \"The ShopSmart application is designed to provide users with a seamless shopping experience that includes features such as product comparison, price tracking, and coupons. The application aims to support users in making informed purchasing decisions based on real-time data.\"\n    },\n    {\n      \"title\": \"Business Objectives\",\n      \"content\": \"Increase customer engagement by offering personalized shopping experiences. Enhance revenue streams through affiliate partnerships with retailers. Provide a platform for users to find the best deals on products they are interested in.\"\n    },\n    {\n      \"title\": \"User Requirements\",\n      \"content\": \"Users must be able to create and manage their accounts, including setting preferences for product categories. The application should provide search functionality to allow users to find products across multiple retailers. Users must have a notification system that alerts them to price drops or new coupon availability for their saved products.\"\n    },\n    {\n      \"title\": \"Functional Specifications\",\n      \"content\": \"The application will support various payment methods to accommodate different user preferences. User interface will be responsive and accessible on both desktop and mobile devices. The system will utilize a robust backend that integrates with various retailer APIs for real-time data sourcing.\"\n    },\n    {\n      \"title\": \"Images and Visuals\",\n      \"content\": \"The document includes several images highlighting the user interface design and key features of the ShopSmart application. These visuals illustrate the layout of the application and enhance understanding of user navigation and experience.\"\n    },\n    {\n      \"title\": \"Appendices\",\n      \"content\": \"Additional appendices can be found at the end of this document, which include detailed wireframes, flow diagrams, and additional user feedback collected through surveys.\"\n    }\n  ],\n  \"tables\": [],\n  \"lists\": [],\n  \"confidence\": 0.95\n}"
+        }
+      }
+    ]
+  },
+  "versionId": "7b705a6d-aa43-49eb-a199-c7b941a9e691",
+  "activeVersionId": null,
+  "versionCounter": 2,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-12-01T12:50:33.336Z",
+      "createdAt": "2025-12-01T12:50:33.336Z",
+      "role": "workflow:owner",
+      "workflowId": "Ut1ktNhq7jGXmkuQ",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

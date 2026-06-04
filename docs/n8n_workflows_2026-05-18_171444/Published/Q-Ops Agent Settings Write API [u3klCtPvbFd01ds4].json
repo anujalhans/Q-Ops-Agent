@@ -1,0 +1,232 @@
+{
+  "updatedAt": "2026-05-07T11:22:13.761Z",
+  "createdAt": "2026-05-07T06:14:39.634Z",
+  "id": "u3klCtPvbFd01ds4",
+  "name": "Q-Ops Agent Settings Write API",
+  "description": "PATCH /webhook/settings endpoint for environment or integration settings updates with qops_audit_events logging. updated_by is only sent when a UUID actor is provided.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "270622f7-f8b9-495a-a31d-e3b7d1fed3a3",
+      "name": "PATCH /settings",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "PATCH",
+        "path": "settings",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "845ed02e-dd68-421f-9f15-df624f8457d3"
+    },
+    {
+      "id": "74deced9-ce3f-4629-a6e8-d625351380ec",
+      "name": "Prepare Settings Patch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const restBase = 'https://ifnznfspkjayhnooncrv.supabase.co/rest/v1';\nconst body = $json.body || {};\nconst envKey = String(body.environmentKey || body.environment?.environmentKey || 'local');\nconst integrationBody = body.integration || {};\nconst integrationKey = String(body.integrationKey || integrationBody.integrationKey || '').trim();\nconst now = new Date().toISOString();\nconst actor = body.updatedBy || body.actorName || 'n8n';\nconst uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;\nfunction withActor(payload) {\n  if (uuidPattern.test(String(body.updatedBy || ''))) payload.updated_by = body.updatedBy;\n  if (uuidPattern.test(String(body.actorUserId || ''))) payload.updated_by = body.actorUserId;\n  return payload;\n}\nif (integrationKey) {\n  const payload = withActor({ updated_at: now });\n  if (typeof body.enabled === 'boolean') payload.enabled = body.enabled;\n  if (typeof integrationBody.enabled === 'boolean') payload.enabled = integrationBody.enabled;\n  if (body.config && typeof body.config === 'object') payload.config = body.config;\n  if (integrationBody.config && typeof integrationBody.config === 'object') payload.config = integrationBody.config;\n  if (body.secretRefs && typeof body.secretRefs === 'object') payload.secret_refs = body.secretRefs;\n  if (integrationBody.secretRefs && typeof integrationBody.secretRefs === 'object') payload.secret_refs = integrationBody.secretRefs;\n  if (body.status) payload.status = body.status;\n  if (integrationBody.status) payload.status = integrationBody.status;\n  if (Object.keys(payload).length <= 1) throw new Error('No supported integration settings fields were provided');\n  return [{ json: { target: 'integration', url: `${restBase}/qops_integration_settings?environment_key=eq.${encodeURIComponent(envKey)}&integration_key=eq.${encodeURIComponent(integrationKey)}`, payload, audit: { actor_name: actor, action: 'SETTINGS_INTEGRATION_UPDATED', entity_type: 'integration_settings', entity_id: integrationKey, status: 'success', details: `Updated ${integrationKey} settings for ${envKey}`, metadata: { source: 'ui', environmentKey: envKey, integrationKey, changedKeys: Object.keys(payload) } } } }];\n}\nconst environment = body.environment || body;\nconst payload = withActor({ updated_at: now });\nif (environment.displayName !== undefined) payload.display_name = environment.displayName;\nif (environment.apiBaseUrl !== undefined) payload.api_base_url = environment.apiBaseUrl;\nif (environment.n8nBaseUrl !== undefined) payload.n8n_base_url = environment.n8nBaseUrl;\nif (environment.webhookPaths !== undefined) payload.webhook_paths = environment.webhookPaths;\nif (environment.isActive !== undefined) payload.is_active = Boolean(environment.isActive);\nif (Object.keys(payload).length <= 1) throw new Error('No supported environment settings fields were provided');\nreturn [{ json: { target: 'environment', url: `${restBase}/qops_environment_settings?environment_key=eq.${encodeURIComponent(envKey)}`, payload, audit: { actor_name: actor, action: 'SETTINGS_ENVIRONMENT_UPDATED', entity_type: 'environment_settings', entity_id: envKey, status: 'success', details: `Updated environment settings for ${envKey}`, metadata: { source: 'ui', environmentKey: envKey, changedKeys: Object.keys(payload) } } } }];"
+      }
+    },
+    {
+      "id": "207bdfbb-5be2-459c-af33-cfddc96f4ed8",
+      "name": "Patch Settings Row",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=representation\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.payload }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "id": "81956196-2916-4d5c-964f-10305a74392a",
+      "name": "Map Settings Write Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const prepared = $('Prepare Settings Patch').first().json;\nconst updated = $input.first().json || {};\nreturn [{ json: { ok: true, target: prepared.target, updated, audit: prepared.audit } }];"
+      }
+    },
+    {
+      "id": "fc14774a-15f0-4e60-9ffc-b0171390f5b2",
+      "name": "Insert Settings Audit Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.audit }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "id": "20d117db-bbe7-45bb-9a56-78e5ced7d3c8",
+      "name": "Respond Settings Write",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $(\"Map Settings Write Response\").first().json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "PATCH /settings": {
+      "main": [
+        [
+          {
+            "node": "Prepare Settings Patch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Settings Patch": {
+      "main": [
+        [
+          {
+            "node": "Patch Settings Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Patch Settings Row": {
+      "main": [
+        [
+          {
+            "node": "Map Settings Write Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Settings Write Response": {
+      "main": [
+        [
+          {
+            "node": "Insert Settings Audit Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Settings Audit Event": {
+      "main": [
+        [
+          {
+            "node": "Respond Settings Write",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": {},
+  "versionId": "0aed7a24-5a00-46d1-9409-1c8290f27336",
+  "activeVersionId": "0aed7a24-5a00-46d1-9409-1c8290f27336",
+  "versionCounter": 21,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-07T06:14:39.638Z",
+      "createdAt": "2026-05-07T06:14:39.638Z",
+      "role": "workflow:owner",
+      "workflowId": "u3klCtPvbFd01ds4",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

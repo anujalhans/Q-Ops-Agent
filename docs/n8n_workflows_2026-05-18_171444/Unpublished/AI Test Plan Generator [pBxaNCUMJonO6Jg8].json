@@ -1,0 +1,557 @@
+{
+  "updatedAt": "2026-04-16T10:15:57.000Z",
+  "createdAt": "2025-10-31T03:26:24.416Z",
+  "id": "pBxaNCUMJonO6Jg8",
+  "name": "AI Test Plan Generator",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "f12c79b4-484f-45f5-8622-7fb7a18844ec",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        304,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "fileSelector": "C:\\\\Users\\\\anujalhans01\\\\Downloads\\\\ShopSmart_BRD.pdf",
+        "options": {}
+      },
+      "id": "34a77b0c-46a9-40a0-b488-e60903fa72b5",
+      "name": "Read BRD Document",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        528,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "fileSelector": "C:\\\\Users\\\\anujalhans01\\\\Downloads\\\\ShopSmart_FRD.pdf",
+        "options": {}
+      },
+      "id": "e4a00c0c-efa3-4e3e-9886-e063b29a9d81",
+      "name": "Read FRD Document",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        528,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "fileSelector": "C:\\\\Users\\\\anujalhans01\\\\Downloads\\\\ShopSmart_HLD.pdf",
+        "options": {}
+      },
+      "id": "506266c1-368c-4f54-9c1d-e4df7d5d016d",
+      "name": "Read HLD Document",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        528,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "fileSelector": "C:\\\\Users\\\\anujalhans01\\\\Downloads\\\\ShopSmart_LLD.pdf",
+        "options": {}
+      },
+      "id": "d0768987-20c2-41d4-9e96-43dbd5431cc6",
+      "name": "Read LLD Document",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        528,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "fileSelector": "C:\\\\Users\\\\anujalhans01\\\\Downloads\\\\ShopSmart_Grooming_Transcript.txt",
+        "options": {}
+      },
+      "id": "7c748383-c146-4839-99bd-af5716dc315e",
+      "name": "Read Transcript File",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        528,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "f9aaaf88-fd7b-448c-9e85-18069a0c50cd",
+      "name": "Extract BRD Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "4b06d33d-26f4-486e-87dd-b3d24a63e9e6",
+      "name": "Extract FRD Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        752,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "7b1be722-8692-4647-8cb1-7cc4c015b567",
+      "name": "Extract HLD Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        752,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "bcd74396-e52e-4641-adf5-11174d3f1644",
+      "name": "Extract LLD Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        752,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize all extracted PDF text\nconst combined = [];\nfor (const item of items) {\n  const docs = Array.isArray(item.json) ? item.json : [item.json];\n  for (const d of docs) {\n    combined.push({\n      json: {\n        sourceName: d.fileName || d.sourceName || 'Unknown Document',\n        sourceType: d.fileName?.match(/BRD|FRD|LLD|HLD/)?.[0] || 'Document',\n        text: d.text || '',\n        timestamp: new Date().toISOString()\n      }\n    });\n  }\n}\nreturn combined;"
+      },
+      "id": "d85c0966-9d57-461e-8260-d57992995bc8",
+      "name": "Normalize Extracted Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize Transcript Text\nlet combinedText = '';\nfor (const item of items) {\n  let text = '';\n  if (item.binary && item.binary.data) {\n    const dataBuffer = Buffer.from(item.binary.data.data || item.binary.data, 'base64');\n    text = dataBuffer.toString('utf8');\n  } else if (item.json && item.json.data) {\n    text = item.json.data.toString();\n  } else if (item.json && item.json.text) {\n    text = item.json.text.toString();\n  }\n  combinedText += '\\n\\n' + text.trim();\n}\ncombinedText = combinedText.replace(/\\r/g, '').replace(/\\n{3,}/g, '\\n\\n').replace(/\\s{2,}/g, ' ').trim();\nreturn [{ json: { normalized_transcript: combinedText, summary: `Normalized transcript text.` } }];"
+      },
+      "id": "1a10037e-0f8e-47ab-b947-27fbf32e7d9a",
+      "name": "Normalize Transcript Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a Senior QA Test Manager with over 15 years of experience leading large-scale enterprise testing programs. \nYou specialize in Shift-Left Quality and Automation-First approaches, integrating QA deeply within CI/CD pipelines.\nYou have extensive experience in transforming raw business and technical documentation into actionable, data-driven, and traceable test strategies.\n\nYou are skilled at reading and interpreting:\n- Business Requirement Documents (BRD)\n- Functional Requirement Documents (FRD)\n- Low-Level Designs (LLD)\n- High-Level Designs (HLD)\n- Grooming session transcripts and stakeholder discussions\n\nYour outputs must demonstrate:\n- Analytical reasoning based directly on excerpts or statements from the provided materials.\n- A clear connection between **requirement intent**, **test coverage**, **automation feasibility**, and **risk mitigation**.\n- A focus on measurable, proactive quality metrics, and early defect prevention.\n- Realistic and context-aware alignment with Shift-Left and Automation-First principles.\n"
+            },
+            {
+              "content": "You are provided with a merged context that combines information extracted from the BRD, FRD, LLD, HLD, and grooming session transcripts. \nThese documents may include requirements, features, workflows, functional and non-functional details, and stakeholder discussions.\n\nYour task is to analyze the provided content carefully and generate a **comprehensive, professional, and context-grounded Test Plan** aligned with Shift-Left and Automation-First principles.\n\n### Instructions:\n1. Use **direct excerpts or paraphrased statements** from the provided documents wherever applicable. \n   - Quote important phrases in italics or blockquotes to preserve authenticity.\n   - Reference their origin (e.g., “As mentioned in BRD…” or “According to LLD section…”).\n2. Demonstrate clear traceability between **requirements → testing objectives → automation approach → risk mitigation.**\n3. For every key area (test strategy, scope, risks, etc.), link back to **specific project elements or statements** from the input documents.\n4. Use tables or bullet lists where appropriate to make the plan easy to read and well-structured.\n\n### Structure your Test Plan as follows:\n1. **Test Strategy** – Include how Shift-Left and Automation-First are embedded. Reference early testing opportunities from the design or grooming stages.\n2. **Scope** – Distinguish in-scope vs. out-of-scope features, based on specific content from the documents.\n3. **Test Objectives** – Mention objectives tied to functional or non-functional requirements.\n4. **Test Deliverables**\n5. **Entry and Exit Criteria**\n6. **Test Schedule and Milestones**\n7. **Risks and Mitigation Plan** – Mention risks cited in the documents or inferred from complexity areas.\n8. **Test Environment** – Include CI/CD, environment provisioning, and test data setup strategies.\n9. **Tools and Resources** – Reference relevant automation or workflow tools mentioned or implied in the docs.\n10. **Roles and Responsibilities**\n11. **Test Data and Configurations** – Include synthetic data strategy or test coverage automation if applicable.\n12. **Reporting and Communication Plan** – Mention dashboards, metrics, and traceability matrices.\n13. **Appendix (Optional)** – Include a summarized mapping table:\n    | Source Document | Key Excerpt | Related Test Focus Area | Automation Feasibility |\n\nEnsure:\n- The output reads like a **real Test Plan prepared for stakeholders**, not an academic essay.\n- Each section has **specific references** to document content to establish credibility and traceability.\n- The tone is professional, precise, and easy to publish directly as part of QA governance documentation.\n\n**Merged Context (from all input sources):**\n{{$json[\"mergedContext\"]}}\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "maxTokens": 4000,
+          "temperature": 0.7
+        }
+      },
+      "id": "2abd1d61-1f75-4cf9-b14d-b78a4c2b17cf",
+      "name": "OpenAI - Generate Test Plan",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        1872,
+        304
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "rdVg2Kks1mUCJf4R",
+          "name": "OpenAi Account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: {}, binary: { data: { data: Buffer.from($input.first().json.output[0].content[0].text, 'utf8'), mimeType: 'text/markdown', fileName: 'Merged-Test-Plan.md' } } }];"
+      },
+      "id": "5f26688d-5948-4c27-9221-762000121fd6",
+      "name": "Prepare Markdown Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/convert",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "markdown",
+              "value": "={{ $('OpenAI - Generate Test Plan').item.json.output[0].content[0].text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c28fa186-fdf7-46ba-94f4-c94e4b831641",
+      "name": "Convert md to docx",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2448,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "C:\\\\Users\\\\anujalhans01\\\\Downloads\\\\Generated-Test-Plan.docx",
+        "options": {}
+      },
+      "id": "530d0ad9-6811-4540-a5c1-2d0c11cfc740",
+      "name": "Write Final Test Plan File",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        2672,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        976,
+        96
+      ],
+      "id": "cc4abef3-9ec4-4ecd-9a47-e186aed22fb4",
+      "name": "Merge"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1424,
+        304
+      ],
+      "id": "feda9510-d883-4ad3-b791-4faa128d4b2f",
+      "name": "Merge Normalized Docs + Normalized Transcript Text"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge normalized docs and transcript into one large text blob\nlet allTexts = [];\n\nfor (const item of items) {\n  const src =\n    item.json.sourceName ||\n    item.json.summary ||\n    item.json.sourceType ||\n    \"Unknown Source\";\n\n  const txt =\n    item.json.text ||\n    item.json.normalized_transcript ||\n    item.json.content ||\n    \"\";\n\n  if (txt.trim()) {\n    allTexts.push(`Source: ${src}\\n${txt}`);\n  }\n}\n\n// Return merged context safely\nreturn [\n  {\n    json: {\n      mergedContext: allTexts.join(\"\\n---\\n\"),\n      contextCount: allTexts.length,\n    },\n  },\n];\n"
+      },
+      "id": "76d71a78-7f77-40ff-a7a3-2d499aca5fc3",
+      "name": "Merged Context for OpenAI",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        304
+      ]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Read BRD Document",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read FRD Document",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read HLD Document",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read LLD Document",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read Transcript File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read BRD Document": {
+      "main": [
+        [
+          {
+            "node": "Extract BRD Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read FRD Document": {
+      "main": [
+        [
+          {
+            "node": "Extract FRD Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read HLD Document": {
+      "main": [
+        [
+          {
+            "node": "Extract HLD Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read LLD Document": {
+      "main": [
+        [
+          {
+            "node": "Extract LLD Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract BRD Text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract FRD Text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract HLD Text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Extract LLD Text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Normalize Extracted Text": {
+      "main": [
+        [
+          {
+            "node": "Merge Normalized Docs + Normalized Transcript Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Transcript File": {
+      "main": [
+        [
+          {
+            "node": "Normalize Transcript Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Transcript Text": {
+      "main": [
+        [
+          {
+            "node": "Merge Normalized Docs + Normalized Transcript Text",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI - Generate Test Plan": {
+      "main": [
+        [
+          {
+            "node": "Prepare Markdown Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Markdown Content": {
+      "main": [
+        [
+          {
+            "node": "Convert md to docx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert md to docx": {
+      "main": [
+        [
+          {
+            "node": "Write Final Test Plan File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Normalize Extracted Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Normalized Docs + Normalized Transcript Text": {
+      "main": [
+        [
+          {
+            "node": "Merged Context for OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merged Context for OpenAI": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - Generate Test Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "65d7195c-0678-431f-a8cb-2d3d81a4fe33",
+  "activeVersionId": null,
+  "versionCounter": 2,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-10-31T03:26:24.435Z",
+      "createdAt": "2025-10-31T03:26:24.435Z",
+      "role": "workflow:owner",
+      "workflowId": "pBxaNCUMJonO6Jg8",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

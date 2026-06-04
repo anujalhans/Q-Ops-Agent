@@ -1,0 +1,12 @@
+Grooming Session 03 - UI/UX, Accessibility, and Support Readiness
+Date: 2026-05-20
+Participants: UX Researcher, Accessibility Specialist, QA Lead, Support Ops, Frontend Lead
+
+UX Researcher: Customers abandon when payment status is unclear. Pending state copy must explain that duplicate charge will not happen.
+Accessibility Specialist: Auth forms, filters, variant selectors, checkout steps, payment errors, and order timeline must be keyboard accessible and have clear focus states.
+QA Lead: UI image evidence should include auth page, home page, listing, PDP, checkout, success/failure, and order tracking for vision-based requirement generation.
+Support Ops: Order tracking must show shipment delay, refund progress, failed payment, and cancellation reason with support link.
+Frontend Lead: We will implement a persistent checkout progress indicator and error summary at the top of checkout when payment validation fails.
+Decision: Payment failure page shows retry payment, change payment method, back to cart, and contact support.
+Decision: Order history filters include status, date range, item category, and payment method.
+Risk: Mobile filters may cover listing content if drawer focus trap fails. QA to add mobile exploratory tests.

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+<rect width="900" height="520" fill="#f8fafc"/>
+<style>.box{fill:#fff;stroke:#2563eb;stroke-width:3}.txt{font:18px Arial;fill:#111827}.arrow{stroke:#334155;stroke-width:3;marker-end:url(#m)}</style>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#334155"/></marker></defs>
+<rect class="box" x="60" y="70" width="180" height="80" rx="14"/><text class="txt" x="95" y="117">Cart Draft</text>
+<rect class="box" x="360" y="70" width="180" height="80" rx="14"/><text class="txt" x="388" y="117">Price Locked</text>
+<rect class="box" x="660" y="70" width="180" height="80" rx="14"/><text class="txt" x="696" y="117">Payment Init</text>
+<rect class="box" x="360" y="245" width="180" height="80" rx="14"/><text class="txt" x="399" y="292">Order Placed</text>
+<rect class="box" x="660" y="245" width="180" height="80" rx="14"/><text class="txt" x="706" y="292">Failed</text>
+<rect class="box" x="360" y="405" width="180" height="80" rx="14"/><text class="txt" x="397" y="452">Track Order</text>
+<line class="arrow" x1="240" y1="110" x2="360" y2="110"/><line class="arrow" x1="540" y1="110" x2="660" y2="110"/>
+<line class="arrow" x1="750" y1="150" x2="480" y2="245"/><line class="arrow" x1="750" y1="150" x2="750" y2="245"/>
+<line class="arrow" x1="450" y1="325" x2="450" y2="405"/><line class="arrow" x1="660" y1="285" x2="540" y2="285"/>
+<text class="txt" x="63" y="35">AstraCart checkout state transitions</text>
+</svg>

@@ -96,10 +96,10 @@ Known webhook route hints:
                             "parameters":  [
                                                {
                                                    "name":  "select",
-                                                   "value":  "project_id,role,qops_projects(name)"
+                                                   "value":  "project_id,role:project_role,qops_projects(name)"
                                                },
                                                {
-                                                   "name":  "qops_user_id",
+                                                   "name":  "user_id",
                                                    "value":  "=eq.{{ $(\"Fetch Q-Ops User Profile\").first().json.id || \"00000000-0000-0000-0000-000000000000\" }}"
                                                }
                                            ]

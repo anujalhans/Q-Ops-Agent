@@ -1,0 +1,5 @@
+Grooming transcript - Loyalty Rewards
+Product Owner: Customers must see available points, expiring points, and campaign bonuses before checkout.
+QA Lead: We need boundary tests for minimum redemption, expired reservations, duplicate submit, and concurrent devices.
+Engineering Lead: The idempotency key must be stable across retry attempts and must be visible in logs.
+Security Lead: Support adjustments require manager approval and no sensitive PII should be copied into ledger events.

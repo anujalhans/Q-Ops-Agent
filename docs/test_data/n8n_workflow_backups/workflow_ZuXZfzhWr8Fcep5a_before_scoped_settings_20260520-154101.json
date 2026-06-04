@@ -1,0 +1,240 @@
+{
+  "id": "ZuXZfzhWr8Fcep5a",
+  "name": "Q-Ops Agent Settings API",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "settings",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "b8028c25-1439-4b34-a108-60f4043144cf",
+      "name": "GET /settings",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "6582e0c4-e418-4ddd-98dc-5093a9360770"
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_environment_settings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "environment_key,display_name,api_base_url,n8n_base_url,webhook_paths,is_active,created_at,updated_at,updated_by"
+            },
+            {
+              "name": "order",
+              "value": "environment_key.asc"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "6f424c5f-39f3-4cf2-8648-ea5b5bc2b398",
+      "name": "Fetch Environment Settings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        0
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_integration_settings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "environment_key,integration_key,display_name,enabled,config,secret_refs,status,last_tested_at,last_tested_by,settings_version,created_at,updated_at,updated_by"
+            },
+            {
+              "name": "order",
+              "value": "environment_key.asc,integration_key.asc"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "58b17e90-36e6-4028-9a65-bd74f96bb611",
+      "name": "Fetch Integration Settings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_connection_test_results",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "environment_key,integration_key,service_name,status,latency_ms,message,technical_detail,checked_by,checked_at,created_at"
+            },
+            {
+              "name": "order",
+              "value": "checked_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "100"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "353582f2-7578-4368-9fab-ee17e15e9aae",
+      "name": "Fetch Latest Connection Results",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const envs = $items('Fetch Environment Settings').map(i => i.json).filter(r => r && r.environment_key);\nconst integrations = $items('Fetch Integration Settings').map(i => i.json).filter(r => r && r.integration_key);\nconst rawResults = $items('Fetch Latest Connection Results').map(i => i.json).filter(r => r && r.integration_key);\nconst latestByKey = {};\nfor (const result of rawResults) {\n  const key = `${result.environment_key}:${result.integration_key}`;\n  if (!latestByKey[key]) latestByKey[key] = result;\n}\nconst byEnvironment = envs.map(env => {\n  const scoped = integrations.filter(integration => integration.environment_key === env.environment_key).map(integration => {\n    const latest = latestByKey[`${integration.environment_key}:${integration.integration_key}`] || null;\n    return {\n      environmentKey: integration.environment_key,\n      integrationKey: integration.integration_key,\n      displayName: integration.display_name,\n      enabled: Boolean(integration.enabled),\n      config: integration.config || {},\n      secretRefs: integration.secret_refs || {},\n      status: integration.status || 'not_configured',\n      lastTestedAt: integration.last_tested_at,\n      lastTestedBy: integration.last_tested_by,\n      settingsVersion: integration.settings_version || 1,\n      updatedAt: integration.updated_at,\n      latestTest: latest ? { status: latest.status, latencyMs: latest.latency_ms, message: latest.message, checkedAt: latest.checked_at, checkedBy: latest.checked_by } : null,\n    };\n  });\n  return {\n    environmentKey: env.environment_key,\n    displayName: env.display_name,\n    apiBaseUrl: env.api_base_url,\n    n8nBaseUrl: env.n8n_base_url,\n    webhookPaths: env.webhook_paths || {},\n    isActive: Boolean(env.is_active),\n    updatedAt: env.updated_at,\n    updatedBy: env.updated_by,\n    integrations: scoped,\n  };\n});\nreturn [{ json: { environments: byEnvironment, environmentSettings: envs, integrations, latestResults: rawResults } }];"
+      },
+      "id": "cc4da577-3d40-47d6-871c-deb0d53fca8f",
+      "name": "Map Settings Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "92609ba9-1077-412a-b3d4-aa39deb190c8",
+      "name": "Respond Settings",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1120,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "GET /settings": {
+      "main": [
+        [
+          {
+            "node": "Fetch Environment Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Environment Settings": {
+      "main": [
+        [
+          {
+            "node": "Fetch Integration Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Integration Settings": {
+      "main": [
+        [
+          {
+            "node": "Fetch Latest Connection Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Latest Connection Results": {
+      "main": [
+        [
+          {
+            "node": "Map Settings Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Settings Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "versionCounter": 16
+}

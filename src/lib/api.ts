@@ -16,7 +16,8 @@ async function fetchOptional<T>(path: string, init?: RequestInit, timeoutMs = 25
   const timeout = window.setTimeout(() => controller.abort(), timeoutMs)
   try {
     const request = { ...init, signal: controller.signal }
-    const res = await fetch(webhookUrl(path), authenticated ? withAuth(request) : request)
+    const authenticatedRequest = authenticated ? await withFreshAuth(request) : request
+    const res = await fetch(webhookUrl(path), authenticatedRequest)
     if (!res.ok) return null
     return (await res.json()) as T
   } catch {
@@ -320,18 +321,48 @@ export type ApiArtifact = {
   status?: 'processing' | 'processed' | 'failed'
   url?: string
   jobId?: string
+  output?: any
+  extractionMetrics?: Record<string, any>
+  extractionObservability?: Record<string, any>
 }
 
 export type ApiGeneratedDocument = {
   id?: string
   jobId?: string
+  projectId?: string | null
   projectName: string
   artifactLabel?: string
   documentType?: string
   createdAt?: string
+  updatedAt?: string
   status?: 'queued' | 'pending' | 'processing' | 'completed' | 'failed'
   url?: string
   output?: any
+  error?: string | null
+  requestedBy?: string | null
+  settingsVersion?: number | string | null
+  retryOfJobId?: string | null
+  retriedByJobId?: string | null
+  retryStatus?: string | null
+  retryAttempt?: number
+  generationMode?: 'create' | 'update' | 'retry' | string | null
+  updateOfJobId?: string | null
+}
+
+export type ApiJobMetric = {
+  jobId?: string | null
+  projectId?: string | null
+  projectName?: string | null
+  documentType?: string | null
+  pipeline?: string | null
+  event?: string | null
+  status?: string | null
+  wordCount?: number | null
+  tokensTotal?: number | null
+  estimatedCostUsd?: number | string | null
+  durationMs?: number | null
+  metadata?: Record<string, any> | null
+  createdAt?: string | null
 }
 
 export type ApiAuditEvent = {
@@ -398,12 +429,16 @@ export type AnalyticsRecentJob = {
   documentType?: string
   pipeline?: 'generation' | 'ingestion' | string
   status?: string
+  event?: string
   durationMs?: number
   wordCount?: number
   chunkCount?: number
   totalFiles?: number
   tokensTotal?: number
   estimatedCostUsd?: number
+  errorMessage?: string | null
+  retryOfJobId?: string | null
+  retryAttempt?: number
   createdAt?: string
 }
 
@@ -474,6 +509,8 @@ export type AnalyticsSummary = {
     totalWordsProcessed?: number
     avgProcessingDurationMs: number
     totalFilesProcessed: number
+    tokensTotal?: number
+    estimatedCostUsd?: number
     filesByKnowledgeBase: AnalyticsKnowledgeBaseFiles[]
   }
   failures?: {
@@ -483,6 +520,24 @@ export type AnalyticsSummary = {
   costs?: {
     byPipeline: AnalyticsCostBucket[]
     byProject: AnalyticsCostBucket[]
+  }
+  failedSpend?: {
+    generation?: {
+      attempts: number
+      wordCount?: number
+      tokensTotal: number
+      estimatedCostUsd: number
+      avgDurationMs?: number
+    }
+    ingestion?: {
+      attempts: number
+      filesAttempted?: number
+      chunksCreated?: number
+      wordCount?: number
+      tokensTotal: number
+      estimatedCostUsd: number
+      avgDurationMs?: number
+    }
   }
   meta: {
     generatedAt: string
@@ -556,6 +611,7 @@ export type KnowledgeBasePayload = {
   lld: File | null
   transcripts: File[]
   images: File[]
+  supportingDocuments?: File[]
 }
 
 export type ProcessingClass = 'text' | 'mixed' | 'image'
@@ -575,8 +631,36 @@ function classifyKnowledgeBaseFile(file: File, fallback: ProcessingClass): Proce
   const extension = getFileExtension(file.name)
   if (['txt', 'md', 'csv', 'log'].includes(extension)) return 'text'
   if (['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(extension)) return 'image'
-  if (['pdf', 'doc', 'docx', 'ppt', 'pptx'].includes(extension)) return 'mixed'
+  if (['pdf', 'docx', 'pptx'].includes(extension)) return 'mixed'
   return fallback
+}
+
+const knowledgeBaseAllowedExtensions: Record<string, string[]> = {
+  brd: ['pdf', 'docx'],
+  frd: ['pdf', 'docx'],
+  hld: ['pdf', 'docx'],
+  lld: ['pdf', 'docx'],
+  transcript: ['txt', 'md', 'log'],
+  supporting: ['pdf', 'docx', 'pptx', 'txt', 'md', 'csv', 'log'],
+  image: ['jpg', 'jpeg', 'png', 'webp', 'svg'],
+}
+
+const knowledgeBaseFileLabels: Record<string, string> = {
+  brd: 'BRD document',
+  frd: 'FRD document',
+  hld: 'HLD document',
+  lld: 'LLD document',
+  transcript: 'Transcript files',
+  supporting: 'Other supporting documents',
+  image: 'UI designs',
+}
+
+function validateKnowledgeBaseFileType(item: KnowledgeBaseUploadItem) {
+  const extension = getFileExtension(item.file.name)
+  const allowed = knowledgeBaseAllowedExtensions[item.key] || []
+  if (allowed.length && !allowed.includes(extension)) {
+    throw new Error(`${knowledgeBaseFileLabels[item.key] || item.key} accepts ${allowed.map((value) => `.${value}`).join(', ')} files only.`)
+  }
 }
 
 function knowledgeBaseUploadItems(payload: KnowledgeBasePayload): KnowledgeBaseUploadItem[] {
@@ -586,6 +670,7 @@ function knowledgeBaseUploadItems(payload: KnowledgeBasePayload): KnowledgeBaseU
   if (payload.hld) items.push({ key: 'hld', file: payload.hld, processingClass: classifyKnowledgeBaseFile(payload.hld, 'mixed') })
   if (payload.lld) items.push({ key: 'lld', file: payload.lld, processingClass: classifyKnowledgeBaseFile(payload.lld, 'mixed') })
   payload.transcripts.forEach((file) => items.push({ key: 'transcript', file, processingClass: classifyKnowledgeBaseFile(file, 'text') }))
+  ;(payload.supportingDocuments || []).forEach((file) => items.push({ key: 'supporting', file, processingClass: classifyKnowledgeBaseFile(file, 'mixed') }))
   payload.images.forEach((file) => items.push({ key: 'image', file, processingClass: classifyKnowledgeBaseFile(file, 'image') }))
   return items.sort((a, b) => {
     const weight: Record<ProcessingClass, number> = { text: 0, mixed: 1, image: 2 }
@@ -594,13 +679,19 @@ function knowledgeBaseUploadItems(payload: KnowledgeBasePayload): KnowledgeBaseU
 }
 
 async function uploadKnowledgeBaseItem(payload: KnowledgeBasePayload, item: KnowledgeBaseUploadItem): Promise<UploadResponse> {
+  validateKnowledgeBaseFileType(item)
   const fd = new FormData()
+  const uploadFileName =
+    item.key === 'supporting' && !item.file.name.toLowerCase().startsWith('supporting')
+      ? `supporting_${item.file.name}`
+      : item.file.name
+
   fd.append('projectName', payload.projectName)
   if (payload.projectId) fd.append('projectId', payload.projectId)
   fd.append('environment', 'local')
   fd.append('processingClass', item.processingClass)
   fd.append('fileKey', item.key)
-  fd.append(item.key, item.file)
+  fd.append(item.key, item.file, uploadFileName)
 
   const res = await fetch(webhookUrl('/webhook/upload-test-artifacts'), await withFreshAuth({ method: 'POST', body: fd }))
   const data = await res.json()
@@ -642,7 +733,7 @@ export async function uploadKnowledgeBase(payload: KnowledgeBasePayload, onJobQu
 }
 
 export async function fetchKbStatus(jobId: string): Promise<StatusResponse | null> {
-  const res = await fetch(`${webhookUrl('/webhook/job-status')}?jobId=${encodeURIComponent(jobId)}`)
+  const res = await fetch(`${webhookUrl('/webhook/job-status')}?jobId=${encodeURIComponent(jobId)}`, await withFreshAuth())
   if (!res.ok) throw new Error('Failed to fetch job status')
   const raw = await res.json()
   const data = Array.isArray(raw) ? raw[0] : raw
@@ -681,40 +772,52 @@ export type GenerateDocPayload = {
   projectName: string
   artifact: DocumentArtifactKey
   productOwner?: string
+  generationMode?: 'create' | 'update' | 'retry'
+  updateContext?: Record<string, any>
   retryJobId?: string
+  retryInstruction?: string
+  retryContext?: Record<string, any>
 }
 
 export async function generateDocument(payload: GenerateDocPayload): Promise<UploadResponse> {
-  const res = await fetch(webhookUrl('/webhook/generate-qa-doc'), {
+  const res = await fetch(webhookUrl('/webhook/generate-qa-doc'), await withFreshAuth({
     method: 'POST',
-    ...withAuth({ headers: { 'Content-Type': 'application/json' } }),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       projectId: payload.projectId,
       projectName: payload.projectName,
       documentType: mapArtifactToDocumentType(payload.artifact),
       productOwner: payload.productOwner || 'PO',
       environment: 'local',
+      generationMode: payload.generationMode,
+      updateContext: payload.updateContext,
       retryJobId: payload.retryJobId,
+      retryInstruction: payload.retryInstruction,
+      retryContext: payload.retryContext,
     }),
-  })
+  }))
   const data = await res.json()
   if (!data?.jobId) throw new Error('Invalid response from backend')
   return data
 }
 
 export async function generateStoryTestCases(payload: GenerateDocPayload): Promise<UploadResponse> {
-  const res = await fetch(webhookUrl('/webhook/generate-story-test-cases'), {
+  const res = await fetch(webhookUrl('/webhook/generate-story-test-cases'), await withFreshAuth({
     method: 'POST',
-    ...withAuth({ headers: { 'Content-Type': 'application/json' } }),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       projectId: payload.projectId,
       projectName: payload.projectName,
       documentType: mapArtifactToDocumentType(payload.artifact),
       productOwner: payload.productOwner || 'PO',
       environment: 'local',
+      generationMode: payload.generationMode,
+      updateContext: payload.updateContext,
       retryJobId: payload.retryJobId,
+      retryInstruction: payload.retryInstruction,
+      retryContext: payload.retryContext,
     }),
-  })
+  }))
   const data = await res.json()
   if (!data?.jobId) throw new Error(data?.error?.message || data?.message || 'Invalid response from backend')
   return data
@@ -723,7 +826,7 @@ export async function generateStoryTestCases(payload: GenerateDocPayload): Promi
 export async function fetchDocStatus(jobId: string): Promise<StatusResponse | null> {
   let primaryError: unknown = null
   try {
-    const res = await fetch(`${webhookUrl('/webhook/job-status-retrieve')}?jobId=${encodeURIComponent(jobId)}`)
+    const res = await fetch(`${webhookUrl('/webhook/job-status-retrieve')}?jobId=${encodeURIComponent(jobId)}`, await withFreshAuth())
     if (!res.ok) throw new Error('Failed to fetch doc job status')
     const raw = await res.json()
     const data = Array.isArray(raw) ? raw[0] : raw
@@ -751,11 +854,11 @@ export async function fetchDocStatus(jobId: string): Promise<StatusResponse | nu
 }
 
 export async function createDeliveryIntelligenceJob(payload: DeliveryIntelligenceJobPayload): Promise<DeliveryIntelligenceJobResponse> {
-  const res = await fetch(webhookUrl('/webhook/di/jobs'), {
+  const res = await fetch(webhookUrl('/webhook/di/jobs'), await withFreshAuth({
     method: 'POST',
-    ...withAuth({ headers: { 'Content-Type': 'application/json' } }),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
-  })
+  }))
   const data = await res.json().catch(() => null)
   if (!res.ok || !data) {
     throw new Error(data?.error || data?.message || 'Delivery Intelligence job could not be queued.')
@@ -1400,10 +1503,11 @@ export function isTemplateError(status: unknown): boolean {
   return typeof status === 'string' && status.includes('{{')
 }
 
-export async function fetchAnalyticsSummary(params: { pipeline?: string; days?: number } = {}): Promise<AnalyticsSummary | null> {
+export async function fetchAnalyticsSummary(params: { pipeline?: string; days?: number; projectId?: string } = {}): Promise<AnalyticsSummary | null> {
   const query = new URLSearchParams()
   query.set('pipeline', params.pipeline || 'all')
   query.set('days', String(params.days || 30))
+  if (params.projectId) query.set('projectId', params.projectId)
   return fetchOptional<AnalyticsSummary>(`/webhook/analytics-summary?${query.toString()}`, undefined, 10000, true)
 }
 
@@ -1508,6 +1612,26 @@ export async function fetchGeneratedDocuments(): Promise<ApiGeneratedDocument[] 
   return Array.isArray(documents) ? documents : null
 }
 
+export async function fetchGenerationJobMetrics(): Promise<ApiJobMetric[] | null> {
+  const summary = await fetchAnalyticsSummary({ pipeline: 'generation', days: 90 })
+  if (!summary?.recentJobs?.length) return null
+  return summary.recentJobs
+    .filter((job) => String(job.pipeline || 'generation') !== 'ingestion')
+    .map((job) => ({
+      jobId: job.jobId,
+      projectName: job.projectName || null,
+      documentType: job.documentType || null,
+      pipeline: job.pipeline || 'generation',
+      event: job.event || null,
+      status: job.status || null,
+      wordCount: job.wordCount ?? null,
+      tokensTotal: job.tokensTotal ?? null,
+      estimatedCostUsd: job.estimatedCostUsd ?? null,
+      durationMs: job.durationMs ?? null,
+      createdAt: job.createdAt || null,
+    }))
+}
+
 export async function fetchAuditEvents(): Promise<ApiAuditEvent[] | null> {
   const data = await fetchOptional<ApiAuditEvent[] | { events?: ApiAuditEvent[] }>('/webhook/audit-events', undefined, 10000, true)
   if (!data) return null
@@ -1527,6 +1651,9 @@ export async function reprocessArtifact(artifactId: string): Promise<UploadRespo
 export type IntegrationSetting = {
   environmentKey: string
   integrationKey: string
+  scope?: IntegrationSettingsScope
+  userId?: string
+  projectId?: string
   displayName?: string
   enabled: boolean
   config: Record<string, any>
@@ -1543,6 +1670,8 @@ export type IntegrationSetting = {
   } | null
 }
 
+export type IntegrationSettingsScope = 'workspace' | 'user' | 'project'
+
 export type EnvironmentSetting = {
   environmentKey: string
   displayName?: string
@@ -1558,18 +1687,36 @@ export type SettingsResponse = {
   environments: EnvironmentSetting[]
   environmentSettings?: any[]
   integrations?: any[]
+  userIntegrations?: IntegrationSetting[]
+  projectOverrides?: IntegrationSetting[]
+  projectMemberships?: Array<{ project_id?: string; projectId?: string; project_role?: string; role?: string }>
+  currentUser?: Pick<CurrentUser, 'id' | 'email' | 'name' | 'role' | 'status'> | null
   latestResults?: any[]
 }
 
-export async function fetchSettings(): Promise<SettingsResponse | null> {
-  return fetchOptional<SettingsResponse>('/webhook/settings', undefined, 10000, true)
+export async function fetchSettings(params: { environmentKey?: string; projectId?: string } = {}): Promise<SettingsResponse | null> {
+  const query = new URLSearchParams()
+  if (params.environmentKey) query.set('environmentKey', params.environmentKey)
+  if (params.projectId) query.set('projectId', params.projectId)
+  const suffix = query.toString() ? `?${query.toString()}` : ''
+  try {
+    const res = await fetch(webhookUrl(`/webhook/settings${suffix}`), await withFreshAuth())
+    if (!res.ok) return null
+    return (await res.json()) as SettingsResponse
+  } catch {
+    return null
+  }
 }
 
 export async function patchSettings(payload: {
   environmentKey?: string
   integrationKey?: string
+  scope?: IntegrationSettingsScope
+  projectId?: string
   integration?: {
     integrationKey?: string
+    scope?: IntegrationSettingsScope
+    projectId?: string
     enabled?: boolean
     config?: Record<string, any>
     secretRefs?: Record<string, any>
@@ -1580,11 +1727,17 @@ export async function patchSettings(payload: {
   actorUserId?: string
   actorName?: string
 }): Promise<any | null> {
-  return fetchOptional<any>('/webhook/settings', {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  }, 10000, true)
+  try {
+    const res = await fetch(webhookUrl('/webhook/settings'), await withFreshAuth({
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }))
+    if (!res.ok) return null
+    return await res.json()
+  } catch {
+    return null
+  }
 }
 
 export async function testIntegration(integrationKey: string): Promise<any | null> {

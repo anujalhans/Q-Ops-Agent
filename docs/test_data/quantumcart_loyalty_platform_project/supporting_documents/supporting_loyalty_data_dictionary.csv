@@ -1,0 +1,6 @@
+entity,field,type,description,test_focus
+loyalty_accounts,account_id,uuid,Primary account identifier,Enrollment and lookup
+loyalty_accounts,tier,string,Current loyalty tier,Tier recalculation
+point_ledger,idempotency_key,string,Unique event key,Duplicate prevention
+campaign_budget,consumed_amount,decimal,Used partner budget,Budget cap testing
+support_adjustments,approver_id,uuid,Manager approval identity,RBAC audit

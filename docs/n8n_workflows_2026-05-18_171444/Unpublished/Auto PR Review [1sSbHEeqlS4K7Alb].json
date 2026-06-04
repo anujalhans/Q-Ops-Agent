@@ -1,0 +1,495 @@
+{
+  "updatedAt": "2025-10-17T08:30:39.000Z",
+  "createdAt": "2025-09-23T18:19:40.814Z",
+  "id": "1sSbHEeqlS4K7Alb",
+  "name": "Auto PR Review",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/github-pr-review",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        208
+      ],
+      "id": "24e6b7ec-8ee7-4123-b9ea-34fb44a8ccf2",
+      "name": "github-pr-review",
+      "webhookId": "33a3258c-d19b-41b1-a601-63f48cde4385",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    {\"role\": \"system\", \"content\": \"You are an expert automation test reviewer. Be concise and only return valid JSON as requested.\"},\n    {\"role\": \"user\", \"content\": {{ JSON.stringify($json.prompt) }}}\n  ],\n  \"temperature\": 0.0,\n  \"max_tokens\": 1500\n}\n",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        208
+      ],
+      "id": "b4ebeec3-d601-4498-86af-3304abc7780c",
+      "name": "OpenAI Review",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "jafTB364O8QBqOzJ",
+          "name": "Jenkins"
+        },
+        "httpBearerAuth": {
+          "id": "nTi01UwbEgCFVIlW",
+          "name": "Bearer Auth account"
+        },
+        "httpHeaderAuth": {
+          "id": "skQ4rOdSijyBM3Yv",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get OpenAI response item (usually single)\nconst openaiItem = $input.all()[0].json;\n\n// Extract text content safely\nlet text = \"\";\n\nif (openaiItem.choices?.[0]?.message?.content) {\n  text = openaiItem.choices[0].message.content;\n} else if (openaiItem.choices?.[0]?.text) {\n  text = openaiItem.choices[0].text;\n} else {\n  text = JSON.stringify(openaiItem).slice(0, 1000);\n}\n\n// 🧹 Remove markdown fences if present (```json ... ```)\ntext = text.replace(/^```json\\s*/i, \"\").replace(/```$/i, \"\").trim();\n\n// Parse JSON output safely\nlet result;\ntry {\n  result = JSON.parse(text);\n} catch (err) {\n  result = {\n    should_block: false,\n    overall_score: 0,\n    critical_issues: [],\n    suggestions: [\"Failed to parse JSON from LLM output.\"],\n    summary: text.substring(0, 800)\n  };\n}\n\n// 🧠 Extract PR metadata (passed through input chain)\nconst meta = openaiItem; // if metadata was merged into same object earlier\n\nreturn [\n  {\n    json: {\n      review: result,\n      llm_raw: text,\n      repo: $('github-pr-review').first().json.body.pull_request.head.repo.full_name || null,\n      pr_number: $('github-pr-review').first().json.body.pull_request.number || null,\n      head_sha: $('Get PR Files').first().json.sha || null\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        208
+      ],
+      "id": "98225842-77b2-4b4f-b1c3-d2e0d530b038",
+      "name": "Parse LLM Response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e69b92f2-13f0-4501-9eff-54f107643995",
+              "leftValue": "={{($json.review.should_block)}}\n",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "b4131c79-b7c6-4763-90b6-75d8f4bc879f",
+              "leftValue": "={{($json.review.overall_score)}}",
+              "rightValue": 70,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            },
+            {
+              "id": "29ab889c-5719-4d54-be50-adc990639456",
+              "leftValue": "={{($json.review.critical_issues.length)}}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1328,
+        208
+      ],
+      "id": "2b260962-bd59-4b2f-92b0-0a02fef23f3c",
+      "name": "If",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get review object from previous node\nconst input = $input.all()[0].json;\nconst r = input.review;\n\nlet lines = [];\nlines.push(\"### 🤖 Automated Code Review\\n\");\nlines.push(`**Summary:** ${r.summary || \"No summary provided.\"}\\n`);\n\nif (r.critical_issues && r.critical_issues.length) {\n  lines.push(\"**Critical Issues:**\");\n  for (let c of r.critical_issues) {\n    lines.push(`- ${c.file || 'unknown'}:${c.line || '-'} — ${c.message}`);\n  }\n}\n\nif (r.suggestions && r.suggestions.length) {\n  lines.push(\"\\n**Suggestions:**\");\n  for (let s of r.suggestions) {\n    lines.push(`- ${s}`);\n  }\n}\n\nreturn [\n  {\n    json: {\n      body: lines.join(\"\\n\"),\n      repo: $('github-pr-review').first().json.body.pull_request.head.repo.full_name,\n      pr_number: $('github-pr-review').first().json.body.pull_request.number,\n      head_sha: $('github-pr-review').first().json.body.pull_request.head.sha\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        112
+      ],
+      "id": "8591fe5e-ebe9-4532-9100-9a2b71e436cc",
+      "name": "Request Changes in PR"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{$json[\"repo\"]}}/pulls/{{$json[\"pr_number\"]}}/reviews",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"body\": \"={{ $json.body.replace(/\\\\/g,'\\\\\\\\').replace(/\\\"/g,'\\\\\\\"').replace(/\\n/g,'\\\\n') }}\",\n  \"event\": \"REQUEST_CHANGES\",\n  \"commit_id\": \"{{$json.head_sha}}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1776,
+        112
+      ],
+      "id": "3d294845-f133-4f3f-ade9-b21c76bac992",
+      "name": "Post PR Review: REQUEST_CHANGES",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "nTi01UwbEgCFVIlW",
+          "name": "Bearer Auth account"
+        },
+        "httpHeaderAuth": {
+          "id": "MyUgg1bWDrYoG7KS",
+          "name": "BotPAT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $json.review;\nconst summary = `Automated Code Review: Passed ✅. Calculated Score is: ${r.overall_score || 'N/A'}. Here is the Review Summary: ${r.summary || ''}`;\nreturn [{ json: { body: summary } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        304
+      ],
+      "id": "9d7fe994-f8ba-41b7-93e7-91b2f2378d05",
+      "name": "approve and trigger Jenkins"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{ $('github-pr-review').first().json.body.pull_request.base.repo.full_name }}/pulls/{{ $('github-pr-review').first().json.body.pull_request.number }}/reviews",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"body\": \"={{$json.body}}\",\n  \"event\": \"APPROVE\",\n  \"commit_id\": \"{{ $('github-pr-review').first().json.body.pull_request.head.sha }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1776,
+        304
+      ],
+      "id": "c45cc7fc-4b13-47df-be1b-f48abb957abf",
+      "name": "Post PR Review: APPROVE",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "nTi01UwbEgCFVIlW",
+          "name": "Bearer Auth account"
+        },
+        "httpHeaderAuth": {
+          "id": "MyUgg1bWDrYoG7KS",
+          "name": "BotPAT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/{{ $('github-pr-review').first().json.body.pull_request.head.repo.full_name }}/pulls/{{ $('github-pr-review').first().json.body.pull_request.number }}/merge",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n \"commit_title\": \"Auto-merged after n8n workflow AI approval on {{ new Date().toISOString() }}\",\n  \"merge_method\": \"merge\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2000,
+        304
+      ],
+      "id": "c4e221a3-6719-466f-abd8-4b97e244abbb",
+      "name": "Merge the PR in Main",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "tXzP1GDAz6NZy7jT",
+          "name": "GitHub Token Header Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Function node set to \"Run Once for All Items\"\nconst MAX_FILES = 6;\nconst MAX_CHARS_PER_DIFF = 4000;\n\n// Get all PR files from previous node\nlet files = $input.all().map(i => i.json);\nif (files.length > MAX_FILES) files = files.slice(0, MAX_FILES);\n\n// Build the review prompt\nlet prompt =\n\"💡 **Context**: You are a *Senior Automation Architect* with deep expertise in Selenium (Java), TestNG, Page Object Model (POM), Log4j, and Extent Reports.\\n\" +\n\"Perform a **fresh, context-independent code review** of the provided Selenium test files. \" +\n\"⚠️ Do NOT compare against any previous commits or diff context — instead, evaluate the code as if it is *entirely new*, using the following best practice guidelines.\\n\\n\" +\n\n\"---\\n\" +\n\"### 🧭 Review Intent\\n\" +\n\"- Treat every code block as newly written. Do NOT reference or assume old code or deletions.\\n\" +\n\"- Focus solely on the *current implementation quality*, not historical changes.\\n\" +\n\"- Do NOT penalize removed code or renamed methods if the new version aligns with guidelines.\\n\" +\n\"---\\n\\n\" +\n\n\"### 📘 Code Review Guidelines\\n\" +\n\"1. **Code Structure & Readability** – Enforce Java/Selenium coding standards, naming conventions, consistent indentation, and removal of redundant logic.\\n\" +\n\"2. **Page Object Model (POM)** – Ensure clear separation between locators, reusable methods, and test logic. Prefer explicit waits over Thread.sleep.\\n\" +\n\"3. **Selenium Best Practices** – Validate driver setup/teardown logic, WebDriverManager usage, and avoidance of hard-coded data.\\n\" +\n\"4. **TestNG Implementation** – Check use of annotations (@Test, @BeforeMethod, @AfterMethod), assertion logic, and grouping strategy.\\n\" +\n\"5. **Logging (Log4j)** – Ensure proper log levels (INFO, DEBUG, ERROR) and avoid exposing sensitive data.\\n\" +\n\"6. **Extent Reports Integration** – Validate report initialization, test log entries, screenshot capture, and final report flush.\\n\" +\n\"7. **Error Handling & Robustness** – Highlight missing try/catch, poor exception handling, and lack of recovery for flaky tests.\\n\" +\n\"8. **Framework Design & Scalability** – Assess modularity, package hierarchy (base/pages/tests/utils), and parallel test readiness.\\n\" +\n\"9. **Configuration Management** – Ensure all environment data and URLs are externalized, not hardcoded.\\n\" +\n\"10. **CI/CD & Maintainability** – Verify tests can run in headless mode, support parallel runs, and integrate with Jenkins or GitHub Actions.\\n\\n\" +\n\n\"### ⚙️ Review Focus Areas\\n\" +\n\"1. Maintainability – No hard-coded waits; prefer explicit waits.\\n\" +\n\"2. Stability – Avoid timing-based or order-dependent tests.\\n\" +\n\"3. Reusability – Maximize reusable components and methods.\\n\" +\n\"4. Readability – Clear test names, concise assertions.\\n\" +\n\"5. Scalability – No duplicate locators; centralize selectors.\\n\" +\n\"6. Data Handling – Externalize configuration and test data.\\n\" +\n\"7. Error Handling – Proper try/catch with meaningful logs.\\n\" +\n\"8. Framework Standards – Follow naming, folder, and reporting conventions.\\n\" +\n\"9. Performance – Avoid unnecessary browser actions or sleeps.\\n\" +\n\"10. CI/CD Fit – Ensure compatibility with headless mode and parallel execution.\\n\\n\" +\n\n\"### 🧾 Output Format\\n\" +\n\"Return ONLY valid JSON with these keys:\\n\" +\n\"- should_block: true/false (whether code violates critical standards)\\n\" +\n\"- overall_score: (0–100) based on code quality\\n\" +\n\"- critical_issues: array of {file, line, message}\\n\" +\n\"- suggestions: array of short actionable improvements\\n\" +\n\"- summary: a single concise paragraph summarizing your review\\n\\n\" +\n\n\"---\\n\" +\n\"### PR Metadata\\n\" +\n\"PR Number: \" + $('github-pr-review').first().json.body.pull_request.number +\n\"\\nRepository: \" + $('github-pr-review').first().json.body.pull_request.head.repo.full_name +\n\"\\nHead SHA: \" + $input.first().json.sha +\n\"\\n\\n\" +\n\"---\\n\" +\n\"### 🔍 Files to Review (fresh evaluation)\\n\\n\";\n\nfor (const f of files) {\n    const filename = f.filename;\n    const diff = (f.patch || '').substring(0, MAX_CHARS_PER_DIFF);\n    prompt += `📄 FILE: ${filename}\\n\\nCODE:\\n${diff}\\n\\n---\\n\\n`;\n}\n\n// Grab PR metadata\nconst first = files[0] || {};\n\nreturn {\n    json: {\n        prompt,\n        repo: first?.body?.repository?.name || '',\n        pr_number: first?.body?.pull_request?.number || 0,\n        head_sha: first?.body?.pull_request?.head?.sha || ''\n    }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        208
+      ],
+      "id": "ecd1fc49-aa71-4a2d-bd08-9c426e1b02f0",
+      "name": "Prompt LLM to extract clean summary of File name & Added/removed lines (diffs)"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $json.body.pull_request.head.repo.full_name }}/pulls/{{ $json.body.pull_request.number }}/files\n",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        432,
+        208
+      ],
+      "id": "18360506-4684-48d9-b458-3679434817c4",
+      "name": "Get PR Files",
+      "alwaysOutputData": false,
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "jafTB364O8QBqOzJ",
+          "name": "Jenkins"
+        },
+        "httpBearerAuth": {
+          "id": "nTi01UwbEgCFVIlW",
+          "name": "Bearer Auth account"
+        },
+        "httpHeaderAuth": {
+          "id": "tXzP1GDAz6NZy7jT",
+          "name": "GitHub Token Header Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Only continue if PR action is one of: opened, reopened, synchronize\nif (!['opened', 'reopened', 'synchronize'].includes($input.first().json.body.action)){\n  // Stop workflow execution for other actions\n  return [];\n}\n\n// Pass item forward for processing\nreturn $input.all();\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        208
+      ],
+      "id": "2419a757-2f6f-4dfd-99ab-2a0a43b27762",
+      "name": "Check PR action is one of: opened, reopened, synchronize",
+      "alwaysOutputData": false
+    }
+  ],
+  "connections": {
+    "github-pr-review": {
+      "main": [
+        [
+          {
+            "node": "Check PR action is one of: opened, reopened, synchronize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Review": {
+      "main": [
+        [
+          {
+            "node": "Parse LLM Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse LLM Response": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Request Changes in PR",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "approve and trigger Jenkins",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Changes in PR": {
+      "main": [
+        [
+          {
+            "node": "Post PR Review: REQUEST_CHANGES",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "approve and trigger Jenkins": {
+      "main": [
+        [
+          {
+            "node": "Post PR Review: APPROVE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post PR Review: APPROVE": {
+      "main": [
+        [
+          {
+            "node": "Merge the PR in Main",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt LLM to extract clean summary of File name & Added/removed lines (diffs)": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get PR Files": {
+      "main": [
+        [
+          {
+            "node": "Prompt LLM to extract clean summary of File name & Added/removed lines (diffs)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check PR action is one of: opened, reopened, synchronize": {
+      "main": [
+        [
+          {
+            "node": "Get PR Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "b0c59c6a-a2ff-4e59-bb05-f40e8ce7ad77",
+  "activeVersionId": null,
+  "versionCounter": 17,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-09-23T18:19:40.814Z",
+      "createdAt": "2025-09-23T18:19:40.814Z",
+      "role": "workflow:owner",
+      "workflowId": "1sSbHEeqlS4K7Alb",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

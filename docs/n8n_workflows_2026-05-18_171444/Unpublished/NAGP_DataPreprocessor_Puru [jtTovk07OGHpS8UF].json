@@ -1,0 +1,664 @@
+{
+  "updatedAt": "2026-03-31T07:21:26.870Z",
+  "createdAt": "2026-03-31T06:41:18.186Z",
+  "id": "jtTovk07OGHpS8UF",
+  "name": "NAGP_DataPreprocessor_Puru",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "nagpdatapreprocessor",
+          "mode": "list",
+          "cachedResultName": "nagpdatapreprocessor"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        256
+      ],
+      "id": "97701157-70d3-4144-b3d0-8fe4973b9348",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "dRzUiwU07mfFG9fn",
+          "name": "My PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        336,
+        480
+      ],
+      "id": "60ebfd36-2fa6-4699-8d49-ace9d8f45479",
+      "name": "Embeddings OpenAI"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        464,
+        480
+      ],
+      "id": "24ea558d-4815-466c-92cc-9f768ecfe52a",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        544,
+        688
+      ],
+      "id": "6ac32933-2d6f-4c72-a095-430452dcd566",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1232,
+        496
+      ],
+      "id": "687134ec-a79e-4270-83f3-3eb5f03c3ed0",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "'13tbNeWdP5Ra5R4xp-TElBrwxVa77xMey' in parents",
+        "returnAll": true,
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1008,
+        496
+      ],
+      "id": "dc17fa5a-ad6d-4c99-87b2-e29a34f809cf",
+      "name": "Search files and folders",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ag6O5VMcRb6uzeUo",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -784,
+        496
+      ],
+      "id": "dc5d9d3d-5ec9-4d42-8a44-f7dd3df264e7",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        544
+      ],
+      "id": "20c002ad-c91b-45ff-9381-2f55f7ab9ef4"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{$json[\"id\"]}}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -560,
+        352
+      ],
+      "id": "e081d1d2-6d6d-4038-82b9-47e9a58969ab",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ag6O5VMcRb6uzeUo",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json[\"name\"]}}",
+                    "rightValue": "RCA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "f25e1ac8-3cd6-4b4d-9f01-4766bb53bdd0"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "7729fd45-bc01-480b-8e76-fad198b4f57f",
+                    "leftValue": "={{$json[\"name\"]}}",
+                    "rightValue": "logs",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8b1154a6-c9b6-48a2-9002-4bc4f540a0b6",
+                    "leftValue": "={{$json[\"name\"]}}",
+                    "rightValue": "Release",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "275ae780-ff30-4f83-a2a1-73fb102f2677",
+                    "leftValue": "={{$json[\"name\"]}}",
+                    "rightValue": "csv",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -336,
+        320
+      ],
+      "id": "ba54732b-2e70-4669-ab13-426b0b487e21",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "174015a8-2908-4997-8afa-4ce19af3627d",
+              "name": "source",
+              "value": "rca",
+              "type": "string"
+            },
+            {
+              "id": "47bae816-aff7-48a0-8c9c-96b3492e85c6",
+              "name": "document_type",
+              "value": "root_cause_analysis",
+              "type": "string"
+            },
+            {
+              "id": "3b967595-b088-48c9-91e1-70eed0dd88ed",
+              "name": "module",
+              "value": "payment",
+              "type": "string"
+            },
+            {
+              "id": "5fed7e8d-c9c2-4d01-8263-e64e895eb57b",
+              "name": "file_name",
+              "value": "={{$json[\"name\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        64
+      ],
+      "id": "0418c94d-0b27-4ff5-a5e4-065a78640270",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f4ea80d-e592-4841-a6a7-37fbe9e0eabf",
+              "name": "source",
+              "value": "logs",
+              "type": "string"
+            },
+            {
+              "id": "805c9520-076c-4251-8cfb-32b701d9196d",
+              "name": "document_type ",
+              "value": "application_logs",
+              "type": "string"
+            },
+            {
+              "id": "b21af10c-18d5-43ba-a42c-344a1278170b",
+              "name": "file_name",
+              "value": "={{$json[\"name\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        256
+      ],
+      "id": "4f222924-a3ca-43ba-9c93-3293c79d7676",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9572083-d100-47c9-9223-d1bf3666df16",
+              "name": "source",
+              "value": "release_notes",
+              "type": "string"
+            },
+            {
+              "id": "3d76afc1-34af-4785-88e2-df7a51b1ef1b",
+              "name": "release_version",
+              "value": "1.6",
+              "type": "string"
+            },
+            {
+              "id": "ce2b4104-caf9-4c3e-bbca-e7d802f135e0",
+              "name": "document_type",
+              "value": "release_document",
+              "type": "string"
+            },
+            {
+              "id": "e55197d9-80bb-4955-b107-0284725698b7",
+              "name": "file_name",
+              "value": "={{$json[\"name\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "8d445a0f-cfc7-4de5-97c6-a36a9b829765",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        448
+      ],
+      "id": "cfd70f31-165b-4d45-ae0a-500cb574bdfd",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "09178f61-11e5-44fc-9c63-69af77e45a00",
+              "name": "source",
+              "value": "historical_defects",
+              "type": "string"
+            },
+            {
+              "id": "cfc14f0f-8dfe-401f-9264-27d8d933bceb",
+              "name": "document_type",
+              "value": "defect_dataset",
+              "type": "string"
+            },
+            {
+              "id": "02df520b-374b-4c9c-9705-c13842c98189",
+              "name": "file_name",
+              "value": "={{$json[\"name\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        640
+      ],
+      "id": "9f1ba73c-615f-4020-8a3a-73f465b25ca6",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        112,
+        224
+      ],
+      "id": "f5a40152-ec37-4b38-8c61-3c971b82733b",
+      "name": "Merge"
+    }
+  ],
+  "connections": {
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "549d2b53-5546-4565-a5ab-92b25f0b6981",
+  "activeVersionId": null,
+  "versionCounter": 3,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-03-31T06:41:18.206Z",
+      "createdAt": "2026-03-31T06:41:18.206Z",
+      "role": "workflow:owner",
+      "workflowId": "jtTovk07OGHpS8UF",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

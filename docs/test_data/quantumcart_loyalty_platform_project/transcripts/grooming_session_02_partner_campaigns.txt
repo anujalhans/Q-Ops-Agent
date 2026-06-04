@@ -1,0 +1,5 @@
+Grooming transcript - Partner Campaigns
+Partner Manager: Campaign budget must stop issuing rewards immediately when exhausted.
+Finance: Settlement exports must tie campaign rewards to partner reference IDs and ledger event IDs.
+Support: Agents need a reason-coded override flow but should not bypass approval thresholds.
+QA: Include tests for audience eligibility, campaign cap race conditions, and support override audit logs.

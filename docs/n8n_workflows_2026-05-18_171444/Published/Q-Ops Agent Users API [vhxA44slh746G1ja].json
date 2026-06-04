@@ -1,0 +1,318 @@
+{
+  "updatedAt": "2026-05-07T07:34:43.820Z",
+  "createdAt": "2026-05-07T07:17:10.780Z",
+  "id": "vhxA44slh746G1ja",
+  "name": "Q-Ops Agent Users API",
+  "description": "GET /webhook/users endpoint. Verifies Supabase Auth JWTs with the Supabase publishable key, requires active qops_users admin role, and returns sanitized user and project-role data.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "5c1d38d2-8481-470c-8401-d7c4d3eff6c3",
+      "name": "GET /users",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "users",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "5591fa5a-e3b0-49d3-a6ab-c98f9e04b7ed"
+    },
+    {
+      "id": "ef225de3-ceec-4338-89f0-31175c7ab255",
+      "name": "Verify Supabase Auth User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={ \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"{{ $json.headers.authorization || $json.headers.Authorization || \"\" }}\" }",
+        "options": {}
+      },
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "669a68a0-f1da-4753-b47d-ec56ff891f21",
+      "name": "Fetch Current Q-Ops User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,auth_user_id,email,name,role,status"
+            },
+            {
+              "name": "or",
+              "value": "=({{ $json.id ? \"auth_user_id.eq.\" + $json.id + \",email.eq.\" + $json.email : \"email.eq.__missing__\" }})"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "05392653-78b1-41d7-b2ad-0beda648053a",
+      "name": "Fetch Users",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,auth_user_id,email,name,title,avatar_url,role,status,last_login_at,created_at,updated_at"
+            },
+            {
+              "name": "order",
+              "value": "created_at.asc"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      },
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "c400c168-0223-4e99-be1b-a346a9f3dc25",
+      "name": "Fetch Project Memberships",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "user_id,project_id,project_role"
+            },
+            {
+              "name": "order",
+              "value": "created_at.asc"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      },
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "87c6231c-f9ab-494c-a2cd-a1a42508f1f0",
+      "name": "Map Users Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const auth = $('Verify Supabase Auth User').first().json || {};\nconst current = $items('Fetch Current Q-Ops User').map(i => i.json).find(r => r && r.id);\nif (!auth.id) return [{ json: { ok: false, error: 'unauthorized', users: [] } }];\nif (!current || current.status !== 'active') return [{ json: { ok: false, error: 'profile_not_active', users: [] } }];\nif (current.role !== 'admin') return [{ json: { ok: false, error: 'forbidden', users: [] } }];\nconst memberships = $items('Fetch Project Memberships').map(i => i.json).filter(r => r && r.user_id);\nconst users = $items('Fetch Users').map(i => i.json).filter(r => r && r.id).map(user => {\n  const scoped = memberships.filter(member => member.user_id === user.id);\n  return {\n    id: user.id,\n    authUserId: user.auth_user_id,\n    email: user.email,\n    name: user.name || user.email,\n    title: user.title,\n    avatarUrl: user.avatar_url,\n    role: user.role,\n    status: user.status,\n    lastLoginAt: user.last_login_at,\n    createdAt: user.created_at,\n    updatedAt: user.updated_at,\n    projects: user.role === 'admin' ? ['All projects'] : scoped.map(member => member.project_id),\n    projectRoles: scoped.map(member => ({ projectId: member.project_id, role: member.project_role }))\n  };\n});\nreturn [{ json: { users } }];"
+      }
+    },
+    {
+      "id": "4f78047a-b1df-499b-9427-92c0945418fc",
+      "name": "Respond Users",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "GET /users": {
+      "main": [
+        [
+          {
+            "node": "Verify Supabase Auth User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Supabase Auth User": {
+      "main": [
+        [
+          {
+            "node": "Fetch Current Q-Ops User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Current Q-Ops User": {
+      "main": [
+        [
+          {
+            "node": "Fetch Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Users": {
+      "main": [
+        [
+          {
+            "node": "Fetch Project Memberships",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Project Memberships": {
+      "main": [
+        [
+          {
+            "node": "Map Users Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Users Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": {},
+  "versionId": "e57d1800-65d8-414a-ba24-c569a5cf6857",
+  "activeVersionId": "e57d1800-65d8-414a-ba24-c569a5cf6857",
+  "versionCounter": 19,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-07T07:17:10.782Z",
+      "createdAt": "2026-05-07T07:17:10.782Z",
+      "role": "workflow:owner",
+      "workflowId": "vhxA44slh746G1ja",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version e57d1800",
+    "description": ""
+  }
+}

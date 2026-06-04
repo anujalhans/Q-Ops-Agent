@@ -1,0 +1,509 @@
+{
+  "updatedAt": "2026-05-08T07:10:04.605Z",
+  "createdAt": "2026-05-08T07:06:29.801Z",
+  "id": "NgKN1jdavJfmJG9h",
+  "name": "Q-Ops Agent Infrastructure Load API",
+  "description": "Auth-aware GET /webhook/infrastructure-load endpoint. Combines scoped queue backlog, recent workflow metrics, service health snapshots, and daily token/cost usage for the Dashboard Compute Load widget.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "infrastructure-load",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "78f84eed-7948-414c-a8fa-4e2731493af9",
+      "name": "GET /infrastructure-load",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "a7526ded-bc9e-4b56-a127-a9749f23e8cc"
+    },
+    {
+      "parameters": {
+        "jsCode": "const headers = $json.headers || {};\nconst authHeader = headers.authorization || headers.Authorization || '';\nconst accessToken = String(authHeader).replace(/^Bearer\\s+/i, '').trim();\nreturn [{ json: { accessToken } }];"
+      },
+      "id": "1e92a304-dfac-4c98-a1d9-d50c928e990e",
+      "name": "Prepare Infrastructure Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={ \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"Bearer {{ $json.accessToken }}\", \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "0f4f3b58-3f82-4adb-b6ac-8cd0dd580bff",
+      "name": "Verify Supabase Auth User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,auth_user_id,email,name,role,status"
+            },
+            {
+              "name": "or",
+              "value": "=(auth_user_id.eq.{{ $(\"Verify Supabase Auth User\").item.json.id }},email.eq.{{ encodeURIComponent($(\"Verify Supabase Auth User\").item.json.email || \"\") }})"
+            },
+            {
+              "name": "status",
+              "value": "eq.active"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "ccc6f7b2-a2d2-48ea-8ab7-73af4be77e68",
+      "name": "Fetch Q-Ops User Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        0
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "project_id,project_role,qops_projects(name)"
+            },
+            {
+              "name": "user_id",
+              "value": "=eq.{{ $(\"Fetch Q-Ops User Profile\").first().json.id || \"00000000-0000-0000-0000-000000000000\" }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "c5f1cef2-464b-48cb-acf9-a933f212dbaa",
+      "name": "Fetch Current User Project Memberships",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "job_id,status,input,project_id,requested_by,created_at,updated_at"
+            },
+            {
+              "name": "order",
+              "value": "created_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "500"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "d934f349-5bc4-4633-914c-64702663352a",
+      "name": "Fetch Generation Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "job_id,status,input,project_id,requested_by,created_at,updated_at"
+            },
+            {
+              "name": "order",
+              "value": "created_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "500"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "ec979881-b540-479a-961a-a8f3d94a42b1",
+      "name": "Fetch Ingestion Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1344,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,job_id,project_id,requested_by,project_name,pipeline,event,status,duration_ms,tokens_total,estimated_cost_usd,error_message,created_at"
+            },
+            {
+              "name": "order",
+              "value": "created_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "500"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "4c0b7e77-251f-44cb-8abb-0c5750881c12",
+      "name": "Fetch Recent Metrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1568,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_connection_test_results",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "environment_key,integration_key,service_name,status,latency_ms,message,checked_at"
+            },
+            {
+              "name": "order",
+              "value": "checked_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "100"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "4fc6018d-fd6a-4699-bcd7-a07152036484",
+      "name": "Fetch Connection Results",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1792,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const authUser = $('Verify Supabase Auth User').first().json || {};\nconst profile = $('Fetch Q-Ops User Profile').first().json || {};\nconst memberships = $items('Fetch Current User Project Memberships').map(i => i.json).filter(m => m && m.project_id);\n\nif (!authUser.id || !profile.id || profile.status !== 'active') {\n  return [{ json: { ok: false, error: 'unauthorized', message: 'Missing or invalid Supabase Auth token.' } }];\n}\n\nconst isAdmin = profile.role === 'admin';\nconst allowedProjectIds = new Set(memberships.map(m => String(m.project_id)));\nconst now = Date.now();\nconst dayAgo = now - 24 * 60 * 60 * 1000;\nconst todayStart = new Date();\ntodayStart.setHours(0, 0, 0, 0);\nconst todayStartMs = todayStart.getTime();\n\nfunction inScope(row) {\n  if (isAdmin) return true;\n  const requestedBy = row.requested_by ? String(row.requested_by) : '';\n  const projectId = row.project_id ? String(row.project_id) : '';\n  return requestedBy === String(profile.id) && (!projectId || allowedProjectIds.has(projectId));\n}\nfunction ts(row) { return new Date(row.created_at || row.updated_at || row.checked_at || 0).getTime(); }\nfunction statusOf(row) { return String(row.status || '').toLowerCase(); }\nfunction isActive(status) { return ['queued', 'pending', 'processing', 'not_found'].includes(status); }\nfunction isFailed(status) { return ['failed', 'error'].includes(status); }\nfunction avg(values) { return values.length ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : 0; }\n\nconst generationJobs = $items('Fetch Generation Jobs').map(i => i.json).filter(j => j && j.job_id && inScope(j)).map(j => ({ ...j, pipeline: 'generation' }));\nconst ingestionJobs = $items('Fetch Ingestion Jobs').map(i => i.json).filter(j => j && j.job_id && inScope(j)).map(j => ({ ...j, pipeline: 'ingestion' }));\nconst allJobs = generationJobs.concat(ingestionJobs);\nconst activeJobs = allJobs.filter(j => isActive(statusOf(j)));\nconst pendingJobs = allJobs.filter(j => ['queued', 'pending', 'not_found'].includes(statusOf(j)));\nconst processingJobs = allJobs.filter(j => statusOf(j) === 'processing');\nconst failedJobsLast24h = allJobs.filter(j => isFailed(statusOf(j)) && ts(j) >= dayAgo);\nconst oldestPending = pendingJobs.map(ts).filter(Boolean).sort((a, b) => a - b)[0] || 0;\n\nconst metrics = $items('Fetch Recent Metrics').map(i => i.json).filter(m => m && m.id && inScope(m));\nconst recentMetrics24h = metrics.filter(m => ts(m) >= dayAgo);\nconst usageToday = metrics.filter(m => ts(m) >= todayStartMs);\nconst failedMetrics24h = metrics.filter(m => isFailed(statusOf(m)) && ts(m) >= dayAgo);\nconst durationValues = recentMetrics24h.map(m => Number(m.duration_ms || 0)).filter(Boolean);\nconst activeExecutionJobIds = new Set(activeJobs.map(j => j.job_id));\n\nconst latestServices = new Map();\nfor (const item of $items('Fetch Connection Results').map(i => i.json).filter(Boolean)) {\n  const key = item.integration_key || item.service_name;\n  if (!key || latestServices.has(key)) continue;\n  const rawStatus = String(item.status || 'not_configured');\n  const normalized = ['operational', 'ok', 'configured'].includes(rawStatus) ? 'ok' : rawStatus === 'degraded' ? 'degraded' : ['unreachable', 'unauthorized', 'error'].includes(rawStatus) ? 'error' : 'not_configured';\n  latestServices.set(key, {\n    name: item.service_name || item.integration_key || key,\n    key,\n    status: normalized,\n    latencyMs: Number(item.latency_ms || 0),\n    message: item.message || '',\n    checkedAt: item.checked_at || null\n  });\n}\nconst services = Array.from(latestServices.values());\nconst unhealthyServices = services.filter(s => ['degraded', 'error', 'unreachable', 'unauthorized'].includes(s.status)).length;\n\nconst pendingCount = pendingJobs.length;\nconst processingCount = processingJobs.length;\nconst failedCount = failedJobsLast24h.length + failedMetrics24h.length;\nconst oldestPendingAgeSeconds = oldestPending ? Math.max(0, Math.round((now - oldestPending) / 1000)) : 0;\nconst avgLatency = avg(services.map(s => s.latencyMs).filter(Boolean));\nconst loadScore = Math.min(100, Math.round(\n  pendingCount * 12 +\n  processingCount * 18 +\n  Math.min(30, oldestPendingAgeSeconds / 20) +\n  failedCount * 10 +\n  unhealthyServices * 15 +\n  Math.min(15, avgLatency / 120)\n));\nconst status = loadScore >= 75 || unhealthyServices >= 2 ? 'error' : loadScore >= 45 || unhealthyServices === 1 || failedCount > 0 ? 'degraded' : 'ok';\nconst jobsCompletedToday = usageToday.filter(m => String(m.event || '').includes('COMPLETED') || statusOf(m) === 'completed').length;\n\nreturn [{ json: {\n  status,\n  score: loadScore,\n  generatedAt: new Date().toISOString(),\n  scope: isAdmin ? 'workspace' : 'self',\n  queues: {\n    pending: pendingCount,\n    processing: processingCount,\n    active: activeJobs.length,\n    failedLast24h: failedJobsLast24h.length,\n    oldestPendingAgeSeconds,\n    generation: { pending: generationJobs.filter(j => ['queued', 'pending', 'not_found'].includes(statusOf(j))).length, processing: generationJobs.filter(j => statusOf(j) === 'processing').length },\n    ingestion: { pending: ingestionJobs.filter(j => ['queued', 'pending', 'not_found'].includes(statusOf(j))).length, processing: ingestionJobs.filter(j => statusOf(j) === 'processing').length }\n  },\n  workflows: {\n    activeExecutions: activeExecutionJobIds.size,\n    failedLast24h: failedMetrics24h.length,\n    avgDurationMs: avg(durationValues),\n    recentMetricEvents: recentMetrics24h.length\n  },\n  services,\n  usage: {\n    tokensToday: usageToday.reduce((sum, m) => sum + Number(m.tokens_total || 0), 0),\n    costTodayUsd: Number(usageToday.reduce((sum, m) => sum + Number(m.estimated_cost_usd || 0), 0).toFixed(6)),\n    jobsCompletedToday\n  },\n  meta: { userRole: profile.role, projectIds: isAdmin ? [] : Array.from(allowedProjectIds) }\n} }];"
+      },
+      "id": "820c4a4f-1181-4e59-bdd8-08fd9eeec965",
+      "name": "Build Infrastructure Load Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "cbda647c-b2e8-4327-aedc-fc7dda87234f",
+      "name": "Respond Infrastructure Load",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2240,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "GET /infrastructure-load": {
+      "main": [
+        [
+          {
+            "node": "Prepare Infrastructure Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Infrastructure Request": {
+      "main": [
+        [
+          {
+            "node": "Verify Supabase Auth User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Supabase Auth User": {
+      "main": [
+        [
+          {
+            "node": "Fetch Q-Ops User Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Q-Ops User Profile": {
+      "main": [
+        [
+          {
+            "node": "Fetch Current User Project Memberships",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Current User Project Memberships": {
+      "main": [
+        [
+          {
+            "node": "Fetch Generation Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Generation Jobs": {
+      "main": [
+        [
+          {
+            "node": "Fetch Ingestion Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Ingestion Jobs": {
+      "main": [
+        [
+          {
+            "node": "Fetch Recent Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Recent Metrics": {
+      "main": [
+        [
+          {
+            "node": "Fetch Connection Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Connection Results": {
+      "main": [
+        [
+          {
+            "node": "Build Infrastructure Load Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Infrastructure Load Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Infrastructure Load",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": {},
+  "versionId": "ed92be26-cdd1-4b0b-b63a-49e1d0cfe8d2",
+  "activeVersionId": "ed92be26-cdd1-4b0b-b63a-49e1d0cfe8d2",
+  "versionCounter": 18,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-08T07:06:29.813Z",
+      "createdAt": "2026-05-08T07:06:29.813Z",
+      "role": "workflow:owner",
+      "workflowId": "NgKN1jdavJfmJG9h",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version ed92be26",
+    "description": ""
+  }
+}

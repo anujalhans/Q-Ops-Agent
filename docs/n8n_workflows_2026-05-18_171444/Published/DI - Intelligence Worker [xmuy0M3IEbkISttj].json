@@ -1,0 +1,554 @@
+{
+  "updatedAt": "2026-05-11T10:46:04.094Z",
+  "createdAt": "2026-05-11T10:40:20.869Z",
+  "id": "xmuy0M3IEbkISttj",
+  "name": "DI - Intelligence Worker",
+  "description": "Scheduled Delivery Intelligence worker that locks pending di_intelligence_jobs, derives DI records from submitted payload plus read-only project/QA context, persists to di_* tables, and updates job status.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Delivery Intelligence Worker\nPolls di_intelligence_jobs only. It never reads or writes qa_jobs except read-only context lookup, and never modifies QA workflows. Persists extracted DI records through public.di_persist_extraction using the Supabase service-role credential.",
+        "height": 220,
+        "width": 2600,
+        "color": 5
+      },
+      "id": "6ec949cb-15be-4c82-a52b-56ac441d41c8",
+      "name": "Sticky Note 0c4e72a9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds"
+            }
+          ]
+        }
+      },
+      "id": "815f96e8-3f3d-4a35-954c-fbf47b03a73f",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_intelligence_jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "eq.pending"
+            },
+            {
+              "name": "order",
+              "value": "created_at.asc"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            },
+            {
+              "name": "select",
+              "value": "job_id,status,job_type,project_id,requested_by,input,output,created_at"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "5f28de72-1075-407f-b943-4bb4e239360d",
+      "name": "Get Pending DI Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        96
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "14dd6bac-2424-43dc-bb69-e7a577896f60",
+      "name": "Pending DI Job Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_intelligence_jobs?job_id=eq.{{ encodeURIComponent($json.job_id) }}&status=eq.pending",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=representation\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ status: \"running\", output: { ...($json.output || {}), startedAt: $now.toISO(), worker: \"DI - Intelligence Worker\" }, updated_at: $now.toISO() }) }}",
+        "options": {}
+      },
+      "id": "63872c41-1d55-4901-8cad-e3964a0ab1dd",
+      "name": "Lock DI Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        96
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "23a901c0-597d-43f2-99fd-b35db32fa503",
+      "name": "DI Lock Acquired?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects?id=eq.{{ encodeURIComponent($json.project_id || \"__none__\") }}&select=id,name,description,owner,module,release,tags,status&limit=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "532ec4a2-79f7-4815-8725-3e58834c39c6",
+      "name": "Fetch DI Project Context",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        96
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs?project_id=eq.{{ encodeURIComponent($(\"Lock DI Job\").item.json.project_id || \"__none__\") }}&status=eq.completed&select=job_id,input,output,created_at&order=created_at.desc&limit=10",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "d3c41d1b-e75c-4a46-a4fe-566a7f8d0692",
+      "name": "Fetch Read Only QA Context",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1344,
+        96
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const job = $('Lock DI Job').first().json || {};\nconst rawProject = $('Fetch DI Project Context').first().json;\nconst project = Array.isArray(rawProject) ? rawProject[0] : rawProject;\nconst qaJobs = $items('Fetch Read Only QA Context').map(i => i.json).filter(j => j && j.job_id);\nconst input = job.input || {};\nconst submitted = input.extraction || input.intelligence || input.payload || {};\nconst contextText = [project?.name, project?.description, JSON.stringify(project?.tags || []), JSON.stringify(input), ...qaJobs.map(j => JSON.stringify({ input: j.input, output: j.output }).slice(0, 4000))].join('\\n');\nconst techCatalog = [['React','frontend'], ['Next.js','frontend'], ['Angular','frontend'], ['Vue','frontend'], ['TypeScript','language'], ['JavaScript','language'], ['Java','language'], ['Spring Boot','backend'], ['Node.js','backend'], ['Express','backend'], ['Python','language'], ['FastAPI','backend'], ['PostgreSQL','database'], ['Supabase','database'], ['MongoDB','database'], ['Redis','cache'], ['Kafka','messaging'], ['RabbitMQ','messaging'], ['Docker','devops'], ['Kubernetes','devops'], ['Jenkins','devops'], ['GitHub Actions','devops'], ['Jira','delivery'], ['Confluence','knowledge'], ['ChromaDB','vector'], ['OpenAI','ai'], ['Azure OpenAI','ai'], ['Playwright','qa'], ['Selenium','qa'], ['Cypress','qa'], ['REST API','integration'], ['GraphQL','integration']];\nconst explicitTechs = Array.isArray(submitted.technologies) ? submitted.technologies : Array.isArray(input.technologies) ? input.technologies : [];\nconst foundTechs = techCatalog.filter(([name]) => new RegExp('\\\\b' + name.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&') + '\\\\b', 'i').test(contextText)).map(([name, category]) => ({ name, category, confidenceScore: 0.72, sourceType: 'context_scan', sourceRef: job.job_id }));\nconst techMap = new Map();\nfor (const t of [...foundTechs, ...explicitTechs]) { const name = String(t.name || t.technology || t).trim(); if (!name) continue; const normalized = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); techMap.set(normalized, { name, normalizedName: normalized, category: t.category || 'detected', description: t.description || null, vendor: t.vendor || null, version: t.version || null, tags: Array.isArray(t.tags) ? t.tags : [], confidenceScore: Number(t.confidenceScore || t.confidence_score || 0.7), sourceType: t.sourceType || 'di_worker', sourceRef: t.sourceRef || job.job_id }); }\nconst technologies = [...techMap.values()];\nconst explicitSolutions = Array.isArray(submitted.solutions) ? submitted.solutions : Array.isArray(input.solutions) ? input.solutions : [];\nconst solutions = explicitSolutions.map((s, index) => ({ title: s.title || `${project?.name || job.project_id} reusable delivery pattern ${index + 1}`, slug: s.slug, summary: s.summary || s.description || 'Reusable delivery intelligence candidate extracted from project artifacts.', problemStatement: s.problemStatement || s.problem_statement || null, implementationApproach: s.implementationApproach || s.implementation_approach || null, qaApproach: s.qaApproach || s.qa_approach || null, riskFactors: Array.isArray(s.riskFactors) ? s.riskFactors : [], productionLearnings: Array.isArray(s.productionLearnings) ? s.productionLearnings : [], implementationComplexity: s.implementationComplexity || s.complexity || 'medium', applicabilityTags: Array.isArray(s.applicabilityTags) ? s.applicabilityTags : (project?.tags || []), visibilityLevel: s.visibilityLevel || 'project', ownerTeam: s.ownerTeam || project?.owner || null, aiSummary: s.aiSummary || s.summary || null, status: s.status || 'draft', technologies: Array.isArray(s.technologies) ? s.technologies : technologies.slice(0, 5).map(t => t.name), assets: Array.isArray(s.assets) ? s.assets : [{ assetType: 'project_context', title: project?.name || job.project_id, description: 'Source project context used during DI extraction', visibilityLevel: s.visibilityLevel || 'project' }] }));\nif (solutions.length === 0 && ['solution_extract','project_intelligence_extract'].includes(job.job_type) && qaJobs.length > 0) solutions.push({ title: `${project?.name || job.project_id} QA delivery intelligence pattern`, summary: 'Draft reusable solution candidate based on completed QA generation outputs and project context.', problemStatement: 'Project delivery and QA knowledge may be reusable across similar initiatives.', implementationApproach: 'Review generated QA assets, project metadata, and extracted technologies before publishing.', qaApproach: 'Reuse proven QA planning, risk, traceability, and test design outputs where applicable.', riskFactors: ['Requires human review before organization-wide reuse'], productionLearnings: [], implementationComplexity: 'medium', applicabilityTags: project?.tags || [], visibilityLevel: 'project', status: 'draft', technologies: technologies.slice(0, 5).map(t => t.name), assets: qaJobs.slice(0, 3).map(j => ({ assetType: 'qa_job', title: `QA output ${j.job_id}`, description: 'Existing QA generation output used as reusable evidence', visibilityLevel: 'project' })) });\nconst explicitLearnings = Array.isArray(submitted.learnings) ? submitted.learnings : Array.isArray(input.learnings) ? input.learnings : [];\nconst learnings = explicitLearnings.map(l => ({ title: l.title || 'Delivery learning', category: l.category || 'delivery', learningSummary: l.learningSummary || l.summary || l.description || '', impactLevel: l.impactLevel || 'medium', reusableRecommendation: l.reusableRecommendation || l.recommendation || '', visibilityLevel: l.visibilityLevel || 'project', sourceRef: l.sourceRef || job.job_id }));\nif (learnings.length === 0 && technologies.length > 0) learnings.push({ title: `${project?.name || job.project_id} technology footprint captured`, category: 'technology', learningSummary: `Detected ${technologies.length} technologies for reuse and discovery.`, impactLevel: 'medium', reusableRecommendation: 'Review technology patterns for cross-project standardization opportunities.', visibilityLevel: 'project', sourceRef: job.job_id });\nconst relationships = [];\nfor (const t of technologies) relationships.push({ sourceEntityType: 'project', sourceEntityId: job.project_id, targetEntityType: 'technology', targetEntityId: t.normalizedName, relationshipType: 'uses_technology', confidenceScore: t.confidenceScore || 0.7, evidence: [{ source: 'di_worker', jobId: job.job_id }], visibilityLevel: 'project' });\nfor (const s of solutions) relationships.push({ sourceEntityType: 'project', sourceEntityId: job.project_id, targetEntityType: 'reusable_solution', targetEntityId: s.slug || s.title, relationshipType: 'has_reusable_candidate', confidenceScore: 0.72, evidence: [{ source: 'di_worker', jobId: job.job_id }], visibilityLevel: s.visibilityLevel || 'project' });\nconst explicitRecommendations = Array.isArray(submitted.recommendations) ? submitted.recommendations : Array.isArray(input.recommendations) ? input.recommendations : [];\nconst recommendations = explicitRecommendations.map(r => ({ recommendationType: r.recommendationType || r.type || 'delivery_intelligence', title: r.title || 'Delivery intelligence recommendation', summary: r.summary || '', rationale: r.rationale || '', relatedEntityType: r.relatedEntityType || null, relatedEntityId: r.relatedEntityId || null, confidenceScore: r.confidenceScore || 0.7, status: 'new' }));\nif (recommendations.length === 0 && solutions.length > 0) recommendations.push({ recommendationType: 'reusable_accelerator_available', title: 'Review reusable solution candidate', summary: `${solutions.length} reusable solution candidate(s) were extracted for this project.`, rationale: 'Draft candidates should be reviewed, sanitized, and published if suitable for reuse.', relatedEntityType: 'project', relatedEntityId: job.project_id, confidenceScore: 0.74, status: 'new' });\nconst payload = { jobId: job.job_id, jobType: job.job_type, projectId: job.project_id, requestedBy: job.requested_by, technologies, solutions, learnings, relationships, recommendations };\nconst totalRecords = technologies.length + solutions.length + learnings.length + relationships.length + recommendations.length;\nreturn [{ json: { jobId: job.job_id, projectId: job.project_id, requestedBy: job.requested_by, jobType: job.job_type, startedAt: job.output?.startedAt || new Date().toISOString(), payload, extractionSummary: { technologies: technologies.length, solutions: solutions.length, learnings: learnings.length, relationships: relationships.length, recommendations: recommendations.length, totalRecords, qaContextJobs: qaJobs.length, projectName: project?.name || null }, warning: totalRecords === 0 ? 'No Delivery Intelligence records were extracted from this job input/context.' : null } }];"
+      },
+      "id": "05f8c1c5-d2a3-4241-a9d5-d3d9ebb94541",
+      "name": "Build DI Extraction Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/rpc/di_persist_extraction",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_payload: $json.payload }) }}",
+        "options": {}
+      },
+      "id": "bd91b003-e88e-40a0-8a0a-c48e457747de",
+      "name": "Persist DI Extraction",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1792,
+        96
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const built = $('Build DI Extraction Payload').first().json;\nconst persisted = $json || {};\nconst counts = persisted.counts || {};\nconst warning = built.warning || (Object.values(counts).reduce((sum, v) => sum + Number(v || 0), 0) === 0 ? 'No DI records were persisted.' : null);\nreturn [{ json: { jobId: built.jobId, status: warning ? 'completed_with_warnings' : 'completed', output: { ok: true, jobType: built.jobType, projectId: built.projectId, extractionSummary: built.extractionSummary, persistResult: persisted, warning, completedAt: new Date().toISOString() } } }];"
+      },
+      "id": "92a42b93-dfd2-4dfe-8c64-fe0abc4dcf25",
+      "name": "Build DI Completion Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_intelligence_jobs?job_id=eq.{{ encodeURIComponent($json.jobId) }}&status=eq.running",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=representation\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ status: $json.status, output: $json.output, error: null, updated_at: $now.toISO() }) }}",
+        "options": {}
+      },
+      "id": "4795c4d7-1dc4-4588-9646-04c176aff391",
+      "name": "Mark DI Job Completed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2240,
+        0
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const built = $('Build DI Extraction Payload').first().json;\nconst message = $json.error?.message || $json.message || 'Delivery Intelligence persistence failed';\nreturn [{ json: { jobId: built.jobId, output: { ok: false, jobType: built.jobType, projectId: built.projectId, extractionSummary: built.extractionSummary, error: message, failedAt: new Date().toISOString() }, error: message } }];"
+      },
+      "id": "6b2a7c24-f9a5-4ddc-985b-40c625036071",
+      "name": "Build DI Failure Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_intelligence_jobs?job_id=eq.{{ encodeURIComponent($json.jobId) }}&status=eq.running",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=representation\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ status: \"failed\", output: $json.output, error: $json.error, updated_at: $now.toISO() }) }}",
+        "options": {}
+      },
+      "id": "3968cbbc-debf-4e35-b050-d9abd7d1f317",
+      "name": "Mark DI Job Failed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2240,
+        192
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Pending DI Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Pending DI Jobs": {
+      "main": [
+        [
+          {
+            "node": "Pending DI Job Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pending DI Job Exists?": {
+      "main": [
+        [
+          {
+            "node": "Lock DI Job",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sticky Note 0c4e72a9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lock DI Job": {
+      "main": [
+        [
+          {
+            "node": "DI Lock Acquired?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DI Lock Acquired?": {
+      "main": [
+        [
+          {
+            "node": "Fetch DI Project Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sticky Note 0c4e72a9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch DI Project Context": {
+      "main": [
+        [
+          {
+            "node": "Fetch Read Only QA Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Read Only QA Context": {
+      "main": [
+        [
+          {
+            "node": "Build DI Extraction Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build DI Extraction Payload": {
+      "main": [
+        [
+          {
+            "node": "Persist DI Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Persist DI Extraction": {
+      "main": [
+        [
+          {
+            "node": "Build DI Completion Output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DI Failure Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build DI Completion Output": {
+      "main": [
+        [
+          {
+            "node": "Mark DI Job Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build DI Failure Output": {
+      "main": [
+        [
+          {
+            "node": "Mark DI Job Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": {},
+  "versionId": "68d4453e-72e7-4438-8e35-a577191cfebb",
+  "activeVersionId": "68d4453e-72e7-4438-8e35-a577191cfebb",
+  "versionCounter": 17,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-11T10:40:20.873Z",
+      "createdAt": "2026-05-11T10:40:20.873Z",
+      "role": "workflow:owner",
+      "workflowId": "xmuy0M3IEbkISttj",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 68d4453e",
+    "description": ""
+  }
+}

@@ -1,0 +1,1206 @@
+{
+  "updatedAt": "2026-05-12T04:06:20.974Z",
+  "createdAt": "2026-05-07T16:29:35.388Z",
+  "id": "fullIngestDraft01",
+  "name": "Multimodal Knowledge Ingestion & Vectorization Engine - Full Clone Draft",
+  "description": "Full inactive clone of the production multimodal ingestion/vectorization engine with worker-side attribution/runtime-config changes. Production workflow remains untouched.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "/*const output = [];\n\nfor (const item of $input.all()) {\n  const binaries = item.binary || {};\n  \n  for (const key of Object.keys(binaries)) {\n    output.push({\n      json: item.json,\n      binary: {\n        data: binaries[key]\n      }\n    });\n  }\n}\n\nreturn output;*/\n\nconst output = [];\n\nfor (const item of $input.all()) {\n  const binaries = item.binary || {};\n  \n  for (const key of Object.keys(binaries)) {\n    output.push({\n      json: {\n        ...item.json,\n        fileKey: key   // ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â¥ VERY USEFUL for tracking\n      },\n      binary: {\n        data: binaries[key]\n      }\n    });\n  }\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9712,
+        48
+      ],
+      "id": "1eb9bf43-6c26-4a4d-88b6-cf08a2e71b49",
+      "name": "Rename Binary File Keys"
+    },
+    {
+      "parameters": {
+        "content": "Intelligent Document Extraction using Python Fast API"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -9568,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "7582bbbb-5f56-43d3-96a0-3aafc90bfbfc",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().flatMap(item => {\n  const data = item.json;\n  const chunks = [];\n\n  if (!data.semanticContent || typeof data.semanticContent !== \"string\") return [];\n\n  const text = data.semanticContent\n    .replace(/Project Name:.*\\n/, \"\")\n    .replace(/Document Name:.*\\n/, \"\")\n    .replace(/Document Type:.*\\n/, \"\")\n    .replace(/Source Format:.*\\n/, \"\");\n\n  const lines = text.split(/\\n/g).map(l => l.trim()).filter(l => l);\n\n  let currentSection = [];\n  let sectionIndex = 0;\n  let sectionTitle = \"\";\n\n  const chunkSize = 10000;\n  const overlap = 2000;\n  const minChunkSize = 200;\n\n  const headingRegex =\n    /^(\\d+(\\.\\d+)*\\s+.*|[A-Z]{1,3}-\\d+\\s+.*|[A-Z][A-Za-z\\s]{3,50}:?)$/;\n\n  const safeString = value => String(value ?? '').trim();\n  const metadataText = value => safeString(value).replace(/\\s+/g, ' ').slice(0, 500);\n  const metadataNumber = value => {\n    const number = Number(value);\n    return Number.isFinite(number) ? number : 0;\n  };\n  const normalizeDocType = value => {\n    const text = safeString(value).toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');\n    return text || 'UNKNOWN';\n  };\n\n  function extractImageId(chunkText) {\n    const match = chunkText.match(/Image ID:\\s*(.+)/i);\n    return match ? match[1].trim() : null;\n  }\n\n  function detectContentSource(sectionText, imageId) {\n    const mode = safeString(data.contentMode).toLowerCase();\n    const hasImageEvidence = Boolean(imageId) || /IMAGE-DERIVED INSIGHTS|IMAGE CONTEXT START|Extracted Insights:/i.test(sectionText);\n    if (mode === \"image-only\") return \"image\";\n    if (mode === \"hybrid\" && hasImageEvidence) return \"image\";\n    return \"text\";\n  }\n\n  function buildMetadata(sectionText, chunkText, chunkIndex) {\n    const imageId = extractImageId(chunkText);\n    const contentSource = detectContentSource(chunkText, imageId);\n    const docType = normalizeDocType(data.docType || \"UNKNOWN\");\n    const project = data.projectName || \"unknown\";\n    const fileName = data.fileName || data.filename || \"unknown\";\n    const sourceFormat = data.sourceFormat || data.fileType || \"unknown\";\n    const compositeKey = `${project}|${docType}|${contentSource}`;\n    const chunkId = [\n      data.documentId || fileName,\n      sectionIndex,\n      chunkIndex,\n      contentSource\n    ].map(value => safeString(value).replace(/[^A-Za-z0-9_-]+/g, '-')).join('|');\n\n    return {\n      project,\n      projectId: data.projectId || null,\n      requestedBy: data.requestedBy || null,\n      settingsVersion: data.settingsVersion || null,\n      environment: data.environmentKey || 'local',\n      chromaCollection: data.configSnapshot?.chroma?.collection || 'qa-chunks-batches',\n\n      jobId: data.jobId || null,\n      status: data.status || null,\n      documentId: data.documentId || \"unknown\",\n      docType,\n      documentTypeOriginal: metadataText(data.documentTypeOriginal || ''),\n      documentCategory: data.documentCategory || \"unclassified\",\n      artifactType: data.artifactType || \"unclassified_document\",\n      metadataConfidence: metadataNumber(data.metadataConfidence),\n      metadataSource: data.metadataSource || \"fallback_unknown\",\n\n      fileName,\n      filename: fileName,\n      fileType: data.fileType || \"unknown\",\n      sourceFormat,\n      pageCount: metadataNumber(data.pageCount),\n\n      contentMode: data.contentMode || \"unknown\",\n      containsImages: Boolean(data.containsImages),\n      containsText: Boolean(data.containsText),\n      hasVisionContent: /IMAGE-DERIVED INSIGHTS|IMAGE CONTEXT START|Extracted Insights:/i.test(sectionText),\n\n      sectionTitle: sectionTitle || `Section ${sectionIndex}`,\n      sectionIndex,\n      structuralType: \"logical_section\",\n      chunkIndex,\n      chunkId,\n\n      imageId: imageId || null,\n      contentSource,\n      compositeKey\n    };\n  }\n\n  function buildChunks(sectionText) {\n    const result = [];\n\n    if (sectionText.length <= chunkSize) {\n      if (sectionText.trim().length >= minChunkSize) {\n        result.push({\n          json: {\n            pageContent: sectionText,\n            metadata: buildMetadata(sectionText, sectionText, 0)\n          }\n        });\n      }\n\n      return result;\n    }\n\n    for (let i = 0; i < sectionText.length; i += (chunkSize - overlap)) {\n      const chunkText = sectionText.slice(i, i + chunkSize);\n\n      if (chunkText.trim().length < minChunkSize) break;\n\n      const chunkIndex = Math.floor(i / (chunkSize - overlap));\n      result.push({\n        json: {\n          pageContent: chunkText,\n          metadata: buildMetadata(sectionText, chunkText, chunkIndex)\n        }\n      });\n    }\n\n    return result;\n  }\n\n  lines.forEach(line => {\n    if (headingRegex.test(line)) {\n      if (currentSection.length) {\n        const sectionText = currentSection.join(\"\\n\").trim();\n        if (sectionText) {\n          chunks.push(...buildChunks(sectionText));\n        }\n      }\n      sectionIndex++;\n      sectionTitle = line;\n      currentSection = [line];\n    } else {\n      currentSection.push(line);\n    }\n  });\n\n  if (currentSection.length) {\n    const sectionText = currentSection.join(\"\\n\").trim();\n    if (sectionText) {\n      chunks.push(...buildChunks(sectionText));\n    }\n  }\n\n  return chunks;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7088,
+        32
+      ],
+      "id": "6c988ed7-46c5-4d47-9295-5da593d2c428",
+      "name": "Chunking Raw Data"
+    },
+    {
+      "parameters": {
+        "content": "Chunking raw data to generate embeddings"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -7152,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "26086f71-dd50-4c29-ab03-aa796309f9d7",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('When Executed by Another Workflow').first().json.configSnapshot?.microservices?.documentProcessorUrl || $('When Executed by Another Workflow').first().json.config_snapshot?.microservices?.documentProcessorUrl || 'http://127.0.0.1:8000/process-document' }}",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "projectName",
+              "value": "={{ $json.files[0].projectName }}"
+            },
+            {
+              "name": "status",
+              "value": "={{ $json.files[0].status }}"
+            },
+            {
+              "name": "jobId",
+              "value": "={{ $json.files[0].jobId }}"
+            },
+            {
+              "name": "projectId",
+              "value": "={{ $('When Executed by Another Workflow').first().json.projectId || $('When Executed by Another Workflow').first().json.project_id || null }}"
+            },
+            {
+              "name": "requestedBy",
+              "value": "={{ $('When Executed by Another Workflow').first().json.requestedBy || $('When Executed by Another Workflow').first().json.requested_by || null }}"
+            },
+            {
+              "name": "settingsVersion",
+              "value": "={{ $('When Executed by Another Workflow').first().json.settingsVersion || $('When Executed by Another Workflow').first().json.settings_version || null }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -9504,
+        48
+      ],
+      "id": "9d1cad60-adbd-45ab-83d6-4423b4aaae82",
+      "name": "Extract Text + Image"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().flatMap(item => {\n  const data = item.json;\n\n  if (!data.images || data.images.length === 0) {\n    return [];\n  }\n\n  return data.images.map((img, index) => ({\n    json: {\n      projectName: data.projectName,\n      status: data.status,\n      jobId: data.jobId,\n      parentFileName: data.fileName,\n      imageFileName: img.fileName,   // ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ important\n      imageId: img.imageId || `${data.fileName}_${index}`, // ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ SAFE FALLBACK\n      imageIndex: index,\n      base64: img.base64\n    }\n  }));\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9296,
+        48
+      ],
+      "id": "7a2a855d-d177-49a5-9e64-d327d5d06740",
+      "name": "Split images for Vision Extraction"
+    },
+    {
+      "parameters": {
+        "jsCode": "const visionOutputs = $input.all();\nconst originalItems = $items(\"Prepare Vision Payload\");\n\nfunction readUsage(json) {\n  const usage =\n    json.usage ||\n    json.response?.usage ||\n    json.output?.usage ||\n    json.output?.[0]?.usage ||\n    json.llmUsage ||\n    {};\n\n  const inputTokens =\n    Number(usage.input_tokens) ||\n    Number(usage.prompt_tokens) ||\n    Number(usage.inputTokens) ||\n    Number(usage.promptTokens) ||\n    0;\n\n  const outputTokens =\n    Number(usage.output_tokens) ||\n    Number(usage.completion_tokens) ||\n    Number(usage.outputTokens) ||\n    Number(usage.completionTokens) ||\n    0;\n\n  return { inputTokens, outputTokens };\n}\n\nconst results = [];\n\nfor (const vision of visionOutputs) {\n  const rawText =\n    vision.json.output?.[0]?.content?.[0]?.text ||\n    vision.json.output_text ||\n    '';\n\n  const imageDescription = rawText.trim();\n  const pairedIndex = vision.pairedItem?.item;\n  const original = originalItems[pairedIndex];\n\n  if (!original) continue;\n\n  const usage = readUsage(vision.json || {});\n  const estimatedOutputTokens = usage.outputTokens || Math.ceil(imageDescription.length / 4);\n  const meta = original.json;\n\n  results.push({\n    json: {\n      projectName: meta.projectName,\n      status: meta.status,\n      jobId: meta.jobId,\n      imageIndex: meta.imageIndex,\n      imageId: meta.imageId,\n      imageFileName: meta.imageFileName,\n      parentFileName: meta.parentFileName,\n      imageDescription,\n      totalImagesInDocument: meta.totalImagesInDocument || null,\n      imageLimitApplied: meta.imageLimitApplied || false,\n      visionTokensInput: usage.inputTokens,\n      visionTokensOutput: estimatedOutputTokens,\n      visionTokensTotal: usage.inputTokens + estimatedOutputTokens,\n      visionUsageEstimated: !usage.inputTokens && !usage.outputTokens\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7952,
+        240
+      ],
+      "id": "16cc7cdf-9107-4f8b-9a40-8731a18da117",
+      "name": "Extract Vision Response"
+    },
+    {
+      "parameters": {
+        "content": "Vision Extraction"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -8384,
+        208
+      ],
+      "typeVersion": 1,
+      "id": "3615bd44-93da-444f-a7b4-b2b293dea390",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const originalDocs = $items(\"Extract Text + Image\");\nconst visionResults = $input.all();\n\nconst visionMap = {};\nconst usageMap = {};\n\nfor (const item of visionResults) {\n  const { imageId, imageDescription } = item.json;\n  visionMap[imageId] = imageDescription;\n  usageMap[imageId] = {\n    input: Number(item.json.visionTokensInput) || 0,\n    output: Number(item.json.visionTokensOutput) || 0,\n    total: Number(item.json.visionTokensTotal) || 0,\n    estimated: Boolean(item.json.visionUsageEstimated)\n  };\n}\n\nconst VISION_INPUT_PER_TOKEN = 0.15 / 1_000_000;\nconst VISION_OUTPUT_PER_TOKEN = 0.60 / 1_000_000;\n\nreturn originalDocs.map(doc => {\n  const data = doc.json;\n\n  if (!data.images || data.images.length === 0) {\n    return {\n      json: {\n        ...data,\n        visionTokensInput: 0,\n        visionTokensOutput: 0,\n        visionTokensTotal: 0,\n        visionCostUsd: 0,\n        visionUsageEstimated: false\n      }\n    };\n  }\n\n  let visionTokensInput = 0;\n  let visionTokensOutput = 0;\n  let visionUsageEstimated = false;\n\n  const updatedImages = data.images.map(img => {\n    const usage = usageMap[img.imageId] || {};\n    visionTokensInput += Number(usage.input) || 0;\n    visionTokensOutput += Number(usage.output) || 0;\n    visionUsageEstimated = visionUsageEstimated || Boolean(usage.estimated);\n    return {\n      imageFileName: img.fileName,\n      imageId: img.imageId,\n      imageDescription: visionMap[img.imageId] || null,\n      visionTokensInput: Number(usage.input) || 0,\n      visionTokensOutput: Number(usage.output) || 0,\n      visionTokensTotal: Number(usage.total) || 0,\n      visionUsageEstimated: Boolean(usage.estimated)\n    };\n  });\n\n  const visionCostUsd =\n    (visionTokensInput * VISION_INPUT_PER_TOKEN) +\n    (visionTokensOutput * VISION_OUTPUT_PER_TOKEN);\n\n  return {\n    json: {\n      ...data,\n      images: updatedImages,\n      visionTokensInput,\n      visionTokensOutput,\n      visionTokensTotal: visionTokensInput + visionTokensOutput,\n      visionCostUsd: Number(visionCostUsd.toFixed(6)),\n      visionUsageEstimated\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7824,
+        32
+      ],
+      "id": "3d935b11-2d94-4639-a30f-1842dea6a90a",
+      "name": "Rebuild Document With Vision Extracted Text"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const d = item.json;\n\n  const safeString = value => String(value ?? '').trim();\n  const compact = value => safeString(value).replace(/\\s+/g, ' ');\n  const normalizeFormat = value => safeString(value || 'unknown').replace(/^\\./, '').toLowerCase() || 'unknown';\n\n  const normalizeDocTypeValue = value => {\n    const raw = safeString(value);\n    if (!raw) return null;\n    const key = raw.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');\n    const aliases = {\n      BUSINESS_REQUIREMENTS: 'BRD',\n      BUSINESS_REQUIREMENT_DOCUMENT: 'BRD',\n      BRD: 'BRD',\n      FUNCTIONAL_REQUIREMENTS: 'FRD',\n      FUNCTIONAL_REQUIREMENT_DOCUMENT: 'FRD',\n      FRD: 'FRD',\n      PRODUCT_REQUIREMENTS: 'PRD',\n      PRODUCT_REQUIREMENT_DOCUMENT: 'PRD',\n      PRD: 'PRD',\n      SOFTWARE_REQUIREMENTS_SPECIFICATION: 'SRS',\n      SRS: 'SRS',\n      HIGH_LEVEL_DESIGN: 'HLD',\n      HLD: 'HLD',\n      LOW_LEVEL_DESIGN: 'LLD',\n      LLD: 'LLD',\n      UI_UX: 'UI_UX',\n      UX_UI: 'UI_UX',\n      WIREFRAME: 'UI_UX',\n      WIREFRAMES: 'UI_UX',\n      TRANSCRIPT: 'TRANSCRIPT',\n      MEETING_TRANSCRIPT: 'TRANSCRIPT',\n      TEST_CASE: 'TEST_CASES',\n      TEST_CASES: 'TEST_CASES',\n      TEST_PLAN: 'TEST_PLAN',\n      QA_PLAN: 'TEST_PLAN',\n      API: 'API_SPEC',\n      API_SPEC: 'API_SPEC',\n      OPENAPI: 'API_SPEC',\n      SWAGGER: 'API_SPEC',\n      DATA_MODEL: 'DATA_MODEL',\n      ERD: 'DATA_MODEL',\n      ARCHITECTURE: 'ARCHITECTURE',\n      UNKNOWN: null\n    };\n    return aliases[key] || null;\n  };\n\n  const classifyByText = value => {\n    const text = safeString(value).toLowerCase();\n    if (!text) return null;\n    const tests = [\n      ['BRD', /\\b(brd|business requirements?|business requirement document|business rules?|business objective|stakeholder requirements?)\\b/i],\n      ['FRD', /\\b(frd|functional requirements?|functional requirement document|functional specification|system shall|the application shall)\\b/i],\n      ['PRD', /\\b(prd|product requirements?|product requirement document|product goals?|product scope)\\b/i],\n      ['SRS', /\\b(srs|software requirements specification|system requirements specification)\\b/i],\n      ['HLD', /\\b(hld|high level design|solution architecture|logical architecture|architecture overview)\\b/i],\n      ['LLD', /\\b(lld|low level design|detailed design|class design|sequence diagram|component design)\\b/i],\n      ['UI_UX', /\\b(ui\\/ux|ux\\/ui|wireframes?|mockups?|prototype|figma|screen design|user interface|user journey|navigation flow)\\b/i],\n      ['TRANSCRIPT', /\\b(transcript|meeting notes|workshop|discussion|interview|q&a|question and answer|minutes of meeting)\\b/i],\n      ['TEST_CASES', /\\b(test cases?|test suite|test scenarios?|expected result|actual result|precondition)\\b/i],\n      ['TEST_PLAN', /\\b(test plan|qa strategy|test strategy|test approach|test scope)\\b/i],\n      ['API_SPEC', /\\b(api specification|openapi|swagger|endpoint|request payload|response payload|rest api|graphql)\\b/i],\n      ['DATA_MODEL', /\\b(data model|database schema|erd|entity relationship|table structure|data dictionary)\\b/i],\n      ['ARCHITECTURE', /\\b(architecture|deployment topology|infrastructure|non functional architecture|integration architecture)\\b/i]\n    ];\n    for (const [docType, pattern] of tests) {\n      if (pattern.test(text)) return docType;\n    }\n    return null;\n  };\n\n  const docTypeCategory = docType => ({\n    BRD: 'business_requirements',\n    PRD: 'business_requirements',\n    FRD: 'functional_requirements',\n    SRS: 'functional_requirements',\n    HLD: 'technical_design',\n    LLD: 'technical_design',\n    ARCHITECTURE: 'technical_design',\n    API_SPEC: 'technical_design',\n    DATA_MODEL: 'technical_design',\n    UI_UX: 'user_experience',\n    TRANSCRIPT: 'stakeholder_conversation',\n    TEST_CASES: 'quality_assurance',\n    TEST_PLAN: 'quality_assurance',\n    UNKNOWN: 'unclassified'\n  }[docType] || 'unclassified');\n\n  const docTypeArtifact = docType => ({\n    BRD: 'business_requirements_document',\n    PRD: 'product_requirements_document',\n    FRD: 'functional_requirements_document',\n    SRS: 'software_requirements_specification',\n    HLD: 'high_level_design',\n    LLD: 'low_level_design',\n    ARCHITECTURE: 'architecture_document',\n    API_SPEC: 'api_specification',\n    DATA_MODEL: 'data_model',\n    UI_UX: 'ui_ux_artifact',\n    TRANSCRIPT: 'meeting_transcript',\n    TEST_CASES: 'test_cases',\n    TEST_PLAN: 'test_plan',\n    UNKNOWN: 'unclassified_document'\n  }[docType] || 'unclassified_document');\n\n  const explicitDocType =\n    normalizeDocTypeValue(d.docType) ||\n    normalizeDocTypeValue(d.documentType) ||\n    normalizeDocTypeValue(d.document_type);\n\n  const filenameDocType = classifyByText(d.fileName || d.fileKey || '');\n  const imageText = Array.isArray(d.images)\n    ? d.images.map(img => img.imageDescription || img.fileName || '').join('\\n')\n    : '';\n  const contentDocType = classifyByText([\n    d.rawText || '',\n    imageText\n  ].join('\\n').slice(0, 12000));\n\n  let docType = 'UNKNOWN';\n  let metadataSource = 'fallback_unknown';\n  let metadataConfidence = 0.2;\n\n  if (explicitDocType) {\n    docType = explicitDocType;\n    metadataSource = 'upstream_doc_type';\n    metadataConfidence = 0.95;\n  } else if (filenameDocType) {\n    docType = filenameDocType;\n    metadataSource = 'filename_classifier';\n    metadataConfidence = 0.78;\n  } else if (contentDocType) {\n    docType = contentDocType;\n    metadataSource = 'content_classifier';\n    metadataConfidence = 0.68;\n  }\n\n  const sourceFormat = normalizeFormat(d.fileType || d.fileExtension || d.extension);\n  const documentCategory = docTypeCategory(docType);\n  const artifactType = docTypeArtifact(docType);\n  const documentTypeOriginal = compact(d.docType || d.documentType || d.document_type || '');\n\n  let combined = '';\n\n  combined += `Project Name: ${d.projectName}\\n`;\n  combined += `Document Name: ${d.fileName}\\n`;\n  combined += `Document Type: ${docType}\\n`;\n  combined += `Source Format: ${sourceFormat}\\n\\n`;\n\n  if (d.rawText && d.rawText.trim().length > 0) {\n    combined += '===== DOCUMENT TEXT =====\\n';\n    combined += d.rawText.trim() + '\\n\\n';\n  }\n\n  if (d.images && d.images.length > 0) {\n    const validImages = d.images.filter(img => img.imageDescription);\n\n    if (validImages.length > 0) {\n      combined += '===== IMAGE-DERIVED INSIGHTS =====\\n\\n';\n\n      for (const img of validImages) {\n        combined += `--- IMAGE CONTEXT START ---\\n`;\n        combined += `Image Name: ${img.imageFileName}\\n`;\n        combined += `Image ID: ${img.imageId}\\n\\n`;\n        combined += `Extracted Insights:\\n`;\n        combined += img.imageDescription + '\\n\\n';\n        combined += `--- IMAGE CONTEXT END ---\\n\\n`;\n      }\n    }\n  }\n\n  const trigger = $('When Executed by Another Workflow').first().json;\n  const configSnapshot = d.configSnapshot || trigger.configSnapshot || trigger.config_snapshot || {};\n\n  return {\n    json: {\n      projectName: d.projectName,\n      status: d.status,\n      jobId: d.jobId,\n      fileName: d.fileName,\n      filename: d.fileName,\n      fileType: d.fileType,\n      sourceFormat,\n      pageCount: d.pageCount,\n      docType,\n      documentTypeOriginal,\n      documentCategory,\n      artifactType,\n      metadataConfidence,\n      metadataSource,\n      documentId: d.documentId,\n      contentMode: d.contentMode,\n      containsText: d.containsText,\n      containsImages: d.containsImages,\n      semanticContent: combined.trim(),\n      visionTokensInput: Number(d.visionTokensInput) || 0,\n      visionTokensOutput: Number(d.visionTokensOutput) || 0,\n      visionTokensTotal: Number(d.visionTokensTotal) || 0,\n      visionCostUsd: Number(d.visionCostUsd) || 0,\n      visionUsageEstimated: Boolean(d.visionUsageEstimated),\n      projectId: d.projectId || trigger.projectId || trigger.project_id || null,\n      requestedBy: d.requestedBy || trigger.requestedBy || trigger.requested_by || null,\n      settingsVersion: d.settingsVersion || trigger.settingsVersion || trigger.settings_version || null,\n      configSnapshot,\n      environmentKey: configSnapshot.environment?.key || d.environment || 'local'\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7568,
+        32
+      ],
+      "id": "43c9c529-7334-4274-8f7b-aad7cfdc263a",
+      "name": "Build Semantic Content",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "Combine Image text and raw text semantically so that it becomes a single text"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -7616,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "124bd622-b7ac-453b-af71-961cf561a8b3",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "Base64 image context is now replaced with actual vision extracted text and combined with raw text"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -7888,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "50c0f20d-f652-4759-a1e5-c159d75f8b46",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a software architecture and QA documentation analyzer.\nExtract all visible text.\nIf the image is a diagram, explain:\n- Components\n- Services\n- Integrations\n- Flows\n- Technical meaning\nProvide structured explanation.\n"
+            },
+            {
+              "content": "=Image Context & Metadata:\nprojectName: {{$json.projectName}}\nstatus: {{$json.status}}\njobId: {{$json.jobId}}\nimageIndex: {{$json.imageIndex}}\nimageId: {{$json.imageId}}\nimageFileName: {{$json.imageFileName}}\nparentFileName: {{$json.parentFileName}}\n---\n\nAnalyze this software document image.\n\nReturn:\n1. Extracted text (if any)\n2. UI elements (buttons, fields, labels)\n3. If diagram:\n   - Components\n   - Services\n   - Integrations\n   - Data flow\n4. Testing insights (what should be validated)\n\nBe precise and structured."
+            },
+            {
+              "type": "image",
+              "imageUrl": "=data:image/png;base64,{{$json.base64}}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -8384,
+        256
+      ],
+      "id": "cda260aa-57b9-48aa-b06a-b0d579c44750",
+      "name": "Vision Extraction",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "openAiApi": {
+          "id": "rdVg2Kks1mUCJf4R",
+          "name": "OpenAi Paid Account (Aonu)"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n\n  let text = item.json.semanticContent || \"\";\n\n  // 1ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢Ãƒâ€ Ã¢â‚¬â„¢Ãƒâ€šÃ‚Â£ Remove markdown headers (###, ##, #)\n  text = text.replace(/^#{1,6}\\s+/gm, \"\");\n\n  // 2ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢Ãƒâ€ Ã¢â‚¬â„¢Ãƒâ€šÃ‚Â£ Remove separator lines like ===== or -----\n  text = text.replace(/^[=\\-]{3,}$/gm, \"\");\n\n  // 3ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢Ãƒâ€ Ã¢â‚¬â„¢Ãƒâ€šÃ‚Â£ Remove emojis (basic unicode emoji ranges)\n  text = text.replace(\n    /[\\u{1F300}-\\u{1FAFF}]/gu,\n    \"\"\n  );\n\n  // 4ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢Ãƒâ€ Ã¢â‚¬â„¢Ãƒâ€šÃ‚Â£ Remove markdown bullets (*, -, + at line start)\n  text = text.replace(/^[\\*\\-\\+]\\s+/gm, \"\");\n\n  // 5ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢Ãƒâ€ Ã¢â‚¬â„¢Ãƒâ€šÃ‚Â£ Remove excessive line breaks (more than 2)\n  text = text.replace(/\\n{3,}/g, \"\\n\\n\");\n\n  // 6ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢Ãƒâ€ Ã¢â‚¬â„¢Ãƒâ€šÃ‚Â£ Trim extra spaces\n  text = text.replace(/[ \\t]{2,}/g, \" \");\n\n  // 7ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢Ãƒâ€ Ã¢â‚¬â„¢Ãƒâ€šÃ‚Â£ Final trim\n  text = text.trim();\n\n  return {\n    json: {\n      ...item.json,\n      semanticContent: text\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7344,
+        32
+      ],
+      "id": "67ec909f-7fc5-4ee8-a70d-ec2158376483",
+      "name": "Clean Emojis, # etc"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "authentication": "chromaCloudApi",
+        "chromaCollection": {
+          "__rl": true,
+          "value": "={{ $('When Executed by Another Workflow').first().json.configSnapshot?.chroma?.collection || $('When Executed by Another Workflow').first().json.config_snapshot?.chroma?.collection || 'qa-chunks-batches' }}",
+          "mode": "id",
+          "cachedResultName": "runtime-configured collection"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreChromaDB",
+      "typeVersion": 1.3,
+      "position": [
+        -6368,
+        224
+      ],
+      "id": "98446b51-7f95-4ed0-a90a-f13e0de18231",
+      "name": "Chroma Vector Store",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "chromaCloudApi": {
+          "id": "vFAjhz7sZ0XQGaUU",
+          "name": "ChromaDB Self-Hosted account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -6496,
+        448
+      ],
+      "id": "021d729d-206d-4352-9780-0051ab5aa0d7",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "rdVg2Kks1mUCJf4R",
+          "name": "OpenAi Paid Account (Aonu)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "project",
+                "value": "={{$json.metadata.project}}"
+              },
+              {
+                "name": "docType",
+                "value": "={{$json.metadata.docType}}"
+              },
+              {
+                "name": "documentCategory",
+                "value": "={{$json.metadata.documentCategory}}"
+              },
+              {
+                "name": "artifactType",
+                "value": "={{$json.metadata.artifactType}}"
+              },
+              {
+                "name": "contentSource",
+                "value": "={{$json.metadata.contentSource}}"
+              },
+              {
+                "name": "sectionTitle",
+                "value": "={{$json.metadata.sectionTitle}}"
+              },
+              {
+                "name": "sectionIndex",
+                "value": "={{$json.metadata.sectionIndex}}"
+              },
+              {
+                "name": "documentId",
+                "value": "={{$json.metadata.documentId}}"
+              },
+              {
+                "name": "chunkIndex",
+                "value": "={{$json.metadata.chunkIndex}}"
+              },
+              {
+                "name": "chunkId",
+                "value": "={{$json.metadata.chunkId}}"
+              },
+              {
+                "name": "fileName",
+                "value": "={{$json.metadata.fileName || $json.metadata.filename}}"
+              },
+              {
+                "name": "sourceFormat",
+                "value": "={{$json.metadata.sourceFormat}}"
+              },
+              {
+                "name": "contentMode",
+                "value": "={{$json.metadata.contentMode}}"
+              },
+              {
+                "name": "hasVisionContent",
+                "value": "={{$json.metadata.hasVisionContent}}"
+              },
+              {
+                "name": "metadataConfidence",
+                "value": "={{$json.metadata.metadataConfidence}}"
+              },
+              {
+                "name": "metadataSource",
+                "value": "={{$json.metadata.metadataSource}}"
+              },
+              {
+                "name": "compositeKey",
+                "value": "={{$json.metadata.compositeKey}}"
+              },
+              {
+                "name": "containsImages",
+                "value": "={{$json.metadata.containsImages}}"
+              },
+              {
+                "name": "containsText",
+                "value": "={{$json.metadata.containsText}}"
+              },
+              {
+                "name": "imageId",
+                "value": "={{$json.metadata.imageId}}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -6144,
+        448
+      ],
+      "id": "16d3c06c-6cf5-42d8-a79a-7083cf6abf30",
+      "name": "Default Data Loader",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chunkSize": 20000
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterTokenSplitter",
+      "typeVersion": 1,
+      "position": [
+        -6224,
+        608
+      ],
+      "id": "49604319-8c4a-470d-b629-154918fa8587",
+      "name": "Token Splitter",
+      "notesInFlow": true,
+      "notes": "This is acting as a Pass Through and no splitting will happen using this node"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "250dc377-8ad3-47e7-99e6-a12000b96c31",
+              "name": "projectName",
+              "value": "={{$json.projectName}}",
+              "type": "string"
+            },
+            {
+              "id": "b41d3aa7-4264-456d-9cae-ccf2a8abf07f",
+              "name": "status",
+              "value": "={{$json.status}}",
+              "type": "string"
+            },
+            {
+              "id": "9581298d-61fa-4f1f-9092-1d2d39116fb1",
+              "name": "jobId",
+              "value": "={{$json.jobId}}",
+              "type": "string"
+            },
+            {
+              "id": "ad29416a-7538-4399-bcbe-97e386c2a6da",
+              "name": "parentFileName",
+              "value": "={{$json.parentFileName}}",
+              "type": "string"
+            },
+            {
+              "id": "dc007e9b-1453-446a-8240-36a3f668d19a",
+              "name": "imageFileName",
+              "value": "={{$json.imageFileName}}",
+              "type": "string"
+            },
+            {
+              "id": "d0b27988-fa75-4ec7-8e47-e8f119942315",
+              "name": "imageId",
+              "value": "={{$json.imageId}}",
+              "type": "string"
+            },
+            {
+              "id": "a891dce7-bdab-4de0-8f53-e84639a27c43",
+              "name": "base64",
+              "value": "={{$json.base64}}",
+              "type": "string"
+            },
+            {
+              "id": "45499e22-a9cb-4708-b5e4-1eb1ed45e3ef",
+              "name": "imageIndex",
+              "value": "={{$json.imageIndex}}",
+              "type": "string"
+            },
+            {
+              "id": "79938304-882b-49d7-bf79-de85683dbe7a",
+              "name": "totalImagesInDocument",
+              "value": "={{ $json.totalImagesInDocument }}",
+              "type": "string"
+            },
+            {
+              "id": "c2160bc5-8523-46d1-91ee-8acd437f7f6f",
+              "name": "imageLimitApplied",
+              "value": "={{ $json.imageLimitApplied }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -8640,
+        256
+      ],
+      "id": "fcb5001f-b887-473c-a1bc-3ad5b014307d",
+      "name": "Prepare Vision Payload"
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -8896,
+        48
+      ],
+      "id": "af4c0294-b5e6-4a15-8fea-7857c4355907",
+      "name": "Batch Images for Vision"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "81bab6c0-c1ef-44ff-aa10-e0528890ee91",
+              "name": "pageContent",
+              "value": "={{$json.pageContent}}",
+              "type": "string"
+            },
+            {
+              "id": "2033c08e-6a87-4f9d-a26a-cb1b82716f15",
+              "name": "metadata",
+              "value": "={{$json.metadata}}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -6592,
+        224
+      ],
+      "id": "8b5ddb19-defc-480b-a023-331d4ece24e0",
+      "name": "Fix Data Format"
+    },
+    {
+      "parameters": {
+        "jsCode": "const originalItems = $items(\"Prepare Vision Payload\");\n\nreturn $input.all().map((item, index) => {\n\n  const pairedIndex = item.pairedItem?.item;\n  const original = originalItems[pairedIndex];\n\n  return {\n    json: {\n      error: true,\n      message: item.json?.error?.message || \"Unknown Vision Error\",\n\n      // ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ CRITICAL: bring original metadata\n      jobId: original?.json?.jobId || \"unknown\",\n      projectName: original?.json?.projectName || \"unknown\",\n\n      imageId: original?.json?.imageId || \"unknown\",\n      imageFileName: original?.json?.imageFileName || \"unknown\",\n      parentFileName: original?.json?.parentFileName || \"unknown\",\n\n      timestamp: new Date().toISOString()\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7952,
+        512
+      ],
+      "id": "c2ab95da-aefc-46b4-908f-6cf0f2ae8f97",
+      "name": "Handle Vision Errors"
+    },
+    {
+      "parameters": {
+        "batchSize": 50,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -6864,
+        32
+      ],
+      "id": "cd8cd4a3-52ef-4aaf-b67f-68b0ee4687b3",
+      "name": "Store Chunks in Batches"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n\n  const err = item.json?.error || {};\n\n  return {\n    json: {\n      error: true,\n      source: \"Default Data Loader\",\n\n      // ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â¥ Core error info\n      message: err.message || \"Unknown Loader Error\",\n      stack: err.stack || null,\n\n      // ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â¥ Debug metadata\n      project: item.json?.metadata?.project || \"unknown\",\n      fileName: item.json?.metadata?.fileName || \"unknown\",\n      docType: item.json?.metadata?.docType || \"unknown\",\n      sectionTitle: item.json?.metadata?.sectionTitle || \"unknown\",\n      chunkIndex: item.json?.metadata?.chunkIndex ?? -1,\n\n      // ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â¥ Content preview (VERY IMPORTANT for debugging)\n      preview: (item.json?.pageContent || \"\").slice(0, 200),\n\n      timestamp: new Date().toISOString()\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5728,
+        432
+      ],
+      "id": "be087fa8-685e-42a4-939a-101155030ea5",
+      "name": "Handle Data Loader Errors"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -9920,
+        48
+      ],
+      "id": "d8f02fce-ab5f-4e14-8d07-b1b032e6c129",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs?job_id=eq.{{ $json.metadata.jobId }}&status=eq.processing ",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \n  \"Content-Type\": \"application/json\",\n  \"Prefer\": \"return=representation\" \n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"completed\",\n  \"output\": {\n    \"settingsVersion\": {{ $('When Executed by Another Workflow').first().json.settingsVersion || $('When Executed by Another Workflow').first().json.settings_version || 'null' }},\n    \"destination\": {\n      \"type\": \"chroma\",\n      \"collection\": \"{{ $('When Executed by Another Workflow').first().json.configSnapshot?.chroma?.collection || $('When Executed by Another Workflow').first().json.config_snapshot?.chroma?.collection || 'qa-chunks-batches' }}\"\n    },\n    \"totalChunksStored\": {{ $json.totalChunksStored || 0 }},\n    \"tokenUsage\": {{ JSON.stringify($json.tokenUsage || {}) }}\n  },\n  \"updated_at\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -5920,
+        16
+      ],
+      "id": "f648f093-4ae7-4e37-b383-fe4ce6a22730",
+      "name": "Update Job Status as Completed",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "W6PsBv4SlXFSR6Kk",
+          "name": "supabase-anon-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -6352,
+        -224
+      ],
+      "id": "d3029986-d52d-4a99-a406-f5946b8dd8e6",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chunks = $items(\"Chunking Raw Data\").map(item => item.json);\nconst semanticDocs = $items(\"Build Semantic Content\").map(item => item.json);\nconst trigger = $('When Executed by Another Workflow').first().json;\nconst configSnapshot = trigger.configSnapshot || trigger.config_snapshot || {};\n\nconst embeddedCharacterCount = chunks.reduce((total, chunk) => {\n  return total + String(chunk.pageContent || '').length;\n}, 0);\n\nconst estimatedEmbeddingTokens = Math.ceil(embeddedCharacterCount / 4);\nconst embeddingModel = configSnapshot.models?.embeddingModel || 'text-embedding-3-small';\nconst embeddingCostPerToken = String(embeddingModel).includes('large')\n  ? 0.13 / 1_000_000\n  : 0.02 / 1_000_000;\nconst embeddingCostUsd = estimatedEmbeddingTokens * embeddingCostPerToken;\n\nconst visionTokensInput = semanticDocs.reduce((total, doc) => total + (Number(doc.visionTokensInput) || 0), 0);\nconst visionTokensOutput = semanticDocs.reduce((total, doc) => total + (Number(doc.visionTokensOutput) || 0), 0);\nconst visionCostUsd = semanticDocs.reduce((total, doc) => total + (Number(doc.visionCostUsd) || 0), 0);\nconst visionUsageEstimated = semanticDocs.some(doc => Boolean(doc.visionUsageEstimated));\n\nconst tokensInput = visionTokensInput + estimatedEmbeddingTokens;\nconst tokensOutput = visionTokensOutput;\nconst tokensTotal = tokensInput + tokensOutput;\nconst estimatedCostUsd = visionCostUsd + embeddingCostUsd;\n\nreturn [\n  {\n    json: {\n      totalChunksStored: chunks.length,\n      tokensInput,\n      tokensOutput,\n      tokensTotal,\n      estimatedCostUsd: Number(estimatedCostUsd.toFixed(6)),\n      tokenUsage: {\n        accounting: 'actual_vision_when_available_plus_estimated_embeddings',\n        visionModel: 'gpt-4o-mini',\n        visionTokensInput,\n        visionTokensOutput,\n        visionTokensTotal: visionTokensInput + visionTokensOutput,\n        visionCostUsd: Number(visionCostUsd.toFixed(6)),\n        visionUsageEstimated,\n        embeddingModel,\n        embeddedCharacterCount,\n        estimatedEmbeddingTokens,\n        embeddingCostUsd: Number(embeddingCostUsd.toFixed(6)),\n        tokensInput,\n        tokensOutput,\n        tokensTotal,\n        estimatedCostUsd: Number(estimatedCostUsd.toFixed(6))\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6640,
+        16
+      ],
+      "id": "b71a6760-9201-493d-852f-81395d862e2a",
+      "name": "Count Stored Chunks"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs?job_id=eq.{{ encodeURIComponent($json.jobId || $json.metadata?.jobId || $('When Executed by Another Workflow').first().json.jobId || '') }}&status=eq.processing",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \n  \"Content-Type\": \"application/json\",\n  \"Prefer\": \"return=representation\" \n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"failed\",\n  \"error\": {{ JSON.stringify($json.message || $json.error?.message || \"Ingestion workflow failed\") }},\n  \"output\": {\n    \"error\": true,\n    \"message\": {{ JSON.stringify($json.message || $json.error?.message || \"Ingestion workflow failed\") }},\n    \"source\": {{ JSON.stringify($json.error?.node?.name || $json.source || \"Multimodal ingestion full clone\") }},\n    \"failureStage\": {{ JSON.stringify($json.failureStage || \"ingestion_workflow\") }},\n    \"timestamp\": {{ JSON.stringify($json.timestamp || new Date().toISOString()) }},\n    \"projectName\": {{ JSON.stringify($json.projectName || null) }},\n    \"projectId\": {{ JSON.stringify($json.projectId || null) }},\n    \"requestedBy\": {{ JSON.stringify($json.requestedBy || null) }},\n    \"fileName\": {{ JSON.stringify($json.fileName || null) }},\n    \"docType\": {{ JSON.stringify($json.docType || null) }},\n    \"chunkId\": {{ JSON.stringify($json.chunkId || null) }},\n    \"chunkIndex\": {{ $json.chunkIndex === undefined || $json.chunkIndex === null ? 'null' : Number($json.chunkIndex) }},\n    \"chromaCollection\": {{ JSON.stringify($json.chromaCollection || null) }},\n    \"stack\": {{ JSON.stringify($json.stack || null) }},\n    \"details\": {{ JSON.stringify($json.errorDetails || null) }}\n  },\n  \"updated_at\": \"{{$now}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -7024,
+        512
+      ],
+      "id": "e820178e-8258-4ca5-b71c-4218f4e10b53",
+      "name": "Update Job Status as Failed",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "W6PsBv4SlXFSR6Kk",
+          "name": "supabase-anon-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\nconst trigger = $('When Executed by Another Workflow').first().json;\n\nconst jobId = data.job_id;\nconst projectName = data.input?.projectName;\nconst files = data.input?.files || {};\nconst fileKeys = Object.keys(files);\nconst totalFiles = fileKeys.length;\nconst configSnapshot = data.config_snapshot || trigger.configSnapshot || trigger.config_snapshot || {};\nconst tokenUsage = data.output?.tokenUsage || {};\nconst completedAt = new Date();\nconst createdAt = data.created_at ? new Date(data.created_at) : null;\nconst durationMs = createdAt && !Number.isNaN(createdAt.getTime())\n  ? Math.max(0, completedAt.getTime() - createdAt.getTime())\n  : null;\n\nconsole.log(\"INGESTION COMPLETED:\", {\n  jobId,\n  projectName,\n  totalFiles,\n  fileKeys,\n  projectId: data.project_id || trigger.projectId || trigger.project_id || null,\n  requestedBy: data.requested_by || trigger.requestedBy || trigger.requested_by || null,\n  tokensTotal: tokenUsage.tokensTotal || 0,\n  estimatedCostUsd: tokenUsage.estimatedCostUsd || 0\n});\n\nreturn [\n  {\n    json: {\n      jobId,\n      projectName,\n      totalFiles,\n      fileKeys,\n      logType: \"INGESTION_COMPLETED\",\n      totalChunksStored: data.output?.totalChunksStored || 0,\n      durationMs,\n      tokensInput: Number(tokenUsage.tokensInput) || 0,\n      tokensOutput: Number(tokenUsage.tokensOutput) || 0,\n      tokensTotal: Number(tokenUsage.tokensTotal) || 0,\n      estimatedCostUsd: Number(tokenUsage.estimatedCostUsd) || 0,\n      tokenUsage,\n      projectId: data.project_id || trigger.projectId || trigger.project_id || null,\n      requestedBy: data.requested_by || trigger.requestedBy || trigger.requested_by || null,\n      settingsVersion: data.settings_version || trigger.settingsVersion || trigger.settings_version || null,\n      configSnapshot,\n      environmentKey: configSnapshot.environment?.key || trigger.environment || 'local',\n      completedAt: completedAt.toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5568,
+        16
+      ],
+      "id": "47be1531-ed8d-4548-9c1d-6796da0265d4",
+      "name": "LOG"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_queuecreator_logs?job_id=eq.{{ $json.jobId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \n  \"Content-Type\": \"application/json\",\n  \"Prefer\": \"return=minimal\" \n}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "total_files",
+              "value": "={{ $json.totalFiles }}"
+            },
+            {
+              "name": "file_keys",
+              "value": "={{ $json.fileKeys }}"
+            },
+            {
+              "name": "log_type",
+              "value": "={{ $json.logType }}"
+            },
+            {
+              "name": "updated_at",
+              "value": "={{ $json.completedAt }}"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -5120,
+        16
+      ],
+      "id": "52afabbf-b409-4c51-8e94-6d36067ce8ce",
+      "name": "Store LOGS in Supabase",
+      "retryOnFail": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "W6PsBv4SlXFSR6Kk",
+          "name": "supabase-anon-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const MAX_IMAGES = 30;\nconst items = $input.all();\n\n// Log if we're trimming\nif (items.length > MAX_IMAGES) {\n  console.log(`ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â Image count (${items.length}) exceeds limit. Trimming to first ${MAX_IMAGES}.`);\n}\n\n// Take only the first MAX_IMAGES items\nreturn items.slice(0, MAX_IMAGES).map(item => ({\n  json: {\n    ...item.json,\n    totalImagesInDocument: items.length,\n    imageLimitApplied: items.length > MAX_IMAGES\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9104,
+        48
+      ],
+      "id": "491c62c8-593c-4dee-947c-a889cf56fb40",
+      "name": "Guard: Max Image Limit"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Prefer\": \"return=minimal\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"job_id\":       \"{{ $json.jobId }}\",\n  \"project_name\": \"{{ $json.projectName }}\",\n  \"pipeline\":     \"ingestion\",\n  \"event\":        \"JOB_COMPLETED\",\n  \"status\":       \"info\",\n  \"project_id\": {{ $json.projectId ? JSON.stringify($json.projectId) : 'null' }},\n  \"requested_by\": {{ $json.requestedBy ? JSON.stringify($json.requestedBy) : 'null' }},\n  \"duration_ms\":  {{ Number($json.durationMs) || 0 }},\n  \"chunk_count\":  {{ parseInt($json.totalChunksStored) || 0 }},\n  \"total_files\":  {{ $json.totalFiles || 0 }},\n  \"tokens_input\": {{ Number($json.tokensInput) || 0 }},\n  \"tokens_output\": {{ Number($json.tokensOutput) || 0 }},\n  \"tokens_total\": {{ Number($json.tokensTotal) || 0 }},\n  \"estimated_cost_usd\": {{ Number($json.estimatedCostUsd) || 0 }},\n  \"metadata\": {\n    \"file_keys\": {{ JSON.stringify($json.fileKeys || []) }},\n    \"settings_version\": {{ $json.settingsVersion || 'null' }},\n    \"project_id\": {{ $json.projectId ? JSON.stringify($json.projectId) : 'null' }},\n    \"requested_by\": {{ $json.requestedBy ? JSON.stringify($json.requestedBy) : 'null' }},\n    \"environment\": \"{{ $json.environmentKey || 'local' }}\",\n    \"chroma_collection\": \"{{ $json.configSnapshot?.chroma?.collection || 'qa-chunks-batches' }}\",\n    \"token_usage\": {{ JSON.stringify($json.tokenUsage || {}) }}\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -5360,
+        16
+      ],
+      "id": "3b8ed455-4a17-4b8c-a612-b9abe5a2d9e9",
+      "name": "LOG: Job Completed",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "W6PsBv4SlXFSR6Kk",
+          "name": "supabase-anon-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects?id=eq.{{ encodeURIComponent($json.project_id || $('When Executed by Another Workflow').first().json.projectId || $('When Executed by Another Workflow').first().json.project_id || '') }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"status\": \"ready\", \"updated_at\": \"{{ new Date().toISOString() }}\" }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -5696,
+        176
+      ],
+      "id": "qops-project-ready-after-ingestion",
+      "name": "Update Project Status as Ready",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Rename Binary File Keys": {
+      "main": [
+        [
+          {
+            "node": "Extract Text + Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text + Image": {
+      "main": [
+        [
+          {
+            "node": "Split images for Vision Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split images for Vision Extraction": {
+      "main": [
+        [
+          {
+            "node": "Guard: Max Image Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Vision Response": {
+      "main": [
+        [
+          {
+            "node": "Batch Images for Vision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rebuild Document With Vision Extracted Text": {
+      "main": [
+        [
+          {
+            "node": "Build Semantic Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vision Extraction": {
+      "main": [
+        [
+          {
+            "node": "Extract Vision Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Vision Errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Semantic Content": {
+      "main": [
+        [
+          {
+            "node": "Clean Emojis, # etc",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Job Status as Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Emojis, # etc": {
+      "main": [
+        [
+          {
+            "node": "Chunking Raw Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunking Raw Data": {
+      "main": [
+        [
+          {
+            "node": "Store Chunks in Batches",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Chroma Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Chroma Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ],
+      "main": [
+        [
+          {
+            "node": "Handle Data Loader Errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Token Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Vision Payload": {
+      "main": [
+        [
+          {
+            "node": "Vision Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch Images for Vision": {
+      "main": [
+        [
+          {
+            "node": "Rebuild Document With Vision Extracted Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Vision Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fix Data Format": {
+      "main": [
+        [
+          {
+            "node": "Chroma Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chroma Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Store Chunks in Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Chunks in Batches": {
+      "main": [
+        [
+          {
+            "node": "Count Stored Chunks",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fix Data Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Rename Binary File Keys",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Update Job Status as Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Count Stored Chunks": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Handle Vision Errors": {
+      "main": [
+        [
+          {
+            "node": "Update Job Status as Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Job Status as Failed": {
+      "main": [
+        []
+      ]
+    },
+    "LOG": {
+      "main": [
+        [
+          {
+            "node": "LOG: Job Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Job Status as Completed": {
+      "main": [
+        [
+          {
+            "node": "Update Project Status as Ready",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "LOG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guard: Max Image Limit": {
+      "main": [
+        [
+          {
+            "node": "Batch Images for Vision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOG: Job Completed": {
+      "main": [
+        [
+          {
+            "node": "Store LOGS in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Project Status as Ready": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "b2651291-d55c-4268-add9-e30cc5f87034",
+  "activeVersionId": null,
+  "versionCounter": 53,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-07T16:29:35.391Z",
+      "createdAt": "2026-05-07T16:29:35.391Z",
+      "role": "workflow:owner",
+      "workflowId": "fullIngestDraft01",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version b2651291",
+    "description": ""
+  }
+}

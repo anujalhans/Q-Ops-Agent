@@ -1,0 +1,83 @@
+{
+  "updatedAt": "2026-02-24T11:28:40.000Z",
+  "createdAt": "2026-02-23T10:48:37.164Z",
+  "id": "VlsQ96Ok64BoaQea",
+  "name": "My Sub-workflow",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -7712,
+        -48
+      ],
+      "id": "9fa41d82-97a4-4a86-83a4-566795f933a1",
+      "name": "Embeddings OpenAI1",
+      "disabled": false,
+      "parameters": {
+        "notice": "",
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "issues": {},
+      "credentials": {
+        "openAiApi": {
+          "id": "rdVg2Kks1mUCJf4R",
+          "name": "OpenAi Paid Account (Aonu)"
+        }
+      }
+    },
+    {
+      "id": "8877081a-7de1-4009-960b-4277ca56e071",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -7920,
+        -48
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    }
+  ],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "0fc19501-0c42-48ea-9f15-8955c02d90ae",
+  "activeVersionId": null,
+  "versionCounter": 5,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-02-23T10:48:37.169Z",
+      "createdAt": "2026-02-23T10:48:37.169Z",
+      "role": "workflow:owner",
+      "workflowId": "VlsQ96Ok64BoaQea",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

@@ -1,0 +1,12 @@
+Grooming Session 02 - Payment Gateway, Result Pages, and Order Tracking
+Date: 2026-05-20
+Participants: Payment SME, OMS Lead, QA Lead, Support Lead, Product Owner, Data Analyst
+
+Payment SME: Gateway flow creates an order with idempotency key, redirects customer, and sends webhook. Webhook status is authoritative.
+QA Lead: We need payment success, failure, pending, redirect success but webhook failure, redirect failure but webhook success, duplicate webhook, and delayed webhook cases.
+OMS Lead: Order is created only after authorized or captured status. Pending payment shows a waiting page and polls status before moving to failure.
+Support Lead: Support needs event trail: payment order id, gateway transaction id, callback timestamp, webhook signature status, order id, refund id.
+Data Analyst: Emit events CHECKOUT_STARTED, PAYMENT_INITIATED, PAYMENT_RESULT_VIEWED, ORDER_CONFIRMED, ORDER_TRACKED, REFUND_REQUESTED.
+Product Owner: Failure page must keep cart and offer retry. Success page must show order number, ETA, invoice pending state, and track order CTA.
+Decision: Payment retry reuses quote if price lock is active; otherwise customer returns to cart review.
+Open question: Which gateway supports UPI intent and card saved-token flow in sandbox? Owner: Payment SME.

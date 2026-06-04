@@ -1,0 +1,617 @@
+{
+  "updatedAt": "2026-04-16T10:15:13.000Z",
+  "createdAt": "2025-11-03T08:17:55.904Z",
+  "id": "Xv7UheIRR8lYxc4d",
+  "name": "AI Test Plan Generator - Supports File Upload Dynamically via API",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "data0",
+        "options": {}
+      },
+      "id": "b23dbfd4-7718-432f-9e43-85d35e063bea",
+      "name": "Extract BRD Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "data1",
+        "options": {}
+      },
+      "id": "65a4d9ba-2060-4033-b768-26da2ed1bbcb",
+      "name": "Extract FRD Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "data2",
+        "options": {}
+      },
+      "id": "872d6bd4-ea10-4b23-b940-74724a1c2df3",
+      "name": "Extract HLD Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "data3",
+        "options": {}
+      },
+      "id": "c9e639a6-4211-4248-b8f9-f84ac90eb693",
+      "name": "Extract LLD Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize and tag Grooming Transcript\nlet combinedText = '';\n\nfor (const item of items) {\n  // after extraction, text is inside item.json.data\n  const text = item.json?.data?.toString().trim();\n  if (text) combinedText += '\\n' + text;\n}\n\n// cleanup formatting\ncombinedText = combinedText\n  .replace(/\\r/g, '')\n  .replace(/\\n{3,}/g, '\\n\\n')\n  .replace(/[ \\t]{2,}/g, ' ')\n  .trim();\n\nreturn [\n  {\n    json: {\n      sourceName: \"Grooming Transcript\",\n      sourceType: \"TRANSCRIPT\",\n      text: `### Source: GROOMING TRANSCRIPT\\n${combinedText}`,\n      timestamp: new Date().toISOString()\n    }\n  }\n];\n"
+      },
+      "id": "08628f2f-1bb0-4d79-b343-6ca4362f249f",
+      "name": "Normalize Transcript Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        96,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a Senior QA Test Manager with over 15 years of experience leading large-scale enterprise testing programs. \nYou specialize in Shift-Left Quality and Automation-First approaches, integrating QA deeply within CI/CD pipelines.\nYou have extensive experience in transforming raw business and technical documentation into actionable, data-driven, and traceable test strategies.\n\nYou are skilled at reading and interpreting:\n- Business Requirement Documents (BRD)\n- Functional Requirement Documents (FRD)\n- Low-Level Designs (LLD)\n- High-Level Designs (HLD)\n- Grooming session transcripts and stakeholder discussions\n\nYour outputs must demonstrate:\n- Analytical reasoning based directly on excerpts or statements from the provided materials.\n- A clear connection between **requirement intent**, **test coverage**, **automation feasibility**, and **risk mitigation**.\n- A focus on measurable, proactive quality metrics, and early defect prevention.\n- Realistic and context-aware alignment with Shift-Left and Automation-First principles.\n"
+            },
+            {
+              "content": "You are provided with a merged context that combines information extracted from the BRD, FRD, LLD, HLD, and grooming session transcripts. \nThese documents may include requirements, features, workflows, functional and non-functional details, and stakeholder discussions.\n\nYour task is to analyze the provided content carefully and generate a **comprehensive, professional, and context-grounded Test Plan** aligned with Shift-Left and Automation-First principles.\n\n### Instructions:\n1. Use **direct excerpts or paraphrased statements** from the provided documents wherever applicable. \n   - Quote important phrases in italics or blockquotes to preserve authenticity.\n   - Reference their origin (e.g., “As mentioned in BRD…” or “According to LLD section…”).\n2. Demonstrate clear traceability between **requirements → testing objectives → automation approach → risk mitigation.**\n3. For every key area (test strategy, scope, risks, etc.), link back to **specific project elements or statements** from the input documents.\n4. Use tables or bullet lists where appropriate to make the plan easy to read and well-structured.\n\n### Structure your Test Plan as follows:\n1. **Test Strategy** – Include how Shift-Left and Automation-First are embedded. Reference early testing opportunities from the design or grooming stages.\n2. **Scope** – Distinguish in-scope vs. out-of-scope features, based on specific content from the documents.\n3. **Test Objectives** – Mention objectives tied to functional or non-functional requirements.\n4. **Test Deliverables**\n5. **Entry and Exit Criteria**\n6. **Test Schedule and Milestones**\n7. **Risks and Mitigation Plan** – Mention risks cited in the documents or inferred from complexity areas.\n8. **Test Environment** – Include CI/CD, environment provisioning, and test data setup strategies.\n9. **Tools and Resources** – Reference relevant automation or workflow tools mentioned or implied in the docs.\n10. **Roles and Responsibilities**\n11. **Test Data and Configurations** – Include synthetic data strategy or test coverage automation if applicable.\n12. **Reporting and Communication Plan** – Mention dashboards, metrics, and traceability matrices.\n13. **Appendix (Optional)** – Include a summarized mapping table:\n    | Source Document | Key Excerpt | Related Test Focus Area | Automation Feasibility |\n\nEnsure:\n- The output reads like a **real Test Plan prepared for stakeholders**, not an academic essay.\n- Each section has **specific references** to document content to establish credibility and traceability.\n- The tone is professional, precise, and easy to publish directly as part of QA governance documentation.\n\n**Merged Context (from all input sources):**\n{{$json[\"mergedContext\"]}}\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "maxTokens": 4000,
+          "temperature": 0.7
+        }
+      },
+      "id": "dd29496d-2f3d-479e-bdb9-3f0997af57db",
+      "name": "OpenAI - Generate Test Plan",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        768,
+        736
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "8vgztQhfHXEOcdwI",
+          "name": "OpenAi account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: {}, binary: { data: { data: Buffer.from($input.first().json.output[0].content[0].text, 'utf8'), mimeType: 'text/markdown', fileName: 'Merged-Test-Plan.md' } } }];"
+      },
+      "id": "93c94a73-6c0f-4070-a5d9-230b1f9f8b81",
+      "name": "Prepare Markdown Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/convert",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "markdown",
+              "value": "={{ $('OpenAI - Generate Test Plan').item.json.output[0].content[0].text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "99ba5251-ce0a-49c5-bfa0-f48b92098560",
+      "name": "Convert md to docx",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1568,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "C:\\\\Users\\\\anujalhans01\\\\Downloads\\\\Generated-Test-Plan.docx",
+        "options": {}
+      },
+      "id": "1eccb62e-de74-4840-824a-0d1fd4a882b4",
+      "name": "Write Final Test Plan File",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -128,
+        528
+      ],
+      "id": "8d7a62b5-767d-493b-a33e-1a802acb7ec4",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge all normalized document + transcript text into one large context\nlet allTexts = [];\n\nfor (const item of items) {\n  const src = item.json.sourceType || item.json.sourceName || \"Unknown Source\";\n  const txt = item.json.text || \"\";\n\n  if (txt.trim()) {\n    allTexts.push(txt); // already has Source: tags\n  }\n}\n\n// Optional: Insert separator between sources\nconst merged = allTexts.join(\"\\n\\n---\\n\\n\");\n\nreturn [{\n  json: {\n    mergedContext: merged,\n    contextCount: allTexts.length\n  }\n}];\n"
+      },
+      "id": "46588d84-93f0-4a6f-a1dd-271a6b8d8d2e",
+      "name": "Merged Context for OpenAI",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get text safely from previous node (supports both JSON and binary markdown)\nlet md = \"\";\n\n// Case 1: Markdown came as text field in JSON\nif (items[0]?.json?.output?.[0]?.content?.[0]?.text) {\n  md = items[0].json.output[0].content[0].text;\n}\n\n// Case 2: Markdown came as binary file\nelse if (items[0]?.binary?.data) {\n  md = Buffer.from(items[0].binary.data.data, 'base64').toString('utf8');\n}\n\n// Case 3: Markdown as plain text field\nelse if (items[0]?.json?.data) {\n  md = items[0].json.data;\n}\n\nelse {\n  return [{ json: { error: \"No markdown input found for cleaning\" } }];\n}\n\n// Clean and format Markdown\nlet cleaned = md\n  .replace(/#+\\s+/g, match => `\\n\\n${match}`) // add spacing before headings\n  .replace(/-{3,}/g, '\\n\\n\\\\page\\n\\n')         // convert --- to page breaks\n  .replace(/\\n{3,}/g, '\\n\\n')                  // collapse extra newlines\n  .trim();\n\nreturn [{\n  json: {\n    cleanedMarkdown: cleaned\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        736
+      ],
+      "id": "c4e12992-346d-4b91-925c-86da2f15c441",
+      "name": "Clean Markdown Formatting"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/upload-test-docs",
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "id": "8c9318aa-13f3-4b0e-adfe-826e5499b0f9",
+      "name": "Webhook - Upload Test Docs",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -848,
+        656
+      ],
+      "webhookId": "c9312804-6b16-4a1b-9cb8-166b5546763a",
+      "alwaysOutputData": false,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  if (item.binary && item.binary.data) {\n    item.binary.transcript = item.binary.data4; // copy to brd\n    // do NOT delete data\n  }\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        1040
+      ],
+      "id": "c65b20a3-7e3b-4c4a-a69f-5b5dcbbc7cea",
+      "name": "Rename binary key - Transcript"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  if (item.binary && item.binary.data) {\n    item.binary.lld = item.binary.data3; // copy to brd\n    // do NOT delete data\n  }\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        848
+      ],
+      "id": "d86fdf3b-de8e-4c29-8268-67dedc471cfa",
+      "name": "Rename binary key - LLD"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  if (item.binary && item.binary.data) {\n    item.binary.hld = item.binary.data2; // copy to brd\n    // do NOT delete data\n  }\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        656
+      ],
+      "id": "fa5e71ad-dc2a-4194-a99d-6ae5c377eae3",
+      "name": "Rename binary key - HLD"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  if (item.binary && item.binary.data) {\n    item.binary.frd = item.binary.data1; // copy to brd\n    // do NOT delete data\n  }\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        464
+      ],
+      "id": "00312240-fd0e-416c-af8f-429708969d9a",
+      "name": "Rename binary key - FRD"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  if (item.binary && item.binary.data) {\n    item.binary.brd = item.binary.data0; // copy to brd\n    // do NOT delete data\n  }\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        272
+      ],
+      "id": "1cbce7a7-024c-41b7-8c46-fe9a7a5e7847",
+      "name": "Rename binary key - BRD"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "binaryPropertyName": "data4",
+        "options": {}
+      },
+      "id": "2f239ddf-7aa1-4ab7-a018-2691f48234e2",
+      "name": "Extract Transcript Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize and tag each document extract with type headers\nconst cleanedDocs = [];\n\nfor (const item of items) {\n  const d = item.json || {};\n  const text = d.text || \"\";\n\n  // Identify document type\n  const type =\n    d.fileName?.match(/BRD|FRD|HLD|LLD/i)?.[0]?.toUpperCase() || \"DOCUMENT\";\n\n  // Basic cleaning: remove extra spaces, page numbers, headers/footers\n  const cleaned = text\n    .replace(/\\bPage\\s+\\d+\\b/gi, \"\") // remove page numbers\n    .replace(/\\n\\s*\\n\\s*\\n+/g, \"\\n\\n\") // collapse multiple newlines\n    .replace(/[ \\t]{2,}/g, \" \") // remove excessive spaces\n    .trim();\n\n  cleanedDocs.push({\n    json: {\n      sourceName: d.fileName || \"Unknown Document\",\n      sourceType: type,\n      text: `### Source: ${type}\\n${cleaned}`,\n      timestamp: new Date().toISOString(),\n    },\n  });\n}\n\nreturn cleanedDocs;\n"
+      },
+      "id": "f3e6608a-9507-4f41-a796-83e7308fa2e1",
+      "name": "Normalize Docs Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        96,
+        560
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        320,
+        736
+      ],
+      "id": "8f00cf69-8b31-4a23-9668-4d3112bf434d",
+      "name": "Merge Normalized Docs + Transcript Text"
+    }
+  ],
+  "connections": {
+    "Extract BRD Text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract FRD Text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract HLD Text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Extract LLD Text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Normalize Transcript Text": {
+      "main": [
+        [
+          {
+            "node": "Merge Normalized Docs + Transcript Text",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI - Generate Test Plan": {
+      "main": [
+        [
+          {
+            "node": "Prepare Markdown Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Markdown Content": {
+      "main": [
+        [
+          {
+            "node": "Clean Markdown Formatting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert md to docx": {
+      "main": [
+        [
+          {
+            "node": "Write Final Test Plan File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Normalize Docs Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merged Context for OpenAI": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - Generate Test Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Markdown Formatting": {
+      "main": [
+        [
+          {
+            "node": "Convert md to docx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Upload Test Docs": {
+      "main": [
+        [
+          {
+            "node": "Rename binary key - Transcript",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Rename binary key - LLD",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Rename binary key - HLD",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Rename binary key - FRD",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Rename binary key - BRD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename binary key - Transcript": {
+      "main": [
+        [
+          {
+            "node": "Extract Transcript Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename binary key - LLD": {
+      "main": [
+        [
+          {
+            "node": "Extract LLD Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename binary key - HLD": {
+      "main": [
+        [
+          {
+            "node": "Extract HLD Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename binary key - FRD": {
+      "main": [
+        [
+          {
+            "node": "Extract FRD Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename binary key - BRD": {
+      "main": [
+        [
+          {
+            "node": "Extract BRD Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Transcript Text": {
+      "main": [
+        [
+          {
+            "node": "Normalize Transcript Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Docs Text": {
+      "main": [
+        [
+          {
+            "node": "Merge Normalized Docs + Transcript Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Normalized Docs + Transcript Text": {
+      "main": [
+        [
+          {
+            "node": "Merged Context for OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "7bf9da96-bed0-402e-9027-6e483c3f8517",
+  "activeVersionId": null,
+  "versionCounter": 3,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-11-03T08:17:55.904Z",
+      "createdAt": "2025-11-03T08:17:55.904Z",
+      "role": "workflow:owner",
+      "workflowId": "Xv7UheIRR8lYxc4d",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

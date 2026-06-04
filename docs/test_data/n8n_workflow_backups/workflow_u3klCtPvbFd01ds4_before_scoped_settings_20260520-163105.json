@@ -1,0 +1,396 @@
+{
+  "id": "u3klCtPvbFd01ds4",
+  "name": "Q-Ops Agent Settings Write API",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "PATCH",
+        "path": "settings",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "270622f7-f8b9-495a-a31d-e3b7d1fed3a3",
+      "name": "PATCH /settings",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "845ed02e-dd68-421f-9f15-df624f8457d3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const restBase = 'https://ifnznfspkjayhnooncrv.supabase.co/rest/v1';\nconst body = $('Prepare Settings Write Auth').first().json.body || {};\nconst profileRaw = $('Fetch Settings Write User Profile').first().json || {};\nconst profile = Array.isArray(profileRaw) ? profileRaw[0] : profileRaw;\nconst memberships = $items('Fetch Settings Write Project Memberships').map(i => i.json).filter(r => r && r.project_id);\nif (!profile?.id || profile.status !== 'active') {\n  throw new Error('Active Q-Ops user profile not found');\n}\nconst envKey = String(body.environmentKey || body.environment?.environmentKey || 'local');\nconst requestedScope = String(body.scope || body.settingsScope || body.integration?.scope || 'workspace').toLowerCase();\nconst scope = requestedScope === 'admin' || requestedScope === 'workspace_default' ? 'workspace' : requestedScope;\nconst projectId = String(body.projectId || body.integration?.projectId || '').trim();\nconst integrationBody = body.integration || {};\nconst integrationKey = String(body.integrationKey || integrationBody.integrationKey || '').trim();\nconst now = new Date().toISOString();\nconst actor = profile.name || profile.email || body.actorName || 'n8n';\nconst changedBy = profile.id;\nconst canWriteProject = profile.role === 'admin' || memberships.some(m => m.project_id === projectId && ['owner', 'editor'].includes(String(m.project_role || '').toLowerCase()));\nfunction cleanConfig(value) {\n  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};\n  const blocked = /(secret|token|password|api[_-]?key|authorization|service[_-]?role|bearer)/i;\n  const out = {};\n  for (const [key, inner] of Object.entries(value)) {\n    if (blocked.test(key)) continue;\n    if (inner && typeof inner === 'object' && !Array.isArray(inner)) out[key] = cleanConfig(inner);\n    else out[key] = inner;\n  }\n  return out;\n}\nfunction changedKeys(payload) {\n  return Object.keys(payload).filter(k => !['updated_at', 'updated_by'].includes(k));\n}\nif (integrationKey) {\n  const enabled = typeof body.enabled === 'boolean' ? body.enabled : typeof integrationBody.enabled === 'boolean' ? integrationBody.enabled : true;\n  const config = cleanConfig((body.config && typeof body.config === 'object') ? body.config : (integrationBody.config && typeof integrationBody.config === 'object') ? integrationBody.config : {});\n  const secretRefs = (body.secretRefs && typeof body.secretRefs === 'object') ? body.secretRefs : (integrationBody.secretRefs && typeof integrationBody.secretRefs === 'object') ? integrationBody.secretRefs : {};\n  const status = String(body.status || integrationBody.status || 'backend_managed');\n  if (scope === 'workspace') {\n    if (profile.role !== 'admin') throw new Error('Only admins can update workspace default integration settings');\n    const payload = { updated_at: now, updated_by: changedBy, enabled, config, secret_refs: secretRefs, status };\n    return [{ json: { method: 'PATCH', target: 'integration', scope, url: `${restBase}/qops_integration_settings?environment_key=eq.${encodeURIComponent(envKey)}&integration_key=eq.${encodeURIComponent(integrationKey)}`, payload, audit: { actor_user_id: changedBy, actor_name: actor, action: 'SETTINGS_INTEGRATION_UPDATED', entity_type: 'integration_settings', entity_id: integrationKey, status: 'success', details: `Updated workspace ${integrationKey} settings for ${envKey}`, metadata: { source: 'ui', scope, environmentKey: envKey, integrationKey, changedKeys: changedKeys(payload) } } } }];\n  }\n  if (scope === 'user') {\n    const payload = { environment_key: envKey, user_id: profile.id, integration_key: integrationKey, display_name: integrationBody.displayName || body.displayName || integrationKey, updated_at: now, updated_by: changedBy, enabled, config, secret_refs: secretRefs, status };\n    return [{ json: { method: 'POST', target: 'integration', scope, url: `${restBase}/qops_user_integration_settings?on_conflict=environment_key,user_id,integration_key`, payload, audit: { actor_user_id: changedBy, actor_name: actor, action: 'SETTINGS_USER_INTEGRATION_UPDATED', entity_type: 'user_integration_settings', entity_id: integrationKey, status: 'success', details: `Updated user ${integrationKey} settings for ${envKey}`, metadata: { source: 'ui', scope, environmentKey: envKey, integrationKey, changedKeys: changedKeys(payload) } } } }];\n  }\n  if (scope === 'project') {\n    if (!projectId) throw new Error('projectId is required for project-scoped integration settings');\n    if (!canWriteProject) throw new Error('Only admins, project owners, or project editors can update project integration overrides');\n    const payload = { project_id: projectId, integration_key: integrationKey, override_config: config, updated_at: now, updated_by: changedBy, enabled, secret_refs: secretRefs, status };\n    return [{ json: { method: 'POST', target: 'integration', scope, projectId, url: `${restBase}/qops_project_integration_overrides?on_conflict=project_id,integration_key`, payload, audit: { actor_user_id: changedBy, actor_name: actor, action: 'SETTINGS_PROJECT_INTEGRATION_UPDATED', entity_type: 'project_integration_overrides', entity_id: integrationKey, project_id: projectId, status: 'success', details: `Updated project ${integrationKey} override`, metadata: { source: 'ui', scope, projectId, environmentKey: envKey, integrationKey, changedKeys: changedKeys(payload) } } } }];\n  }\n  throw new Error(`Unsupported settings scope: ${scope}`);\n}\nif (profile.role !== 'admin') throw new Error('Only admins can update environment settings');\nconst environment = body.environment || body;\nconst payload = { updated_at: now, updated_by: changedBy };\nif (environment.displayName !== undefined) payload.display_name = environment.displayName;\nif (environment.apiBaseUrl !== undefined) payload.api_base_url = environment.apiBaseUrl;\nif (environment.n8nBaseUrl !== undefined) payload.n8n_base_url = environment.n8nBaseUrl;\nif (environment.webhookPaths !== undefined) payload.webhook_paths = environment.webhookPaths;\nif (environment.isActive !== undefined) payload.is_active = Boolean(environment.isActive);\nif (Object.keys(payload).length <= 2) throw new Error('No supported environment settings fields were provided');\nreturn [{ json: { method: 'PATCH', target: 'environment', scope: 'workspace', url: `${restBase}/qops_environment_settings?environment_key=eq.${encodeURIComponent(envKey)}`, payload, audit: { actor_user_id: changedBy, actor_name: actor, action: 'SETTINGS_ENVIRONMENT_UPDATED', entity_type: 'environment_settings', entity_id: envKey, status: 'success', details: `Updated environment settings for ${envKey}`, metadata: { source: 'ui', scope: 'workspace', environmentKey: envKey, changedKeys: changedKeys(payload) } } } }];"
+      },
+      "id": "74deced9-ce3f-4629-a6e8-d625351380ec",
+      "name": "Prepare Settings Patch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "={{ $json.method }}",
+        "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"resolution=merge-duplicates,return=representation\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.payload }}",
+        "options": {}
+      },
+      "id": "207bdfbb-5be2-459c-af33-cfddc96f4ed8",
+      "name": "Patch Settings Row",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1568,
+        -80
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const prepared = $('Prepare Settings Patch').first().json;\nconst updated = $input.first().json || {};\nreturn [{ json: { ok: true, target: prepared.target, updated, audit: prepared.audit } }];"
+      },
+      "id": "81956196-2916-4d5c-964f-10305a74392a",
+      "name": "Map Settings Write Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.audit }}",
+        "options": {}
+      },
+      "id": "fc14774a-15f0-4e60-9ffc-b0171390f5b2",
+      "name": "Insert Settings Audit Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2016,
+        -80
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $(\"Map Settings Write Response\").first().json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "20d117db-bbe7-45bb-9a56-78e5ced7d3c8",
+      "name": "Respond Settings Write",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2240,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const headers = $json.headers || {};\nconst authHeader = headers.authorization || headers.Authorization || '';\nif (!String(authHeader).toLowerCase().startsWith('bearer ')) {\n  return [{ json: { ok: false, statusCode: 401, error: { code: 'UNAUTHORIZED', message: 'Missing bearer token' }, body: $json.body || {} } }];\n}\nreturn [{\n  json: {\n    ok: true,\n    token: String(authHeader).replace(/^Bearer\\s+/i, ''),\n    body: $json.body || {}\n  }\n}];"
+      },
+      "id": "3fee2e9f-e5d7-4963-af50-9664b40dba6b",
+      "name": "Prepare Settings Write Auth",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "2ddae499-d075-43b1-aba1-d07b4b43065a",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f43aeb42-5ac7-45aa-bac0-15f8be8d48a8",
+      "name": "Settings Write Authorized?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={ { \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"Bearer \" + $json.token } }",
+        "options": {}
+      },
+      "id": "9b7bf9eb-141a-4c19-b4b6-5673072da782",
+      "name": "Verify Settings Write Supabase User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        -80
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{ $json.id }}&status=eq.active&select=id,email,name,role,status&limit=1",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "46522d46-6b3f-4886-a53b-03d8245b0fd6",
+      "name": "Fetch Settings Write User Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        -80
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{ (Array.isArray($json) ? $json[0] : $json).id }}&select=project_id,project_role",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {
+          "alwaysOutputData": true
+        }
+      },
+      "id": "aa900328-b581-46fd-b044-868e72c68efd",
+      "name": "Fetch Settings Write Project Memberships",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        -80
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "authorization, content-type"
+              }
+            ]
+          },
+          "responseCode": 401
+        }
+      },
+      "id": "e6124701-5d7e-4a61-b73d-11bd606c64a1",
+      "name": "Respond Settings Write Unauthorized",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        160
+      ]
+    }
+  ],
+  "connections": {
+    "PATCH /settings": {
+      "main": [
+        [
+          {
+            "node": "Prepare Settings Write Auth",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Settings Write Auth": {
+      "main": [
+        [
+          {
+            "node": "Settings Write Authorized?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Settings Write Authorized?": {
+      "main": [
+        [
+          {
+            "node": "Verify Settings Write Supabase User",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Settings Write Unauthorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Settings Write Supabase User": {
+      "main": [
+        [
+          {
+            "node": "Fetch Settings Write User Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Settings Write User Profile": {
+      "main": [
+        [
+          {
+            "node": "Fetch Settings Write Project Memberships",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Settings Write Project Memberships": {
+      "main": [
+        [
+          {
+            "node": "Prepare Settings Patch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Settings Patch": {
+      "main": [
+        [
+          {
+            "node": "Patch Settings Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Patch Settings Row": {
+      "main": [
+        [
+          {
+            "node": "Map Settings Write Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Settings Write Response": {
+      "main": [
+        [
+          {
+            "node": "Insert Settings Audit Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Settings Audit Event": {
+      "main": [
+        [
+          {
+            "node": "Respond Settings Write",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "versionCounter": 38
+}

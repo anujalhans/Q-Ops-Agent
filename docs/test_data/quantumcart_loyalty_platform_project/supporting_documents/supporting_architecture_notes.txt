@@ -1,0 +1,6 @@
+QuantumCart Solution Architecture Notes
+
+This supporting architecture note should classify as ARCHITECTURE.
+System architecture includes Customer App, Loyalty API, Campaign Service, Ledger Service, Event Bus, Notification Service, Fraud Guard, and Support Console.
+Deployment architecture uses stateless services, queue-based event processing, and separate ledgers for reward liability.
+Component diagram evidence: Customer App -> Loyalty API -> Campaign Service -> Ledger Service -> Event Bus.

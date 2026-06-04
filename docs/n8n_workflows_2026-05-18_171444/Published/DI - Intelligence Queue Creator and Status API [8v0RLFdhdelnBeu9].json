@@ -1,0 +1,896 @@
+{
+  "updatedAt": "2026-05-11T10:46:34.433Z",
+  "createdAt": "2026-05-11T10:36:52.263Z",
+  "id": "8v0RLFdhdelnBeu9",
+  "name": "DI - Intelligence Queue Creator and Status API",
+  "description": "Delivery Intelligence UI API for POST /webhook/di/jobs queue creation and GET /webhook/di/jobs polling, isolated to di_intelligence_jobs and existing auth/project membership tables.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Delivery Intelligence Queue and Status API\nPOST /webhook/di/jobs queues Delivery Intelligence jobs into di_intelligence_jobs. GET /webhook/di/jobs?jobId=... returns polling status. This workflow is separate from QA generation and only writes DI tables.",
+        "height": 180,
+        "width": 2200,
+        "color": 4
+      },
+      "id": "66a50620-99f3-42b6-b686-eaf9ebd1a629",
+      "name": "Sticky Note 81492c41",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1456,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "di/jobs",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "6751acf5-7256-4868-8ecf-9155493160c9",
+      "name": "POST /di/jobs",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        128
+      ],
+      "webhookId": "703b5664-4e80-4c31-a7eb-ac4a0f4f7792"
+    },
+    {
+      "parameters": {
+        "jsCode": "const headers = $json.headers || {};\nconst authHeader = headers.authorization || headers.Authorization || '';\nconst body = $json.body || {};\nconst allowed = new Set(['project_intelligence_extract','solution_extract','technology_extract','relationship_build','recommendation_generate','semantic_reindex']);\nconst jobType = String(body.jobType || body.job_type || '').trim();\nconst projectId = body.projectId || body.project_id || null;\nconst keySource = body.idempotencyKey || body.idempotency_key || `${jobType}:${projectId || 'workspace'}:${JSON.stringify(body.input || body.payload || {})}`;\nconst safeKey = String(keySource).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || Math.random().toString(36).slice(2, 10);\nconst datePart = new Date().toISOString().slice(2,10).replace(/-/g, '');\nconst jobId = body.jobId || body.job_id || `DI-${datePart}-${safeKey}`;\nif (!String(authHeader).toLowerCase().startsWith('bearer ')) return [{ json: { ok: false, statusCode: 401, errorCode: 'UNAUTHORIZED', message: 'Missing bearer token' } }];\nif (!allowed.has(jobType)) return [{ json: { ok: false, statusCode: 400, errorCode: 'INVALID_JOB_TYPE', message: 'Unsupported Delivery Intelligence job type' } }];\nif (!projectId && jobType !== 'semantic_reindex') return [{ json: { ok: false, statusCode: 400, errorCode: 'PROJECT_REQUIRED', message: 'projectId is required for this job type' } }];\nreturn [{ json: { ok: true, token: String(authHeader).replace(/^Bearer\\s+/i, ''), jobId, jobType, projectId, input: { ...(body.input || body.payload || body), jobType, projectId, idempotencyKey: keySource, source: 'di-ui' } } }];"
+      },
+      "id": "1a117fcf-3b96-4a6e-8b5a-d1ca017011fa",
+      "name": "Prepare DI Queue Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2ac94fd3-ec89-4b7c-99dd-5c1e9b195f6b",
+      "name": "Valid DI Queue Request?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={ \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"Bearer {{ $json.token }}\" }",
+        "options": {}
+      },
+      "id": "a94c0af1-07df-4717-a7e4-ca7462bfaedf",
+      "name": "Verify Queue Supabase Auth User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        48
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{ $json.id || \"00000000-0000-0000-0000-000000000000\" }}&status=eq.active&select=id,email,name,role,status&limit=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "9611ffec-b322-453c-8aeb-75f50f968bfc",
+      "name": "Fetch Queue Q-Ops User Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        48
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{ Array.isArray($json) ? ($json[0]?.id || \"00000000-0000-0000-0000-000000000000\") : ($json.id || \"00000000-0000-0000-0000-000000000000\") }}&select=project_id,project_role",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "cb3bc19c-214b-45be-9544-cba6f83e3f04",
+      "name": "Fetch Queue Project Memberships",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        48
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const req = $('Prepare DI Queue Request').first().json;\nconst auth = $('Verify Queue Supabase Auth User').first().json || {};\nconst rawProfile = $('Fetch Queue Q-Ops User Profile').first().json;\nconst profile = Array.isArray(rawProfile) ? rawProfile[0] : rawProfile;\nconst memberships = $items('Fetch Queue Project Memberships').map(i => i.json).filter(r => r && r.project_id);\nif (!auth.id) return [{ json: { ok: false, statusCode: 401, errorCode: 'UNAUTHORIZED', message: 'Invalid Supabase Auth token' } }];\nif (!profile?.id || profile.status !== 'active') return [{ json: { ok: false, statusCode: 403, errorCode: 'PROFILE_NOT_ACTIVE', message: 'Active Q-Ops user profile not found' } }];\nconst isAdmin = profile.role === 'admin';\nconst hasProject = !req.projectId || memberships.some(m => m.project_id === req.projectId);\nif (!isAdmin && req.jobType === 'semantic_reindex') return [{ json: { ok: false, statusCode: 403, errorCode: 'ADMIN_REQUIRED', message: 'semantic_reindex requires admin role' } }];\nif (!isAdmin && !hasProject) return [{ json: { ok: false, statusCode: 403, errorCode: 'PROJECT_ACCESS_DENIED', message: 'User is not assigned to this project' } }];\nconst payload = { job_id: req.jobId, status: 'pending', job_type: req.jobType, project_id: req.projectId, requested_by: profile.id, input: req.input, output: { queuedAt: new Date().toISOString(), queuedBy: profile.email, source: 'di-ui' } };\nreturn [{ json: { ok: true, jobId: req.jobId, jobType: req.jobType, projectId: req.projectId, requestedBy: profile.id, payload } }];"
+      },
+      "id": "4fa065ee-d661-4d7a-9f3c-ed895b86e3d4",
+      "name": "Authorize And Build DI Job",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7a7e0d87-10b9-4bc2-824e-793d1eda944a",
+      "name": "DI Queue Authorized?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1568,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_intelligence_jobs?job_id=eq.{{ encodeURIComponent($json.jobId) }}&select=job_id,status,job_type,project_id,created_at,updated_at,error,output&limit=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "0823f236-3c50-43d1-b6ef-8efa9c496d79",
+      "name": "Fetch Existing DI Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1792,
+        0
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const existing = $input.all().map(i => i.json).find(j => j && j.job_id);\nconst prepared = $('Authorize And Build DI Job').first().json;\nif (existing) return [{ json: { exists: true, response: { ok: true, jobId: existing.job_id, status: existing.status, jobType: existing.job_type, projectId: existing.project_id, existing: true, output: existing.output || null, error: existing.error || null } } }];\nreturn [{ json: { exists: false, payload: prepared.payload, response: { ok: true, jobId: prepared.jobId, status: 'queued', jobType: prepared.jobType, projectId: prepared.projectId, existing: false } } }];"
+      },
+      "id": "75cb767e-749d-48eb-bb3d-37c4a601f374",
+      "name": "Decide Existing DI Job",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.exists }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7ba985d1-4dca-4c50-bda0-8ceb35a50d7b",
+      "name": "Existing DI Job Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.response || $json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "7d13329b-b6c0-447e-9448-4768fe88ec62",
+      "name": "Respond DI Job Queued",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2912,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_intelligence_jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=representation\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {}
+      },
+      "id": "4cf06a8b-5511-43a9-88ef-efda6278c03b",
+      "name": "Insert DI Intelligence Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2464,
+        80
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const inserted = $input.first().json || {};\nconst planned = $('Decide Existing DI Job').first().json.response;\nreturn [{ json: { ...planned, jobId: inserted.job_id || planned.jobId, status: inserted.status || planned.status } }];"
+      },
+      "id": "b9773012-70e4-464f-9dc1-c0db04533b30",
+      "name": "Map Inserted DI Job Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2688,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, error: { code: $json.errorCode || \"DI_QUEUE_ERROR\", message: $json.message || \"Unable to queue Delivery Intelligence job\" } }) }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode || 400 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "507c5184-847b-4d1b-9394-cd101e6c4c75",
+      "name": "Respond DI Queue Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1792,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "OPTIONS",
+        "path": "di/jobs",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "60ec1384-3ee8-45b6-91d3-1dde1c0fff8d",
+      "name": "OPTIONS /di/jobs",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        448
+      ],
+      "webhookId": "a49f9b5a-ea69-4ccc-8fbf-5052bbddf4fa"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true }) }}",
+        "options": {
+          "responseCode": 204,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "authorization, content-type"
+              },
+              {
+                "name": "Access-Control-Max-Age",
+                "value": "86400"
+              }
+            ]
+          }
+        }
+      },
+      "id": "18962b5f-d82e-4fe4-bdab-22860dfe2aa6",
+      "name": "Respond DI Jobs CORS",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        224,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "path": "di/jobs",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "158c1ec9-5a25-4793-802d-60eda4e6c97b",
+      "name": "GET /di/jobs",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        736
+      ],
+      "webhookId": "3b1ced25-58d9-4b89-9147-7608a0130e49"
+    },
+    {
+      "parameters": {
+        "jsCode": "const headers = $json.headers || {};\nconst authHeader = headers.authorization || headers.Authorization || '';\nconst query = $json.query || {};\nconst jobId = query.jobId || query.job_id || '';\nif (!String(authHeader).toLowerCase().startsWith('bearer ')) return [{ json: { ok: false, statusCode: 401, errorCode: 'UNAUTHORIZED', message: 'Missing bearer token' } }];\nif (!jobId) return [{ json: { ok: false, statusCode: 400, errorCode: 'JOB_ID_REQUIRED', message: 'jobId query parameter is required' } }];\nreturn [{ json: { ok: true, token: String(authHeader).replace(/^Bearer\\s+/i, ''), jobId } }];"
+      },
+      "id": "c4e8a3bf-3c16-4a60-8856-a522369904ab",
+      "name": "Prepare DI Status Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6a0df0c4-b218-4dc5-9a89-9385a45d2147",
+      "name": "Valid DI Status Request?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={ \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"Bearer {{ $json.token }}\" }",
+        "options": {}
+      },
+      "id": "8010c19a-5664-4ec5-8579-7d262477cece",
+      "name": "Verify Status Supabase Auth User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        672
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{ $json.id || \"00000000-0000-0000-0000-000000000000\" }}&status=eq.active&select=id,email,name,role,status&limit=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "6dcc6113-b84d-4a97-b73b-e4f7dd8da543",
+      "name": "Fetch Status Q-Ops User Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        672
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_intelligence_jobs?job_id=eq.{{ encodeURIComponent($(\"Prepare DI Status Request\").item.json.jobId) }}&select=job_id,status,job_type,project_id,requested_by,input,output,error,created_at,updated_at&limit=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "b437ae01-e158-4e41-915d-1282155047ab",
+      "name": "Fetch DI Job Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        672
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const auth = $('Verify Status Supabase Auth User').first().json || {};\nconst rawProfile = $('Fetch Status Q-Ops User Profile').first().json;\nconst profile = Array.isArray(rawProfile) ? rawProfile[0] : rawProfile;\nconst rawJob = $('Fetch DI Job Status').first().json;\nconst job = Array.isArray(rawJob) ? rawJob[0] : rawJob;\nif (!auth.id) return [{ json: { ok: false, statusCode: 401, errorCode: 'UNAUTHORIZED', message: 'Invalid Supabase Auth token' } }];\nif (!profile?.id || profile.status !== 'active') return [{ json: { ok: false, statusCode: 403, errorCode: 'PROFILE_NOT_ACTIVE', message: 'Active Q-Ops user profile not found' } }];\nif (!job?.job_id) return [{ json: { ok: false, statusCode: 404, errorCode: 'JOB_NOT_FOUND', message: 'Delivery Intelligence job was not found' } }];\nconst canSee = profile.role === 'admin' || job.requested_by === profile.id;\nif (!canSee) return [{ json: { ok: false, statusCode: 403, errorCode: 'JOB_ACCESS_DENIED', message: 'User cannot access this Delivery Intelligence job' } }];\nreturn [{ json: { ok: true, jobId: job.job_id, status: job.status, jobType: job.job_type, projectId: job.project_id, input: job.input || {}, output: job.output || {}, error: job.error || null, createdAt: job.created_at, updatedAt: job.updated_at } }];"
+      },
+      "id": "f19a0ae2-178e-4f80-b41f-fac905df11a3",
+      "name": "Map DI Status Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        672
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.ok ? $json : { ok: false, error: { code: $json.errorCode || \"DI_STATUS_ERROR\", message: $json.message || \"Unable to fetch job status\" } }) }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode || 200 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "de3ad72e-01e6-4e89-ad8c-1c620fc2009d",
+      "name": "Respond DI Job Status",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1568,
+        736
+      ]
+    }
+  ],
+  "connections": {
+    "POST /di/jobs": {
+      "main": [
+        [
+          {
+            "node": "Prepare DI Queue Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare DI Queue Request": {
+      "main": [
+        [
+          {
+            "node": "Valid DI Queue Request?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid DI Queue Request?": {
+      "main": [
+        [
+          {
+            "node": "Verify Queue Supabase Auth User",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond DI Queue Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Queue Supabase Auth User": {
+      "main": [
+        [
+          {
+            "node": "Fetch Queue Q-Ops User Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Queue Q-Ops User Profile": {
+      "main": [
+        [
+          {
+            "node": "Fetch Queue Project Memberships",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Queue Project Memberships": {
+      "main": [
+        [
+          {
+            "node": "Authorize And Build DI Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authorize And Build DI Job": {
+      "main": [
+        [
+          {
+            "node": "DI Queue Authorized?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DI Queue Authorized?": {
+      "main": [
+        [
+          {
+            "node": "Fetch Existing DI Job",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond DI Queue Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Existing DI Job": {
+      "main": [
+        [
+          {
+            "node": "Decide Existing DI Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Existing DI Job": {
+      "main": [
+        [
+          {
+            "node": "Existing DI Job Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Existing DI Job Found?": {
+      "main": [
+        [
+          {
+            "node": "Respond DI Job Queued",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert DI Intelligence Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert DI Intelligence Job": {
+      "main": [
+        [
+          {
+            "node": "Map Inserted DI Job Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Inserted DI Job Response": {
+      "main": [
+        [
+          {
+            "node": "Respond DI Job Queued",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPTIONS /di/jobs": {
+      "main": [
+        [
+          {
+            "node": "Respond DI Jobs CORS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /di/jobs": {
+      "main": [
+        [
+          {
+            "node": "Prepare DI Status Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare DI Status Request": {
+      "main": [
+        [
+          {
+            "node": "Valid DI Status Request?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid DI Status Request?": {
+      "main": [
+        [
+          {
+            "node": "Verify Status Supabase Auth User",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond DI Job Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Status Supabase Auth User": {
+      "main": [
+        [
+          {
+            "node": "Fetch Status Q-Ops User Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Status Q-Ops User Profile": {
+      "main": [
+        [
+          {
+            "node": "Fetch DI Job Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch DI Job Status": {
+      "main": [
+        [
+          {
+            "node": "Map DI Status Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map DI Status Response": {
+      "main": [
+        [
+          {
+            "node": "Respond DI Job Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": {},
+  "versionId": "d8146bee-a5ed-4a26-bbf8-526ef29df266",
+  "activeVersionId": "d8146bee-a5ed-4a26-bbf8-526ef29df266",
+  "versionCounter": 15,
+  "triggerCount": 3,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-11T10:36:52.270Z",
+      "createdAt": "2026-05-11T10:36:52.270Z",
+      "role": "workflow:owner",
+      "workflowId": "8v0RLFdhdelnBeu9",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version d8146bee",
+    "description": ""
+  }
+}

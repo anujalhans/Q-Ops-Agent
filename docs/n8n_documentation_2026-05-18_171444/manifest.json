@@ -1,0 +1,1800 @@
+﻿{
+    "generatedAt":  "2026-05-18T17:20:39.2949551+05:30",
+    "sourceWorkflowBackup":  "docs\\n8n_workflows_2026-05-18_171444",
+    "total":  71,
+    "published":  39,
+    "unpublished":  32,
+    "workflows":  [
+                      {
+                          "id":  "nzc2q8WqmTd6RGCw",
+                          "name":  "DI - Catalog Read API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  18,
+                          "webhookHints":  "GET/POST /webhook/di/catalog",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "di_intelligence_jobs",
+                                                 "di_knowledge_relationships",
+                                                 "di_organizational_learnings",
+                                                 "di_project_technologies",
+                                                 "di_recommendations",
+                                                 "di_reusable_solutions",
+                                                 "di_solution_assets",
+                                                 "di_solution_technologies",
+                                                 "di_technologies",
+                                                 "qa_approach",
+                                                 "qops_project_members",
+                                                 "qops_projects",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_intelligence_jobs?select=job_id,status,job_type,project_id,input,output,error,created_at,updated_at\u0026order=updated_at.desc\u0026limit=200",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_knowledge_relationships?select=id,source_entity_type,source_entity_id,target_entity_type,target_entity_id,relationship_type,confidence_score,evidence,created_by_ai,visibility_level,created_at\u0026order=created_at.desc\u0026limit=500",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_organizational_learnings?select=id,title,category,source_project_id,learning_summary,impact_level,reusable_recommendation,visibility_level,source_ref,created_by_ai,created_at,updated_at\u0026order=updated_at.desc\u0026limit=300",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_project_technologies?select=id,project_id,technology_id,version,confidence_score,source_type,source_ref,created_at\u0026order=created_at.desc\u0026limit=500",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_recommendations?select=id,project_id,recommendation_type,title,summary,rationale,related_entity_type,related_entity_id,confidence_score,status,assigned_to,feedback,created_at,updated_at\u0026order=updated_at.desc\u0026limit=300",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_reusable_solutions?select=id,title,slug,summary,problem_statement,implementation_approach,qa_approach,risk_factors,production_learnings,implementation_complexity,applicability_tags,visibility_level,owner_team,source_project_id,ai_summary,status,created_at,updated_at\u0026order=updated_at.desc\u0026limit=300",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_solution_assets?select=id,solution_id,asset_type,title,url,storage_path,description,visibility_level,created_at\u0026order=created_at.desc\u0026limit=500",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_solution_technologies?select=id,solution_id,technology_id,created_at\u0026order=created_at.desc\u0026limit=500",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_technologies?select=id,name,normalized_name,category,description,vendor,tags,created_at,updated_at\u0026order=updated_at.desc\u0026limit=500",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects?select=id,name,owner,status,updated_at\u0026limit=500",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\DI - Catalog Read API [nzc2q8WqmTd6RGCw].json",
+                          "docPath":  "workflows/Published/DI - Catalog Read API [nzc2q8WqmTd6RGCw].md",
+                          "updatedAt":  "2026-05-11T12:01:45.128Z",
+                          "createdAt":  "2026-05-11T11:58:58.395Z"
+                      },
+                      {
+                          "id":  "18yW35k0ANmU3ZY4",
+                          "name":  "DI - Cross Project Search API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  13,
+                          "webhookHints":  "GET/POST /webhook/di/search",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "di_organizational_learnings",
+                                                 "di_recommendations",
+                                                 "di_reusable_solutions",
+                                                 "di_technologies",
+                                                 "qa_approach",
+                                                 "qops_project_members",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_organizational_learnings?select=id,title,category,source_project_id,learning_summary,impact_level,reusable_recommendation,visibility_level,created_at\u0026order=created_at.desc\u0026limit=200",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_recommendations?select=id,project_id,recommendation_type,title,summary,rationale,related_entity_type,related_entity_id,confidence_score,status,created_at\u0026order=created_at.desc\u0026limit=200",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_reusable_solutions?select=id,title,slug,summary,problem_statement,implementation_approach,qa_approach,applicability_tags,visibility_level,source_project_id,status,updated_at\u0026order=updated_at.desc\u0026limit=200",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_technologies?select=id,name,normalized_name,category,description,vendor,tags,updated_at\u0026order=updated_at.desc\u0026limit=300",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\DI - Cross Project Search API [18yW35k0ANmU3ZY4].json",
+                          "docPath":  "workflows/Published/DI - Cross Project Search API [18yW35k0ANmU3ZY4].md",
+                          "updatedAt":  "2026-05-11T10:45:31.768Z",
+                          "createdAt":  "2026-05-11T10:41:34.141Z"
+                      },
+                      {
+                          "id":  "eFtemLZ4s5NRjF1d",
+                          "name":  "DI - Insights API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  17,
+                          "webhookHints":  [
+                                               "GET/POST /webhook/di/insights",
+                                               "={{ \"OPTIONS\" }} /webhook/di/insights"
+                                           ],
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "di_job_metrics",
+                                                 "di_onboarding_guides",
+                                                 "di_project_profiles",
+                                                 "di_recommendations",
+                                                 "di_reusable_solutions",
+                                                 "di_similarity_matches",
+                                                 "di_solution_reviews",
+                                                 "qops_project_members",
+                                                 "qops_projects",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_job_metrics?select=*\u0026order=updated_at.desc\u0026limit=200",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_onboarding_guides?select=*\u0026order=updated_at.desc\u0026limit=100",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_project_profiles?select=*\u0026order=updated_at.desc\u0026limit=100",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_recommendations?select=id,project_id,title,summary,recommendation_type,status,confidence_score,updated_at\u0026order=updated_at.desc\u0026limit=200",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_reusable_solutions?select=id,title,summary,implementation_complexity,visibility_level,status,source_project_id,updated_at\u0026order=updated_at.desc\u0026limit=200",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_similarity_matches?select=*\u0026order=confidence_score.desc,updated_at.desc\u0026limit=200",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_solution_reviews?select=*\u0026order=updated_at.desc\u0026limit=300",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects?select=id,name,description,owner,module,release,status,tags,updated_at\u0026limit=500",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\DI - Insights API [eFtemLZ4s5NRjF1d].json",
+                          "docPath":  "workflows/Published/DI - Insights API [eFtemLZ4s5NRjF1d].md",
+                          "updatedAt":  "2026-05-12T10:37:28.273Z",
+                          "createdAt":  "2026-05-12T10:01:46.301Z"
+                      },
+                      {
+                          "id":  "8v0RLFdhdelnBeu9",
+                          "name":  "DI - Intelligence Queue Creator and Status API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  26,
+                          "webhookHints":  [
+                                               "POST /webhook/di/jobs",
+                                               "OPTIONS /webhook/di/jobs",
+                                               "GET/POST /webhook/di/jobs"
+                                           ],
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "di_intelligence_jobs",
+                                                 "qops_project_members",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_intelligence_jobs",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_intelligence_jobs?job_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\DI - Intelligence Queue Creator and Status API [8v0RLFdhdelnBeu9].json",
+                          "docPath":  "workflows/Published/DI - Intelligence Queue Creator and Status API [8v0RLFdhdelnBeu9].md",
+                          "updatedAt":  "2026-05-11T10:46:34.433Z",
+                          "createdAt":  "2026-05-11T10:36:52.263Z"
+                      },
+                      {
+                          "id":  "xmuy0M3IEbkISttj",
+                          "name":  "DI - Intelligence Worker",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  14,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "di_intelligence_jobs",
+                                                 "di_persist_extraction",
+                                                 "di_worker",
+                                                 "qa_approach",
+                                                 "qa_job",
+                                                 "qa_jobs",
+                                                 "qops_projects",
+                                                 "rpc"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_intelligence_jobs",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_intelligence_jobs?job_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs?project_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects?id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/rpc/di_persist_extraction"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\DI - Intelligence Worker [xmuy0M3IEbkISttj].json",
+                          "docPath":  "workflows/Published/DI - Intelligence Worker [xmuy0M3IEbkISttj].md",
+                          "updatedAt":  "2026-05-11T10:46:04.094Z",
+                          "createdAt":  "2026-05-11T10:40:20.869Z"
+                      },
+                      {
+                          "id":  "pbxli3DNK16tIhOe",
+                          "name":  "DI - Recommendation Feedback API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  16,
+                          "webhookHints":  [
+                                               "PATCH /webhook/di/recommendations/feedback",
+                                               "OPTIONS /webhook/di/recommendations/feedback"
+                                           ],
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "di_recommendation",
+                                                 "di_recommendations",
+                                                 "qops_audit_events",
+                                                 "qops_project_members",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_recommendations?id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\DI - Recommendation Feedback API [pbxli3DNK16tIhOe].json",
+                          "docPath":  "workflows/Published/DI - Recommendation Feedback API [pbxli3DNK16tIhOe].md",
+                          "updatedAt":  "2026-05-11T10:45:07.729Z",
+                          "createdAt":  "2026-05-11T10:42:41.059Z"
+                      },
+                      {
+                          "id":  "9baEqUVgSSFzZFbc",
+                          "name":  "DI - Solution Review API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  15,
+                          "webhookHints":  [
+                                               "PATCH /webhook/di/solutions/review",
+                                               "={{ \"OPTIONS\" }} /webhook/di/solutions/review"
+                                           ],
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "di_reusable_solutions",
+                                                 "di_solution",
+                                                 "di_solution_reviews",
+                                                 "qops_audit_events",
+                                                 "qops_project_members",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_reusable_solutions?id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_solution_reviews",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\DI - Solution Review API [9baEqUVgSSFzZFbc].json",
+                          "docPath":  "workflows/Published/DI - Solution Review API [9baEqUVgSSFzZFbc].md",
+                          "updatedAt":  "2026-05-12T10:36:36.137Z",
+                          "createdAt":  "2026-05-12T10:04:40.839Z"
+                      },
+                      {
+                          "id":  "iiR8d9v5oI8WzBPX",
+                          "name":  "INGEST API Queue Creator - SaaS - Attributed Draft",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  16,
+                          "webhookHints":  "POST /webhook/upload-test-artifacts",
+                          "credentials":  [
+                                              "httpCustomAuth: supabase-anon-key",
+                                              "httpCustomAuth: supabase-service-role-key"
+                                          ],
+                          "supabaseTables":  [
+                                                 "doc_ingestion_jobs",
+                                                 "doc_ingestion_queuecreator_logs",
+                                                 "qa_job_metrics",
+                                                 "qops_resolve_runtime_config",
+                                                 "qops_users",
+                                                 "rpc"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_queuecreator_logs",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/rpc/qops_resolve_runtime_config",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/storage/v1/object/public/uploaded-project-docs/${projectName}/${jobId}/${encodedFileName}`;\\n}\\nreturn",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/storage/v1/object/uploaded-project-docs/{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\INGEST API Queue Creator - SaaS - Attributed Draft [iiR8d9v5oI8WzBPX].json",
+                          "docPath":  "workflows/Published/INGEST API Queue Creator - SaaS - Attributed Draft [iiR8d9v5oI8WzBPX].md",
+                          "updatedAt":  "2026-05-14T04:41:51.209Z",
+                          "createdAt":  "2026-05-07T15:58:56.088Z"
+                      },
+                      {
+                          "id":  "mlelxUdlNcoBIyru",
+                          "name":  "INGEST Worker Engine (Queue Processor) - Attributed Draft",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  16,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  [
+                                              "httpCustomAuth: supabase-anon-key",
+                                              "httpCustomAuth: supabase-service-role-key"
+                                          ],
+                          "supabaseTables":  [
+                                                 "doc_ingestion_jobs",
+                                                 "doc_ingestion_queuecreator_logs"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs?job_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs?status=eq.pending\u0026order=created_at.asc\u0026limit=1\u0026select=job_id,status,input,project_id,requested_by,settings_version,config_snapshot,created_at",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_queuecreator_logs?job_id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\INGEST Worker Engine (Queue Processor) - Attributed Draft [mlelxUdlNcoBIyru].json",
+                          "docPath":  "workflows/Published/INGEST Worker Engine (Queue Processor) - Attributed Draft [mlelxUdlNcoBIyru].md",
+                          "updatedAt":  "2026-05-14T11:33:42.000Z",
+                          "createdAt":  "2026-04-14T09:41:25.246Z"
+                      },
+                      {
+                          "id":  "KeTwumg3JT7C46BD",
+                          "name":  "INGEST Workflow-Status-Check",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  5,
+                          "webhookHints":  "GET/POST /webhook/job-status",
+                          "credentials":  [
+                                              "httpCustomAuth: supabase-anon-key",
+                                              "httpHeaderAuth: Header Auth account"
+                                          ],
+                          "supabaseTables":  "doc_ingestion_jobs",
+                          "urlHints":  "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\INGEST Workflow-Status-Check [KeTwumg3JT7C46BD].json",
+                          "docPath":  "workflows/Published/INGEST Workflow-Status-Check [KeTwumg3JT7C46BD].md",
+                          "updatedAt":  "2026-05-07T05:16:36.650Z",
+                          "createdAt":  "2026-04-16T12:35:36.421Z"
+                      },
+                      {
+                          "id":  "C9oZfZxpGFakzlB3",
+                          "name":  "Multimodal Knowledge Ingestion \u0026 Vectorization Engine - In Progress",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  35,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  [
+                                              "chromaCloudApi: ChromaDB Self-Hosted account",
+                                              "httpCustomAuth: supabase-anon-key",
+                                              "httpCustomAuth: supabase-service-role-key",
+                                              "openAiApi: OpenAi Paid Account (Aonu)"
+                                          ],
+                          "supabaseTables":  [
+                                                 "doc_ingestion_jobs",
+                                                 "doc_ingestion_queuecreator_logs",
+                                                 "qa_job_metrics",
+                                                 "qops_projects"
+                                             ],
+                          "urlHints":  [
+                                           "http://127.0.0.1:8001/process-document-v2",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs?job_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_queuecreator_logs?job_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects?id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Multimodal Knowledge Ingestion \u0026 Vectorization Engine - In Progress [C9oZfZxpGFakzlB3].json",
+                          "docPath":  "workflows/Published/Multimodal Knowledge Ingestion \u0026 Vectorization Engine - In Progress [C9oZfZxpGFakzlB3].md",
+                          "updatedAt":  "2026-05-15T04:08:04.437Z",
+                          "createdAt":  "2026-05-13T09:17:05.310Z"
+                      },
+                      {
+                          "id":  "Vwc6c8ehsRTF8svG",
+                          "name":  "PRO QA Backlog, Jira \u0026 Confluence Generator - Team Managed Ready",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  40,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  [
+                                              "chromaCloudApi: ChromaDB Self-Hosted account",
+                                              "httpBasicAuth: JIRA",
+                                              "openAiApi: OpenAi Paid Account (Aonu)"
+                                          ],
+                          "supabaseTables":  "qa_document",
+                          "urlHints":  [
+                                           "https://anujalhans1.atlassian.net",
+                                           "https://anujalhans1.atlassian.net/wiki"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\PRO QA Backlog, Jira \u0026 Confluence Generator - Team Managed Ready [Vwc6c8ehsRTF8svG].json",
+                          "docPath":  "workflows/Published/PRO QA Backlog, Jira \u0026 Confluence Generator - Team Managed Ready [Vwc6c8ehsRTF8svG].md",
+                          "updatedAt":  "2026-05-15T05:26:46.000Z",
+                          "createdAt":  "2026-05-11T03:59:47.905Z"
+                      },
+                      {
+                          "id":  "yPgr7mtUnL3E8QQP",
+                          "name":  "PRO QA Generation Queue Creator - Ready Draft",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  18,
+                          "webhookHints":  [
+                                               "POST /webhook/generate-qa-doc",
+                                               "OPTIONS /webhook/generate-qa-doc"
+                                           ],
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qa_job_metrics",
+                                                 "qa_jobs",
+                                                 "qops_resolve_runtime_config",
+                                                 "qops_users",
+                                                 "rpc"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs?job_id=eq.\\",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs\\",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/rpc/qops_resolve_runtime_config"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\PRO QA Generation Queue Creator - Ready Draft [yPgr7mtUnL3E8QQP].json",
+                          "docPath":  "workflows/Published/PRO QA Generation Queue Creator - Ready Draft [yPgr7mtUnL3E8QQP].md",
+                          "updatedAt":  "2026-05-13T04:01:19.748Z",
+                          "createdAt":  "2026-05-11T04:17:16.626Z"
+                      },
+                      {
+                          "id":  "QApRBFSaJgINsdHN",
+                          "name":  "PRO QA Generation Queue Worker - Ready Draft",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  22,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qa_job_metrics",
+                                                 "qa_jobs"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs?job_id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\PRO QA Generation Queue Worker - Ready Draft [QApRBFSaJgINsdHN].json",
+                          "docPath":  "workflows/Published/PRO QA Generation Queue Worker - Ready Draft [QApRBFSaJgINsdHN].md",
+                          "updatedAt":  "2026-05-12T05:26:47.000Z",
+                          "createdAt":  "2026-05-11T04:00:34.834Z"
+                      },
+                      {
+                          "id":  "SG7khcKlhHst48WH",
+                          "name":  "PRO QA Jira Story Test Case Generator",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  18,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  [
+                                              "httpCustomAuth: supabase-service-role-key",
+                                              "jiraSoftwareCloudApi: Jira SW Cloud account",
+                                              "openAiApi: OpenAi Paid Account (Aonu)"
+                                          ],
+                          "supabaseTables":  [
+                                                 "qa_jobs",
+                                                 "qa_story_testcase_links"
+                                             ],
+                          "urlHints":  [
+                                           "https://anujalhans1.atlassian.net",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_story_testcase_links?on_conflict=story_jira_key,testcase_jira_key"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\PRO QA Jira Story Test Case Generator [SG7khcKlhHst48WH].json",
+                          "docPath":  "workflows/Published/PRO QA Jira Story Test Case Generator [SG7khcKlhHst48WH].md",
+                          "updatedAt":  "2026-05-15T06:07:38.000Z",
+                          "createdAt":  "2026-05-12T14:13:40.565Z"
+                      },
+                      {
+                          "id":  "8nuhDEewnnunXSbF",
+                          "name":  "PRO QA Story Test Cases Queue Creator",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  18,
+                          "webhookHints":  [
+                                               "POST /webhook/generate-story-test-cases",
+                                               "OPTIONS /webhook/generate-story-test-cases"
+                                           ],
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qa_job_metrics",
+                                                 "qa_jobs",
+                                                 "qops_resolve_runtime_config",
+                                                 "qops_users",
+                                                 "rpc"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs?job_id=eq.\\",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs\\",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/rpc/qops_resolve_runtime_config"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\PRO QA Story Test Cases Queue Creator [8nuhDEewnnunXSbF].json",
+                          "docPath":  "workflows/Published/PRO QA Story Test Cases Queue Creator [8nuhDEewnnunXSbF].md",
+                          "updatedAt":  "2026-05-13T04:01:31.931Z",
+                          "createdAt":  "2026-05-12T14:20:15.325Z"
+                      },
+                      {
+                          "id":  "ivz13uFyjfCT8149",
+                          "name":  "PRO QA Story Test Cases Worker",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  19,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qa_job_metrics",
+                                                 "qa_jobs"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs?job_id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\PRO QA Story Test Cases Worker [ivz13uFyjfCT8149].json",
+                          "docPath":  "workflows/Published/PRO QA Story Test Cases Worker [ivz13uFyjfCT8149].md",
+                          "updatedAt":  "2026-05-12T17:13:43.449Z",
+                          "createdAt":  "2026-05-12T14:17:35.958Z"
+                      },
+                      {
+                          "id":  "zHsg1Zr7oGOvhPFg",
+                          "name":  "Q-Ops Agent Artifact Reprocess API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  12,
+                          "webhookHints":  "POST /webhook/artifacts/reprocess",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "doc_ingestion_jobs",
+                                                 "qa_job_metrics",
+                                                 "qops_project_members",
+                                                 "qops_projects",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent Artifact Reprocess API [zHsg1Zr7oGOvhPFg].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent Artifact Reprocess API [zHsg1Zr7oGOvhPFg].md",
+                          "updatedAt":  "2026-05-14T06:41:49.226Z",
+                          "createdAt":  "2026-05-07T05:54:43.132Z"
+                      },
+                      {
+                          "id":  "YFsr2hRD7BZlPCEK",
+                          "name":  "Q-Ops Agent Artifacts API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  4,
+                          "webhookHints":  "GET/POST /webhook/artifacts",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  "doc_ingestion_jobs",
+                          "urlHints":  "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent Artifacts API [YFsr2hRD7BZlPCEK].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent Artifacts API [YFsr2hRD7BZlPCEK].md",
+                          "updatedAt":  "2026-05-07T05:53:42.864Z",
+                          "createdAt":  "2026-05-07T05:53:42.864Z"
+                      },
+                      {
+                          "id":  "lyyrP14iTYacuEFv",
+                          "name":  "Q-Ops Agent Audit Events API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  9,
+                          "webhookHints":  "GET/POST /webhook/audit-events",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qa_job_metrics",
+                                                 "qops_audit_events",
+                                                 "qops_project_members",
+                                                 "qops_projects",
+                                                 "qops_user_id",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent Audit Events API [lyyrP14iTYacuEFv].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent Audit Events API [lyyrP14iTYacuEFv].md",
+                          "updatedAt":  "2026-05-08T06:45:10.685Z",
+                          "createdAt":  "2026-05-07T05:54:19.525Z"
+                      },
+                      {
+                          "id":  "55zxBkmwk8ezvWOP",
+                          "name":  "Q-Ops Agent Auth Me API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  6,
+                          "webhookHints":  "GET /webhook/me",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qops_project_members",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent Auth Me API [55zxBkmwk8ezvWOP].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent Auth Me API [55zxBkmwk8ezvWOP].md",
+                          "updatedAt":  "2026-05-08T05:41:43.010Z",
+                          "createdAt":  "2026-05-07T07:16:43.522Z"
+                      },
+                      {
+                          "id":  "mucEtw68lUvv9T6f",
+                          "name":  "Q-Ops Agent Generated Documents API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  4,
+                          "webhookHints":  "GET/POST /webhook/generated-documents",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  "qa_jobs",
+                          "urlHints":  "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs",
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent Generated Documents API [mucEtw68lUvv9T6f].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent Generated Documents API [mucEtw68lUvv9T6f].md",
+                          "updatedAt":  "2026-05-07T05:53:59.139Z",
+                          "createdAt":  "2026-05-07T05:53:59.139Z"
+                      },
+                      {
+                          "id":  "NgKN1jdavJfmJG9h",
+                          "name":  "Q-Ops Agent Infrastructure Load API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  11,
+                          "webhookHints":  "GET/POST /webhook/infrastructure-load",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "doc_ingestion_jobs",
+                                                 "qa_job_metrics",
+                                                 "qa_jobs",
+                                                 "qops_connection_test_results",
+                                                 "qops_project_members",
+                                                 "qops_projects",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_connection_test_results",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent Infrastructure Load API [NgKN1jdavJfmJG9h].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent Infrastructure Load API [NgKN1jdavJfmJG9h].md",
+                          "updatedAt":  "2026-05-08T07:10:04.605Z",
+                          "createdAt":  "2026-05-08T07:06:29.801Z"
+                      },
+                      {
+                          "id":  "3zXdQS9hABDTXuea",
+                          "name":  "Q-Ops Agent Integration Test API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  7,
+                          "webhookHints":  "POST /webhook/integrations/test",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qops_connection_test_results",
+                                                 "qops_integration_settings"
+                                             ],
+                          "urlHints":  [
+                                           "http://localhost:5678/webhook/health",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_connection_test_results",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_integration_settings",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_integration_settings?environment_key=eq.\\"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent Integration Test API [3zXdQS9hABDTXuea].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent Integration Test API [3zXdQS9hABDTXuea].md",
+                          "updatedAt":  "2026-05-07T06:49:56.886Z",
+                          "createdAt":  "2026-05-07T06:15:44.415Z"
+                      },
+                      {
+                          "id":  "CGkgxVrH5D6syesK",
+                          "name":  "Q-Ops Agent Integrations Status API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  5,
+                          "webhookHints":  "GET/POST /webhook/integrations/status",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qops_connection_test_results",
+                                                 "qops_integration_settings"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_connection_test_results",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_integration_settings"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent Integrations Status API [CGkgxVrH5D6syesK].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent Integrations Status API [CGkgxVrH5D6syesK].md",
+                          "updatedAt":  "2026-05-07T06:20:57.471Z",
+                          "createdAt":  "2026-05-07T06:14:59.660Z"
+                      },
+                      {
+                          "id":  "0cyKIIbCq17bD0yK",
+                          "name":  "Q-Ops Agent Integrations Test All API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  7,
+                          "webhookHints":  "POST /webhook/integrations/test-all",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qops_connection_test_results",
+                                                 "qops_integration_settings"
+                                             ],
+                          "urlHints":  [
+                                           "http://localhost:5678/webhook/health",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_connection_test_results",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_integration_settings"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent Integrations Test All API [0cyKIIbCq17bD0yK].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent Integrations Test All API [0cyKIIbCq17bD0yK].md",
+                          "updatedAt":  "2026-05-07T06:49:23.956Z",
+                          "createdAt":  "2026-05-07T06:16:13.941Z"
+                      },
+                      {
+                          "id":  "hWo8zurIZ3KkPKxg",
+                          "name":  "Q-Ops Agent Projects API - Wired",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  11,
+                          "webhookHints":  [
+                                               "GET/POST /webhook/projects",
+                                               "POST /webhook/projects"
+                                           ],
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qops_audit_events",
+                                                 "qops_projects"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent Projects API - Wired [hWo8zurIZ3KkPKxg].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent Projects API - Wired [hWo8zurIZ3KkPKxg].md",
+                          "updatedAt":  "2026-05-07T05:51:38.512Z",
+                          "createdAt":  "2026-05-07T05:51:38.512Z"
+                      },
+                      {
+                          "id":  "ZuXZfzhWr8Fcep5a",
+                          "name":  "Q-Ops Agent Settings API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  6,
+                          "webhookHints":  "GET/POST /webhook/settings",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qops_connection_test_results",
+                                                 "qops_environment_settings",
+                                                 "qops_integration_settings"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_connection_test_results",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_environment_settings",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_integration_settings"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent Settings API [ZuXZfzhWr8Fcep5a].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent Settings API [ZuXZfzhWr8Fcep5a].md",
+                          "updatedAt":  "2026-05-07T06:21:25.076Z",
+                          "createdAt":  "2026-05-07T06:13:43.882Z"
+                      },
+                      {
+                          "id":  "u3klCtPvbFd01ds4",
+                          "name":  "Q-Ops Agent Settings Write API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  6,
+                          "webhookHints":  "PATCH /webhook/settings",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qops_audit_events",
+                                                 "qops_environment_settings",
+                                                 "qops_integration_settings"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent Settings Write API [u3klCtPvbFd01ds4].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent Settings Write API [u3klCtPvbFd01ds4].md",
+                          "updatedAt":  "2026-05-07T11:22:13.761Z",
+                          "createdAt":  "2026-05-07T06:14:39.634Z"
+                      },
+                      {
+                          "id":  "Nkkxc1p3wnzPyj21",
+                          "name":  "Q-Ops Agent User Accept Invite API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  9,
+                          "webhookHints":  "POST /webhook/users/accept-invite",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qops_audit_events",
+                                                 "qops_user",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?id=eq.\\"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent User Accept Invite API [Nkkxc1p3wnzPyj21].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent User Accept Invite API [Nkkxc1p3wnzPyj21].md",
+                          "updatedAt":  "2026-05-07T09:34:39.623Z",
+                          "createdAt":  "2026-05-07T08:31:47.502Z"
+                      },
+                      {
+                          "id":  "W8b32kGweBlEXN6r",
+                          "name":  "Q-Ops Agent User Invite API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  11,
+                          "webhookHints":  "POST /webhook/users/invite",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qops_audit_events",
+                                                 "qops_role",
+                                                 "qops_user",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "http://127.0.0.1:5175/auth/callback",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/invite?redirect_to=\\",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?on_conflict=email"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent User Invite API [W8b32kGweBlEXN6r].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent User Invite API [W8b32kGweBlEXN6r].md",
+                          "updatedAt":  "2026-05-07T09:45:13.228Z",
+                          "createdAt":  "2026-05-07T07:47:41.380Z"
+                      },
+                      {
+                          "id":  "NpD8cnqPE7qAWEpL",
+                          "name":  "Q-Ops Agent User Password Reset Audit API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  7,
+                          "webhookHints":  "POST /webhook/users/password-reset-audit",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qops_audit_events",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent User Password Reset Audit API [NpD8cnqPE7qAWEpL].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent User Password Reset Audit API [NpD8cnqPE7qAWEpL].md",
+                          "updatedAt":  "2026-05-07T11:34:33.536Z",
+                          "createdAt":  "2026-05-07T11:31:37.186Z"
+                      },
+                      {
+                          "id":  "SqF2eOhsuBrtyCtD",
+                          "name":  "Q-Ops Agent User Project Assignments API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  13,
+                          "webhookHints":  "PATCH /webhook/users/project-assignments",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qops_audit_events",
+                                                 "qops_project_members",
+                                                 "qops_projects",
+                                                 "qops_user",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent User Project Assignments API [SqF2eOhsuBrtyCtD].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent User Project Assignments API [SqF2eOhsuBrtyCtD].md",
+                          "updatedAt":  "2026-05-08T05:26:38.511Z",
+                          "createdAt":  "2026-05-08T05:22:04.205Z"
+                      },
+                      {
+                          "id":  "AL5fIgJ9skALon98",
+                          "name":  "Q-Ops Agent User Update API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  9,
+                          "webhookHints":  "PATCH /webhook/users/update",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qops_audit_events",
+                                                 "qops_user",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent User Update API [AL5fIgJ9skALon98].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent User Update API [AL5fIgJ9skALon98].md",
+                          "updatedAt":  "2026-05-07T07:51:50.627Z",
+                          "createdAt":  "2026-05-07T07:48:13.305Z"
+                      },
+                      {
+                          "id":  "vhxA44slh746G1ja",
+                          "name":  "Q-Ops Agent Users API",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  7,
+                          "webhookHints":  "GET /webhook/users",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qops_project_members",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops Agent Users API [vhxA44slh746G1ja].json",
+                          "docPath":  "workflows/Published/Q-Ops Agent Users API [vhxA44slh746G1ja].md",
+                          "updatedAt":  "2026-05-07T07:34:43.820Z",
+                          "createdAt":  "2026-05-07T07:17:10.780Z"
+                      },
+                      {
+                          "id":  "tcKSeScJRiWtRx77",
+                          "name":  "Q-Ops-Agent-Analytics-Summary",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  11,
+                          "webhookHints":  "GET/POST /webhook/analytics-summary",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qa_job_metrics",
+                                                 "qops_project_members",
+                                                 "qops_users"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics?${pairs.join(",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops-Agent-Analytics-Summary [tcKSeScJRiWtRx77].json",
+                          "docPath":  "workflows/Published/Q-Ops-Agent-Analytics-Summary [tcKSeScJRiWtRx77].md",
+                          "updatedAt":  "2026-05-14T12:44:47.000Z",
+                          "createdAt":  "2026-05-02T08:28:12.629Z"
+                      },
+                      {
+                          "id":  "zdx8YtZJOMWtbv1L",
+                          "name":  "Q-Ops-Agent-Health-Status",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  11,
+                          "webhookHints":  "GET/POST /webhook/health",
+                          "credentials":  [
+                                              "httpCustomAuth: supabase-anon-key",
+                                              "httpCustomAuth: supabase-service-role-key",
+                                              "httpHeaderAuth: chromadb-cloud-key"
+                                          ],
+                          "supabaseTables":  [
+                                                 "qa_job_metrics",
+                                                 "qops_integration_settings"
+                                             ],
+                          "urlHints":  [
+                                           "http://127.0.0.1:5050",
+                                           "http://127.0.0.1:5050/health",
+                                           "http://127.0.0.1:8000",
+                                           "http://127.0.0.1:8000/health",
+                                           "https://api.trychroma.com",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_integration_settings",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/storage/v1/bucket/uploaded-project-docs"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\Q-Ops-Agent-Health-Status [zdx8YtZJOMWtbv1L].json",
+                          "docPath":  "workflows/Published/Q-Ops-Agent-Health-Status [zdx8YtZJOMWtbv1L].md",
+                          "updatedAt":  "2026-05-11T12:52:31.034Z",
+                          "createdAt":  "2026-05-04T10:19:08.462Z"
+                      },
+                      {
+                          "id":  "fullRetrievalD01",
+                          "name":  "RETRIEVAL Document Generator AI Agent - SaaS - Full Clone Draft",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  67,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  [
+                                              "chromaCloudApi: ChromaDB Self-Hosted account",
+                                              "httpBasicAuth: Confluence",
+                                              "httpBasicAuth: JIRA",
+                                              "httpCustomAuth: supabase-anon-key",
+                                              "jiraSoftwareCloudApi: Jira SW Cloud account",
+                                              "openAiApi: OpenAi Paid Account (Aonu)"
+                                          ],
+                          "supabaseTables":  [
+                                                 "qa_job_metrics",
+                                                 "qa_jobs"
+                                             ],
+                          "urlHints":  [
+                                           "http://127.0.0.1:5050/convert",
+                                           "https://anujalhans1.atlassian.net/rest/api/3/search/jql",
+                                           "https://anujalhans1.atlassian.net/wiki/rest/api/content",
+                                           "https://anujalhans1.atlassian.net/wiki/rest/api/content/{{",
+                                           "https://anujalhans1.atlassian.net/wiki/rest/api/content?spaceKey=TD\u0026title={{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs?job_id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\RETRIEVAL Document Generator AI Agent - SaaS - Full Clone Draft [fullRetrievalD01].json",
+                          "docPath":  "workflows/Published/RETRIEVAL Document Generator AI Agent - SaaS - Full Clone Draft [fullRetrievalD01].md",
+                          "updatedAt":  "2026-05-11T18:15:41.000Z",
+                          "createdAt":  "2026-05-07T16:29:29.537Z"
+                      },
+                      {
+                          "id":  "b63H3FLO9nFujtQp",
+                          "name":  "RETRIEVE Workflow-status-check",
+                          "active":  true,
+                          "folder":  "Published",
+                          "nodeCount":  5,
+                          "webhookHints":  "GET/POST /webhook/job-status-retrieve",
+                          "credentials":  "httpCustomAuth: supabase-anon-key",
+                          "supabaseTables":  "qa_jobs",
+                          "urlHints":  "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs",
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Published\\RETRIEVE Workflow-status-check [b63H3FLO9nFujtQp].json",
+                          "docPath":  "workflows/Published/RETRIEVE Workflow-status-check [b63H3FLO9nFujtQp].md",
+                          "updatedAt":  "2026-05-07T05:15:46.550Z",
+                          "createdAt":  "2026-04-17T10:32:08.107Z"
+                      },
+                      {
+                          "id":  "pBxaNCUMJonO6Jg8",
+                          "name":  "AI Test Plan Generator",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  19,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  "openAiApi: OpenAi Account 2",
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  "http://127.0.0.1:8000/convert",
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\AI Test Plan Generator [pBxaNCUMJonO6Jg8].json",
+                          "docPath":  "workflows/Unpublished/AI Test Plan Generator [pBxaNCUMJonO6Jg8].md",
+                          "updatedAt":  "2026-04-16T10:15:57.000Z",
+                          "createdAt":  "2025-10-31T03:26:24.416Z"
+                      },
+                      {
+                          "id":  "Xv7UheIRR8lYxc4d",
+                          "name":  "AI Test Plan Generator - Supports File Upload Dynamically via API",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  21,
+                          "webhookHints":  "POST /webhook/upload-test-docs",
+                          "credentials":  "openAiApi: OpenAi account 4",
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  "http://127.0.0.1:8000/convert",
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\AI Test Plan Generator - Supports File Upload Dynamically via API [Xv7UheIRR8lYxc4d].json",
+                          "docPath":  "workflows/Unpublished/AI Test Plan Generator - Supports File Upload Dynamically via API [Xv7UheIRR8lYxc4d].md",
+                          "updatedAt":  "2026-04-16T10:15:13.000Z",
+                          "createdAt":  "2025-11-03T08:17:55.904Z"
+                      },
+                      {
+                          "id":  "8tNH0Qc3q3LGdP8x",
+                          "name":  "AI Test Plan Generator - Supports only Text Input",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  20,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  "openAiApi: OpenAi Account 2",
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  "http://127.0.0.1:8000/convert",
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\AI Test Plan Generator - Supports only Text Input [8tNH0Qc3q3LGdP8x].json",
+                          "docPath":  "workflows/Unpublished/AI Test Plan Generator - Supports only Text Input [8tNH0Qc3q3LGdP8x].md",
+                          "updatedAt":  "2026-04-16T10:15:53.000Z",
+                          "createdAt":  "2025-11-03T05:02:47.772Z"
+                      },
+                      {
+                          "id":  "1sSbHEeqlS4K7Alb",
+                          "name":  "Auto PR Review",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  12,
+                          "webhookHints":  "POST /webhook/github-pr-review",
+                          "credentials":  [
+                                              "httpBasicAuth: Jenkins",
+                                              "httpBearerAuth: Bearer Auth account",
+                                              "httpHeaderAuth: BotPAT",
+                                              "httpHeaderAuth: GitHub Token Header Auth",
+                                              "httpHeaderAuth: Header Auth account"
+                                          ],
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  [
+                                           "https://api.github.com/repos/{{",
+                                           "https://api.github.com/repos/{{$json[\\",
+                                           "https://api.openai.com/v1/chat/completions"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Auto PR Review [1sSbHEeqlS4K7Alb].json",
+                          "docPath":  "workflows/Unpublished/Auto PR Review [1sSbHEeqlS4K7Alb].md",
+                          "updatedAt":  "2025-10-17T08:30:39.000Z",
+                          "createdAt":  "2025-09-23T18:19:40.814Z"
+                      },
+                      {
+                          "id":  "FAkgwawIgaG54lOY",
+                          "name":  "Github-\u003eJenkins Job Trigger",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  10,
+                          "webhookHints":  "POST /webhook/github-webhook",
+                          "credentials":  "httpBasicAuth: Jenkins",
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  [
+                                           "http://localhost:8080/job/Selenium-Automation-Tests/{{$json[\\",
+                                           "http://localhost:8080/job/Selenium-Automation-Tests/build?11aae15c077290bdeb52fb322cd0849bba",
+                                           "http://localhost:8080/job/Selenium-Automation-Tests/lastBuild/api/json",
+                                           "http://localhost:8080/job/Selenium-Automation-Tests/lastSuccessfulBuild/artifact/reports/extent-report.html"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Github- Jenkins Job Trigger [FAkgwawIgaG54lOY].json",
+                          "docPath":  "workflows/Unpublished/Github- Jenkins Job Trigger [FAkgwawIgaG54lOY].md",
+                          "updatedAt":  "2026-03-10T12:37:24.964Z",
+                          "createdAt":  "2025-10-03T17:31:37.799Z"
+                      },
+                      {
+                          "id":  "pjz9L77szB9DDsN1",
+                          "name":  "INGEST API Queue Creator - SaaS",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  12,
+                          "webhookHints":  "POST /webhook/upload-test-artifacts",
+                          "credentials":  [
+                                              "httpCustomAuth: supabase-anon-key",
+                                              "httpCustomAuth: supabase-service-role-key"
+                                          ],
+                          "supabaseTables":  [
+                                                 "doc_ingestion_jobs",
+                                                 "doc_ingestion_queuecreator_logs",
+                                                 "qa_job_metrics"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_queuecreator_logs",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/storage/v1/object/public/uploaded-project-docs/${projectName}/${jobId}/${encodedFileName}`;\\n\\n",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/storage/v1/object/uploaded-project-docs/{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\INGEST API Queue Creator - SaaS [pjz9L77szB9DDsN1].json",
+                          "docPath":  "workflows/Unpublished/INGEST API Queue Creator - SaaS [pjz9L77szB9DDsN1].md",
+                          "updatedAt":  "2026-05-07T05:15:28.892Z",
+                          "createdAt":  "2026-04-14T07:44:15.022Z"
+                      },
+                      {
+                          "id":  "iKOec9hKQmR2KgHs",
+                          "name":  "INGEST Worker Engine (Queue Processor)",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  13,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  [
+                                              "httpCustomAuth: supabase-anon-key",
+                                              "httpCustomAuth: supabase-service-role-key"
+                                          ],
+                          "supabaseTables":  [
+                                                 "doc_ingestion_jobs",
+                                                 "doc_ingestion_queuecreator_logs"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs?job_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs?status=eq.pending\u0026order=created_at.asc\u0026limit=1",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_queuecreator_logs?job_id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\INGEST Worker Engine (Queue Processor) [iKOec9hKQmR2KgHs].json",
+                          "docPath":  "workflows/Unpublished/INGEST Worker Engine (Queue Processor) [iKOec9hKQmR2KgHs].md",
+                          "updatedAt":  "2026-05-07T05:15:37.764Z",
+                          "createdAt":  "2026-04-14T09:41:25.246Z"
+                      },
+                      {
+                          "id":  "jKI3mzjtDyezA3eP",
+                          "name":  "Intelligent Quality Engineering Documentation Generator",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  11,
+                          "webhookHints":  "POST /webhook/generate-qa-doc",
+                          "credentials":  [
+                                              "chromaCloudApi: ChromaDB Self-Hosted account",
+                                              "googleDriveOAuth2Api: Google Drive account",
+                                              "openAiApi: OpenAi Paid Account (Aonu)"
+                                          ],
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  [
+                                           "http://127.0.0.1:5050/convert",
+                                           "https://drive.google.com/drive/folders/1SNy6fJ4A-NvaHy9046n-UwC3UUPo4gwj"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Intelligent Quality Engineering Documentation Generator [jKI3mzjtDyezA3eP].json",
+                          "docPath":  "workflows/Unpublished/Intelligent Quality Engineering Documentation Generator [jKI3mzjtDyezA3eP].md",
+                          "updatedAt":  "2026-03-11T05:58:16.168Z",
+                          "createdAt":  "2026-02-23T11:28:38.557Z"
+                      },
+                      {
+                          "id":  "TAqc6zIDxTE6dsVm",
+                          "name":  "Intelligent Quality Engineering Documentation Generator - Refactored",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  38,
+                          "webhookHints":  "POST /webhook/generate-qa-doc",
+                          "credentials":  [
+                                              "chromaCloudApi: ChromaDB Self-Hosted account",
+                                              "httpBasicAuth: Confluence",
+                                              "httpBasicAuth: JIRA",
+                                              "jiraSoftwareCloudApi: Jira SW Cloud account",
+                                              "openAiApi: OpenAi Paid Account (Aonu)"
+                                          ],
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  [
+                                           "http://127.0.0.1:5050/convert",
+                                           "https://anujalhans1.atlassian.net/rest/api/3/search/jql",
+                                           "https://anujalhans1.atlassian.net/wiki/rest/api/content",
+                                           "https://anujalhans1.atlassian.net/wiki/rest/api/content/{{",
+                                           "https://anujalhans1.atlassian.net/wiki/rest/api/content?spaceKey=TD\u0026title={{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Intelligent Quality Engineering Documentation Generator - Refactored [TAqc6zIDxTE6dsVm].json",
+                          "docPath":  "workflows/Unpublished/Intelligent Quality Engineering Documentation Generator - Refactored [TAqc6zIDxTE6dsVm].md",
+                          "updatedAt":  "2026-03-31T11:44:53.387Z",
+                          "createdAt":  "2026-03-17T07:58:58.305Z"
+                      },
+                      {
+                          "id":  "n0fvS28StF5iMZvG",
+                          "name":  "Multimodal Knowledge Ingestion \u0026 Vectorization Engine",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  33,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  [
+                                              "chromaCloudApi: ChromaDB Self-Hosted account",
+                                              "httpCustomAuth: supabase-anon-key",
+                                              "openAiApi: OpenAi Paid Account (Aonu)"
+                                          ],
+                          "supabaseTables":  [
+                                                 "doc_ingestion_jobs",
+                                                 "doc_ingestion_queuecreator_logs",
+                                                 "qa_job_metrics"
+                                             ],
+                          "urlHints":  [
+                                           "http://127.0.0.1:8000/process-document",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs?job_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_queuecreator_logs?job_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Multimodal Knowledge Ingestion \u0026 Vectorization Engine [n0fvS28StF5iMZvG].json",
+                          "docPath":  "workflows/Unpublished/Multimodal Knowledge Ingestion \u0026 Vectorization Engine [n0fvS28StF5iMZvG].md",
+                          "updatedAt":  "2026-05-07T05:15:21.484Z",
+                          "createdAt":  "2026-02-20T10:39:22.919Z"
+                      },
+                      {
+                          "id":  "fullIngestDraft01",
+                          "name":  "Multimodal Knowledge Ingestion \u0026 Vectorization Engine - Full Clone Draft",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  34,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  [
+                                              "chromaCloudApi: ChromaDB Self-Hosted account",
+                                              "httpCustomAuth: supabase-anon-key",
+                                              "httpCustomAuth: supabase-service-role-key",
+                                              "openAiApi: OpenAi Paid Account (Aonu)"
+                                          ],
+                          "supabaseTables":  [
+                                                 "doc_ingestion_jobs",
+                                                 "doc_ingestion_queuecreator_logs",
+                                                 "qa_job_metrics",
+                                                 "qops_projects"
+                                             ],
+                          "urlHints":  [
+                                           "http://127.0.0.1:8000/process-document",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs?job_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_queuecreator_logs?job_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects?id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Multimodal Knowledge Ingestion \u0026 Vectorization Engine - Full Clone Draft [fullIngestDraft01].json",
+                          "docPath":  "workflows/Unpublished/Multimodal Knowledge Ingestion \u0026 Vectorization Engine - Full Clone Draft [fullIngestDraft01].md",
+                          "updatedAt":  "2026-05-12T04:06:20.974Z",
+                          "createdAt":  "2026-05-07T16:29:35.388Z"
+                      },
+                      {
+                          "id":  "VlsQ96Ok64BoaQea",
+                          "name":  "My Sub-workflow",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  2,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  "openAiApi: OpenAi Paid Account (Aonu)",
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  {
+
+                                       },
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\My Sub-workflow [VlsQ96Ok64BoaQea].json",
+                          "docPath":  "workflows/Unpublished/My Sub-workflow [VlsQ96Ok64BoaQea].md",
+                          "updatedAt":  "2026-02-24T11:28:40.000Z",
+                          "createdAt":  "2026-02-23T10:48:37.164Z"
+                      },
+                      {
+                          "id":  "jtTovk07OGHpS8UF",
+                          "name":  "NAGP_DataPreprocessor_Puru",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  15,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  [
+                                              "googleDriveOAuth2Api: Google Drive account",
+                                              "pineconeApi: My PineconeApi account"
+                                          ],
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  {
+
+                                       },
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\NAGP_DataPreprocessor_Puru [jtTovk07OGHpS8UF].json",
+                          "docPath":  "workflows/Unpublished/NAGP_DataPreprocessor_Puru [jtTovk07OGHpS8UF].md",
+                          "updatedAt":  "2026-03-31T07:21:26.870Z",
+                          "createdAt":  "2026-03-31T06:41:18.186Z"
+                      },
+                      {
+                          "id":  "ij7m4kdXx4KFWfOz",
+                          "name":  "NAGP-Data-preprocssor - Defect Intelligence",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  9,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  [
+                                              "googleDriveOAuth2Api: Google Drive account",
+                                              "openAiApi: OpenAi Paid Account (Aonu)",
+                                              "pineconeApi: My PineconeApi account"
+                                          ],
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  "https://drive.google.com/drive/folders/1_hCicqKnOv_5ZlRCoiN3-eOxrsQKIrSU",
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\NAGP-Data-preprocssor - Defect Intelligence [ij7m4kdXx4KFWfOz].json",
+                          "docPath":  "workflows/Unpublished/NAGP-Data-preprocssor - Defect Intelligence [ij7m4kdXx4KFWfOz].md",
+                          "updatedAt":  "2026-03-31T07:47:44.258Z",
+                          "createdAt":  "2026-03-31T07:42:31.552Z"
+                      },
+                      {
+                          "id":  "wA3qrgR59Vlov0BQ",
+                          "name":  "NAGP-RAG-Agent- DefectIntelligence",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  6,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  [
+                                              "openAiApi: OpenAi Paid Account (Aonu)",
+                                              "pineconeApi: My PineconeApi account"
+                                          ],
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  {
+
+                                       },
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\NAGP-RAG-Agent- DefectIntelligence [wA3qrgR59Vlov0BQ].json",
+                          "docPath":  "workflows/Unpublished/NAGP-RAG-Agent- DefectIntelligence [wA3qrgR59Vlov0BQ].md",
+                          "updatedAt":  "2026-03-31T07:45:27.896Z",
+                          "createdAt":  "2026-03-31T07:44:39.701Z"
+                      },
+                      {
+                          "id":  "UEfHE0VTkSxFvffG",
+                          "name":  "Puru_AI-Powered Defect Triage and Classification Agent",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  6,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  "pineconeApi: My PineconeApi account",
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  {
+
+                                       },
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Puru_AI-Powered Defect Triage and Classification Agent [UEfHE0VTkSxFvffG].json",
+                          "docPath":  "workflows/Unpublished/Puru_AI-Powered Defect Triage and Classification Agent [UEfHE0VTkSxFvffG].md",
+                          "updatedAt":  "2026-03-31T07:20:26.503Z",
+                          "createdAt":  "2026-03-31T06:42:06.320Z"
+                      },
+                      {
+                          "id":  "J9wp94YeehAthHX0",
+                          "name":  "Q-Ops Agent Projects API",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  11,
+                          "webhookHints":  [
+                                               "GET/POST /webhook/projects",
+                                               "POST /webhook/projects"
+                                           ],
+                          "credentials":  {
+
+                                          },
+                          "supabaseTables":  [
+                                                 "qops_audit_events",
+                                                 "qops_projects"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Q-Ops Agent Projects API [J9wp94YeehAthHX0].json",
+                          "docPath":  "workflows/Unpublished/Q-Ops Agent Projects API [J9wp94YeehAthHX0].md",
+                          "updatedAt":  "2026-05-07T05:55:11.000Z",
+                          "createdAt":  "2026-05-07T05:50:46.665Z"
+                      },
+                      {
+                          "id":  "8isqdCjPaPqE02eG",
+                          "name":  "Q-Ops Agent Repository API",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  31,
+                          "webhookHints":  [
+                                               "GET/POST /webhook/projects",
+                                               "POST /webhook/projects",
+                                               "GET/POST /webhook/artifacts",
+                                               "GET/POST /webhook/generated-documents",
+                                               "GET/POST /webhook/audit-events",
+                                               "POST /webhook/artifacts/:artifactId/reprocess"
+                                           ],
+                          "credentials":  {
+
+                                          },
+                          "supabaseTables":  [
+                                                 "doc_ingestion_jobs",
+                                                 "qa_job_metrics",
+                                                 "qa_jobs",
+                                                 "qops_audit_events",
+                                                 "qops_projects"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Q-Ops Agent Repository API [8isqdCjPaPqE02eG].json",
+                          "docPath":  "workflows/Unpublished/Q-Ops Agent Repository API [8isqdCjPaPqE02eG].md",
+                          "updatedAt":  "2026-05-07T05:55:15.000Z",
+                          "createdAt":  "2026-05-07T05:49:11.828Z"
+                      },
+                      {
+                          "id":  "0G3qlenjAeBnHDTr",
+                          "name":  "RETRIEVAL Document Generator AI Agent - SaaS",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  67,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  [
+                                              "chromaCloudApi: ChromaDB Self-Hosted account",
+                                              "httpBasicAuth: Confluence",
+                                              "httpBasicAuth: JIRA",
+                                              "httpCustomAuth: supabase-anon-key",
+                                              "jiraSoftwareCloudApi: Jira SW Cloud account",
+                                              "openAiApi: OpenAi Paid Account (Aonu)"
+                                          ],
+                          "supabaseTables":  [
+                                                 "qa_job_metrics",
+                                                 "qa_jobs"
+                                             ],
+                          "urlHints":  [
+                                           "http://127.0.0.1:5050/convert",
+                                           "https://anujalhans1.atlassian.net/rest/api/3/search/jql",
+                                           "https://anujalhans1.atlassian.net/wiki/rest/api/content",
+                                           "https://anujalhans1.atlassian.net/wiki/rest/api/content/{{",
+                                           "https://anujalhans1.atlassian.net/wiki/rest/api/content?spaceKey=TD\u0026title={{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs?job_id=eq.{{"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\RETRIEVAL Document Generator AI Agent - SaaS [0G3qlenjAeBnHDTr].json",
+                          "docPath":  "workflows/Unpublished/RETRIEVAL Document Generator AI Agent - SaaS [0G3qlenjAeBnHDTr].md",
+                          "updatedAt":  "2026-05-07T05:15:18.659Z",
+                          "createdAt":  "2026-04-01T06:04:29.890Z"
+                      },
+                      {
+                          "id":  "sbUy9luTFnRJ52El",
+                          "name":  "RETRIEVAL Job Queue Creator - SaaS",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  5,
+                          "webhookHints":  "POST /webhook/generate-qa-doc",
+                          "credentials":  "httpCustomAuth: supabase-anon-key",
+                          "supabaseTables":  [
+                                                 "qa_job_metrics",
+                                                 "qa_jobs"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\RETRIEVAL Job Queue Creator - SaaS [sbUy9luTFnRJ52El].json",
+                          "docPath":  "workflows/Unpublished/RETRIEVAL Job Queue Creator - SaaS [sbUy9luTFnRJ52El].md",
+                          "updatedAt":  "2026-05-07T05:15:24.882Z",
+                          "createdAt":  "2026-03-31T11:43:44.909Z"
+                      },
+                      {
+                          "id":  "d8hZl2gQpuWjlwr3",
+                          "name":  "RETRIEVAL Job Queue Creator - SaaS - Attributed Draft",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  10,
+                          "webhookHints":  "POST /webhook/generate-qa-doc",
+                          "credentials":  "httpCustomAuth: supabase-service-role-key",
+                          "supabaseTables":  [
+                                                 "qa_job_metrics",
+                                                 "qa_jobs",
+                                                 "qops_resolve_runtime_config",
+                                                 "qops_users",
+                                                 "rpc"
+                                             ],
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/rpc/qops_resolve_runtime_config"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\RETRIEVAL Job Queue Creator - SaaS - Attributed Draft [d8hZl2gQpuWjlwr3].json",
+                          "docPath":  "workflows/Unpublished/RETRIEVAL Job Queue Creator - SaaS - Attributed Draft [d8hZl2gQpuWjlwr3].md",
+                          "updatedAt":  "2026-05-07T16:01:49.223Z",
+                          "createdAt":  "2026-05-07T15:58:33.915Z"
+                      },
+                      {
+                          "id":  "wvfvdSZjyRSEhy7Z",
+                          "name":  "RETRIEVAL Worker Engine (Queue Processor) - Saas",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  7,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  "httpCustomAuth: supabase-anon-key",
+                          "supabaseTables":  "qa_jobs",
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs?job_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs?status=eq.pending\u0026order=created_at.asc\u0026limit=1"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\RETRIEVAL Worker Engine (Queue Processor) - Saas [wvfvdSZjyRSEhy7Z].json",
+                          "docPath":  "workflows/Unpublished/RETRIEVAL Worker Engine (Queue Processor) - Saas [wvfvdSZjyRSEhy7Z].md",
+                          "updatedAt":  "2026-05-07T05:15:42.073Z",
+                          "createdAt":  "2026-04-01T04:04:46.967Z"
+                      },
+                      {
+                          "id":  "ew9RdPEvMAq5P6t3",
+                          "name":  "RETRIEVAL Worker Engine (Queue Processor) - Saas - Attributed Draft",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  7,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  "httpCustomAuth: supabase-anon-key",
+                          "supabaseTables":  "qa_jobs",
+                          "urlHints":  [
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs?job_id=eq.{{",
+                                           "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs?status=eq.pending\u0026order=created_at.asc\u0026limit=1\u0026select=job_id,status,input,project_id,requested_by,settings_version,config_snapshot,created_at"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\RETRIEVAL Worker Engine (Queue Processor) - Saas - Attributed Draft [ew9RdPEvMAq5P6t3].json",
+                          "docPath":  "workflows/Unpublished/RETRIEVAL Worker Engine (Queue Processor) - Saas - Attributed Draft [ew9RdPEvMAq5P6t3].md",
+                          "updatedAt":  "2026-05-07T05:15:42.073Z",
+                          "createdAt":  "2026-04-01T04:04:46.967Z"
+                      },
+                      {
+                          "id":  "gJzaM5OpYbwTw8qo",
+                          "name":  "Reverse-Engineering-Code-to-HLD Automation Pipeline (using OpenAI)",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  29,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  [
+                                              "httpBearerAuth: Bearer Auth account",
+                                              "httpHeaderAuth: Github latest PAT token",
+                                              "openAiApi: OpenAi Paid Account (Aonu)"
+                                          ],
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  [
+                                           "https://api.github.com/repos/{{",
+                                           "https://raw.githubusercontent.com/{{$json.owner}}/{{$json.repo}}/{{$json.branch}}/{{$json.path}}"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Reverse-Engineering-Code-to-HLD Automation Pipeline (using OpenAI) [gJzaM5OpYbwTw8qo].json",
+                          "docPath":  "workflows/Unpublished/Reverse-Engineering-Code-to-HLD Automation Pipeline (using OpenAI) [gJzaM5OpYbwTw8qo].md",
+                          "updatedAt":  "2026-02-18T08:03:56.841Z",
+                          "createdAt":  "2026-02-12T12:29:56.004Z"
+                      },
+                      {
+                          "id":  "i75ptvltSLz3ycUe",
+                          "name":  "Reverse-Engineering-Code-to-HLD Automation Pipeline (using OpenAI) - Refactored",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  31,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  [
+                                              "httpBearerAuth: Bearer Auth account",
+                                              "httpHeaderAuth: Github latest PAT token",
+                                              "openAiApi: OpenAi Paid Account (Aonu)"
+                                          ],
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  [
+                                           "https://api.github.com/repos/{{",
+                                           "https://api.github.com/repos/{{$json.owner}}/{{$json.repo}}/branches/{{$json.branch}}",
+                                           "https://raw.githubusercontent.com/{{$json.owner}}/{{$json.repo}}/{{$json.branch}}/{{$json.path}}"
+                                       ],
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Reverse-Engineering-Code-to-HLD Automation Pipeline (using OpenAI) - Refactored [i75ptvltSLz3ycUe].json",
+                          "docPath":  "workflows/Unpublished/Reverse-Engineering-Code-to-HLD Automation Pipeline (using OpenAI) - Refactored [i75ptvltSLz3ycUe].md",
+                          "updatedAt":  "2026-02-18T11:14:08.260Z",
+                          "createdAt":  "2026-02-18T08:08:15.491Z"
+                      },
+                      {
+                          "id":  "B35RDSK69GLxA03S",
+                          "name":  "Smart Travel Planning Agent",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  6,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  "openAiApi: OpenAi Paid Account (Aonu)",
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  {
+
+                                       },
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Smart Travel Planning Agent [B35RDSK69GLxA03S].json",
+                          "docPath":  "workflows/Unpublished/Smart Travel Planning Agent [B35RDSK69GLxA03S].md",
+                          "updatedAt":  "2026-03-06T18:34:13.312Z",
+                          "createdAt":  "2026-02-27T07:29:32.330Z"
+                      },
+                      {
+                          "id":  "TWSoUemb3J13h5wC",
+                          "name":  "Test Plan Generator",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  7,
+                          "webhookHints":  {
+
+                                           },
+                          "credentials":  "openAiApi: OpenAi Account 2",
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  "http://127.0.0.1:8000/convert",
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Test Plan Generator [TWSoUemb3J13h5wC].json",
+                          "docPath":  "workflows/Unpublished/Test Plan Generator [TWSoUemb3J13h5wC].md",
+                          "updatedAt":  "2026-04-16T10:16:15.000Z",
+                          "createdAt":  "2025-10-30T05:01:16.581Z"
+                      },
+                      {
+                          "id":  "Zh8eTzahoEYzfsiu",
+                          "name":  "Test Plan Generator - Text + OpenAI Vision Extractor (Final Version)",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  41,
+                          "webhookHints":  "POST /webhook/upload-test-docs",
+                          "credentials":  "openAiApi: OpenAi Paid Account (Aonu)",
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  "http://127.0.0.1:8000/convert",
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Test Plan Generator - Text + OpenAI Vision Extractor (Final Version) [Zh8eTzahoEYzfsiu].json",
+                          "docPath":  "workflows/Unpublished/Test Plan Generator - Text + OpenAI Vision Extractor (Final Version) [Zh8eTzahoEYzfsiu].md",
+                          "updatedAt":  "2026-04-16T10:15:03.000Z",
+                          "createdAt":  "2025-11-05T04:35:17.587Z"
+                      },
+                      {
+                          "id":  "RNJmuRQkUl7Mj490",
+                          "name":  "Test Plan Generator - using Gemini",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  45,
+                          "webhookHints":  "POST /webhook/upload-test-docs",
+                          "credentials":  "googlePalmApi: Google Gemini(PaLM) Api account",
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  "http://127.0.0.1:8000/convert",
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Test Plan Generator - using Gemini [RNJmuRQkUl7Mj490].json",
+                          "docPath":  "workflows/Unpublished/Test Plan Generator - using Gemini [RNJmuRQkUl7Mj490].md",
+                          "updatedAt":  "2026-04-16T10:15:07.000Z",
+                          "createdAt":  "2025-11-20T07:48:02.556Z"
+                      },
+                      {
+                          "id":  "QA1M2UVADLckZYi0",
+                          "name":  "Test Strategy Generator - Text + OpenAI Vision Extractor (Final Version)",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  41,
+                          "webhookHints":  "POST /webhook/upload-test-docs",
+                          "credentials":  "openAiApi: OpenAi Paid Account (Aonu)",
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  "http://127.0.0.1:8000/convert",
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\Test Strategy Generator - Text + OpenAI Vision Extractor (Final Version) [QA1M2UVADLckZYi0].json",
+                          "docPath":  "workflows/Unpublished/Test Strategy Generator - Text + OpenAI Vision Extractor (Final Version) [QA1M2UVADLckZYi0].md",
+                          "updatedAt":  "2026-04-16T10:14:26.000Z",
+                          "createdAt":  "2025-11-26T12:57:39.215Z"
+                      },
+                      {
+                          "id":  "dFOtHUCCXKS8ASn9",
+                          "name":  "User Stories Generator - Text + OpenAI Vision Extractor (Final Version)",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  43,
+                          "webhookHints":  "POST /webhook/upload-test-docs",
+                          "credentials":  "openAiApi: OpenAi Paid Account (Aonu)",
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  "http://127.0.0.1:8000/convert",
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\User Stories Generator - Text + OpenAI Vision Extractor (Final Version) [dFOtHUCCXKS8ASn9].json",
+                          "docPath":  "workflows/Unpublished/User Stories Generator - Text + OpenAI Vision Extractor (Final Version) [dFOtHUCCXKS8ASn9].md",
+                          "updatedAt":  "2026-04-16T10:14:58.000Z",
+                          "createdAt":  "2025-11-27T08:05:58.353Z"
+                      },
+                      {
+                          "id":  "Ut1ktNhq7jGXmkuQ",
+                          "name":  "User Story generator - Refactored (In Progress)",
+                          "active":  false,
+                          "folder":  "Unpublished",
+                          "nodeCount":  33,
+                          "webhookHints":  "POST /webhook/upload-test-docs",
+                          "credentials":  "openAiApi: OpenAi Paid Account (Aonu)",
+                          "supabaseTables":  {
+
+                                             },
+                          "urlHints":  "http://127.0.0.1:8000/convert",
+                          "jsonSource":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-05-18_171444\\Unpublished\\User Story generator - Refactored (In Progress) [Ut1ktNhq7jGXmkuQ].json",
+                          "docPath":  "workflows/Unpublished/User Story generator - Refactored (In Progress) [Ut1ktNhq7jGXmkuQ].md",
+                          "updatedAt":  "2026-04-16T10:15:49.000Z",
+                          "createdAt":  "2025-12-01T12:50:33.329Z"
+                      }
+                  ]
+}
+

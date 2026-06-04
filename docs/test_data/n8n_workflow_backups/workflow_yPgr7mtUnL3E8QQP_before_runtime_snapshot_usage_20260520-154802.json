@@ -1,0 +1,610 @@
+{
+  "id": "yPgr7mtUnL3E8QQP",
+  "name": "PRO QA Generation Queue Creator - Ready Draft",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-qa-doc",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "8f2d2edb-ee04-4439-9b81-8adb8613735e",
+      "name": "POST /generate-qa-doc",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        288
+      ],
+      "webhookId": "dfae3db4-ac1a-4b92-b08d-0d4b4715f25a"
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst datePart = now.toISOString().slice(2, 10).replace(/-/g, '');\nconst randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();\nconst jobId = `PRO-${datePart}-${randomPart}`;\nconst headers = $json.headers || {};\nconst authHeader = headers.authorization || headers.Authorization || '';\nconst input = $json.body || {};\nconst retryJobId = String(input.retryJobId || input.jobId || '').trim();\nconst isRetry = Boolean(retryJobId);\nconst documentTypes = new Set(['test_strategy', 'test_plan', 'risk_matrix', 'test_cases', 'user_stories', 'traceability_matrix']);\nconst documentType = String(input.documentType || '').trim().toLowerCase();\nif (!String(authHeader).toLowerCase().startsWith('bearer ')) {\n  return [{ json: { ok: false, statusCode: 401, errorCode: 'UNAUTHORIZED', message: 'Missing bearer token' } }];\n}\nif (!String(input.projectName || '').trim() || !documentTypes.has(documentType)) {\n  return [{ json: { ok: false, statusCode: 400, errorCode: 'INVALID_REQUEST', message: 'projectName and supported documentType are required' } }];\n}\nreturn [{\n  json: {\n    ok: true,\n    jobId: isRetry ? retryJobId : jobId,\n    retryMode: isRetry,\n    input: { ...input, retryJobId: undefined, jobId: undefined, documentType, generatorMode: 'professional' },\n    token: String(authHeader).replace(/^Bearer\\s+/i, ''),\n    projectId: input.projectId || null,\n    environment: input.environment || 'local'\n  }\n}];"
+      },
+      "id": "57829829-6b5d-422c-8975-86fa4ca48b87",
+      "name": "Prepare Professional Queue Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "829abd05-be3a-49e7-9876-a3ab68404e04",
+      "name": "Valid Request?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={ \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"Bearer {{ $json.token }}\" }",
+        "options": {}
+      },
+      "id": "bd14e390-5012-43e8-b238-85be1198a581",
+      "name": "Verify Supabase Auth User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{ $json.id }}&status=eq.active&select=id,email,name,role,status&limit=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "9d04a3c8-aa9d-4023-bcf6-0acb4cdc3631",
+      "name": "Fetch Active Q-Ops User Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        192
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const profile = Array.isArray($json) ? $json[0] : $json;\nconst job = $('Prepare Professional Queue Request').item.json;\nif (!profile?.id || profile.status !== 'active') {\n  return [{ json: { ok: false, statusCode: 403, errorCode: 'PROFILE_NOT_ACTIVE', message: 'Active Q-Ops user profile not found' } }];\n}\nreturn [{\n  json: {\n    ...job,\n    requestedBy: profile.id,\n    qopsUser: profile,\n    runtimeRequest: {\n      p_environment_key: job.environment || 'local',\n      p_project_id: job.projectId || null,\n      p_pipeline: 'generation',\n      p_requested_by: profile.id\n    }\n  }\n}];"
+      },
+      "id": "f6b32777-fcd3-4485-9033-d76a23f7e410",
+      "name": "Prepare Runtime Config Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d8a71207-fa7a-41fd-bf78-c6310ca5a5a1",
+      "name": "Runtime Request Ready?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1344,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/rpc/qops_resolve_runtime_config",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.runtimeRequest) }}",
+        "options": {}
+      },
+      "id": "978b1a6e-8f07-4610-a68e-779e7d0bfa12",
+      "name": "Resolve Runtime Config",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1568,
+        96
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const runtimeRaw = $input.first().json || {};\nconst runtime = Array.isArray(runtimeRaw) ? runtimeRaw[0] : runtimeRaw;\nconst job = $('Prepare Runtime Config Request').item.json;\nconst settingsVersion = runtime.settingsVersion ?? runtime.settings_version ?? 1;\nconst configSnapshot = runtime.configSnapshot ?? runtime.config_snapshot ?? runtime ?? {};\nreturn [{ json: { ...job, settingsVersion, configSnapshot } }];"
+      },
+      "id": "94b58282-0f7a-40b2-987a-7b4c6abaae6f",
+      "name": "Combine Job And Runtime",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "={{ $json.retryMode ? \"PATCH\" : \"POST\" }}",
+        "url": "={{ $json.retryMode ? \"https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs?job_id=eq.\" + encodeURIComponent($json.jobId) + \"&status=eq.failed&requested_by=eq.\" + encodeURIComponent($json.requestedBy) : \"https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=representation\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.retryMode ? { status: \"pending\", input: $json.input, output: null, error: null, project_id: $json.projectId, requested_by: $json.requestedBy, settings_version: $json.settingsVersion, config_snapshot: $json.configSnapshot, updated_at: $now.toISO() } : { job_id: $json.jobId, status: \"pending\", input: $json.input, project_id: $json.projectId, requested_by: $json.requestedBy, settings_version: $json.settingsVersion, config_snapshot: $json.configSnapshot }) }}",
+        "options": {}
+      },
+      "id": "3a274e85-b04a-4eb1-80ca-062ee17f1362",
+      "name": "Persist Professional Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2016,
+        96
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1091dfc9-d765-4bdf-9285-ee464b883764",
+      "name": "Professional Job Persisted?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2240,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job_id: $(\"Combine Job And Runtime\").item.json.jobId, project_name: $(\"Combine Job And Runtime\").item.json.input.projectName, document_type: $(\"Combine Job And Runtime\").item.json.input.documentType, pipeline: \"generation\", event: $(\"Combine Job And Runtime\").item.json.retryMode ? \"JOB_RETRIED\" : \"JOB_QUEUED\", status: \"info\", project_id: $(\"Combine Job And Runtime\").item.json.projectId, requested_by: $(\"Combine Job And Runtime\").item.json.requestedBy, metadata: { generator_mode: \"professional\", retry: Boolean($(\"Combine Job And Runtime\").item.json.retryMode), product_owner: $(\"Combine Job And Runtime\").item.json.input.productOwner, settings_version: $(\"Combine Job And Runtime\").item.json.settingsVersion, environment: $(\"Combine Job And Runtime\").item.json.environment } }) }}",
+        "options": {}
+      },
+      "id": "8d7fa422-a003-4c5e-9c9c-9e1e8844673e",
+      "name": "LOG: Professional Job Queued",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2464,
+        0
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ jobId: $(\"Combine Job And Runtime\").item.json.jobId, status: \"queued\", generatorMode: \"professional\", retried: Boolean($(\"Combine Job And Runtime\").item.json.retryMode) }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "4f4d84e4-b54f-45ae-8eab-8719c1fadae7",
+      "name": "Respond Queued",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2688,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, error: { code: \"RETRY_UNAVAILABLE\", message: \"The failed QA generation job could not be retried. It may already be running, completed, or owned by another user.\" } }) }}",
+        "options": {
+          "responseCode": 409,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "4e3e4317-c307-4354-99f1-423733a12fd9",
+      "name": "Respond Professional Retry Unavailable",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2464,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, error: { code: $json.errorCode || \"PROFILE_NOT_ACTIVE\", message: $json.message || \"Unable to resolve runtime context\" } }) }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode || 403 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "b875370b-447d-447b-b5d0-339c3f6faac0",
+      "name": "Respond Runtime Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1568,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, error: { code: $json.errorCode || \"INVALID_REQUEST\", message: $json.message || \"Invalid request\" } }) }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode || 400 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "0ad1b15a-42cd-456d-9744-f02178f3c615",
+      "name": "Respond Invalid Request",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "OPTIONS",
+        "path": "generate-qa-doc",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "8f33aa57-5313-4181-88b1-716f31167b96",
+      "name": "OPTIONS /generate-qa-doc",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        608
+      ],
+      "webhookId": "7e53b7f6-5065-417e-9544-526a2d1c059e"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true }) }}",
+        "options": {
+          "responseCode": 204,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "authorization, content-type"
+              },
+              {
+                "name": "Access-Control-Max-Age",
+                "value": "86400"
+              }
+            ]
+          }
+        }
+      },
+      "id": "9fd5263c-72e1-4078-b60a-e7643bab62ac",
+      "name": "Respond CORS Preflight",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        224,
+        608
+      ]
+    }
+  ],
+  "connections": {
+    "POST /generate-qa-doc": {
+      "main": [
+        [
+          {
+            "node": "Prepare Professional Queue Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Professional Queue Request": {
+      "main": [
+        [
+          {
+            "node": "Valid Request?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid Request?": {
+      "main": [
+        [
+          {
+            "node": "Verify Supabase Auth User",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Invalid Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Supabase Auth User": {
+      "main": [
+        [
+          {
+            "node": "Fetch Active Q-Ops User Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Active Q-Ops User Profile": {
+      "main": [
+        [
+          {
+            "node": "Prepare Runtime Config Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Runtime Config Request": {
+      "main": [
+        [
+          {
+            "node": "Runtime Request Ready?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Runtime Request Ready?": {
+      "main": [
+        [
+          {
+            "node": "Resolve Runtime Config",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Runtime Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve Runtime Config": {
+      "main": [
+        [
+          {
+            "node": "Combine Job And Runtime",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Job And Runtime": {
+      "main": [
+        [
+          {
+            "node": "Persist Professional Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Persist Professional Job": {
+      "main": [
+        [
+          {
+            "node": "Professional Job Persisted?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Professional Job Persisted?": {
+      "main": [
+        [
+          {
+            "node": "LOG: Professional Job Queued",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Professional Retry Unavailable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOG: Professional Job Queued": {
+      "main": [
+        [
+          {
+            "node": "Respond Queued",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPTIONS /generate-qa-doc": {
+      "main": [
+        [
+          {
+            "node": "Respond CORS Preflight",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -37,9 +37,11 @@ build/
 
 # ----- Node.js / Next.js -----
 node_modules/
+dist/
 .next/
 out/
 .turbo/
+.vite/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -77,17 +79,29 @@ __pycache__/
 *.pyo
 .venv/
 venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
 *.egg-info/
 
 # ----- Logs -----
 logs/
 *.log
+*.err
+*.out
 
 # ----- Runtime / Dev Server Artifacts -----
 .codex-dev-server*
+.playwright-mcp/
 *.pid
+*.tmp
+tmp-*.json
 tools/sonarqube-mcp-server/
 tools/sonarqube-mcp-storage/
+services/md_docx_converter/*.log
+services/md_docx_converter/*.err
+services/md_docx_converter/*.out
 
 # ----- Archives / Large Files -----
 *.zip

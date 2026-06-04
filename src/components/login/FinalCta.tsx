@@ -18,12 +18,6 @@ export default function FinalCta({ onPrimary }: Props) {
             <Button rightIcon={<ArrowRight className="h-4 w-4" />} onClick={onPrimary}>
               Explore Q-Ops Agent
             </Button>
-            <a
-              href="#docs"
-              className="inline-flex items-center justify-center rounded-md border border-outline-variant px-4 py-2 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-high"
-            >
-              Documentation
-            </a>
           </div>
           <div className="mt-8 rounded-md border border-outline-variant bg-surface-container-low p-4 text-center">
             <p className="text-sm font-semibold text-on-surface">Enterprise-grade security</p>

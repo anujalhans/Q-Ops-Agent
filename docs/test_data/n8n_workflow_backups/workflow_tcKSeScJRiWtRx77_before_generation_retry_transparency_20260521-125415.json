@@ -1,0 +1,234 @@
+[
+  {
+    "parameters": {
+      "path": "analytics-summary",
+      "responseMode": "responseNode",
+      "options": {}
+    },
+    "id": "659ae909-01c3-434a-9ded-a7c3fe52aca0",
+    "name": "GET /analytics-summary",
+    "type": "n8n-nodes-base.webhook",
+    "typeVersion": 2.1,
+    "position": [
+      0,
+      96
+    ],
+    "webhookId": "1d2a015b-9026-4837-a73c-9415b5970fb0"
+  },
+  {
+    "parameters": {
+      "jsCode": "const headers = $json.headers || {};\nconst query = $json.query || {};\nconst authHeader = headers.authorization || headers.Authorization || '';\nconst hasBearerToken = String(authHeader).toLowerCase().startsWith('bearer ');\nconst allowedPipelines = new Set(['all', 'generation', 'ingestion']);\nconst pipeline = allowedPipelines.has(String(query.pipeline || 'all')) ? String(query.pipeline || 'all') : 'all';\nconst daysRaw = Number.parseInt(String(query.days || '30'), 10);\nconst days = Number.isFinite(daysRaw) ? Math.min(Math.max(daysRaw, 1), 365) : 30;\nconst dateFrom = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();\nreturn [{ json: { isAuthorized: hasBearerToken, token: hasBearerToken ? String(authHeader).replace(/^Bearer\\s+/i, '') : '', pipeline, days, dateFrom, userIdFilter: query.userId || '', projectIdFilter: query.projectId || '' } }];"
+    },
+    "id": "59de52b7-a4ca-460b-b2e4-7c46ba9dc4c6",
+    "name": "Prepare Analytics Context",
+    "type": "n8n-nodes-base.code",
+    "typeVersion": 2,
+    "position": [
+      224,
+      96
+    ]
+  },
+  {
+    "parameters": {
+      "conditions": {
+        "combinator": "and",
+        "options": {
+          "caseSensitive": true,
+          "leftValue": "",
+          "typeValidation": "strict",
+          "version": 2
+        },
+        "conditions": [
+          {
+            "leftValue": "={{ $json.isAuthorized }}",
+            "rightValue": true,
+            "operator": {
+              "type": "boolean",
+              "operation": "true",
+              "singleValue": true
+            }
+          }
+        ]
+      },
+      "options": {}
+    },
+    "id": "a88ff80a-dd9e-44bc-a64e-10598fa54921",
+    "name": "Has Bearer Token?",
+    "type": "n8n-nodes-base.if",
+    "typeVersion": 2.3,
+    "position": [
+      448,
+      96
+    ]
+  },
+  {
+    "parameters": {
+      "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+      "sendHeaders": true,
+      "specifyHeaders": "json",
+      "jsonHeaders": "={ \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"Bearer {{ $json.token }}\" }",
+      "options": {}
+    },
+    "id": "8ab4e827-ec31-4247-b6cd-9c7b523a59de",
+    "name": "Verify Supabase Auth User",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4.4,
+    "position": [
+      672,
+      0
+    ]
+  },
+  {
+    "parameters": {
+      "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{ $json.id }}&status=eq.active&select=id,email,name,role,status&limit=1",
+      "authentication": "genericCredentialType",
+      "genericAuthType": "httpCustomAuth",
+      "sendHeaders": true,
+      "specifyHeaders": "json",
+      "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+      "options": {}
+    },
+    "id": "10998353-7f61-4737-a767-3525007f5587",
+    "name": "Fetch Q-Ops User Profile",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4.4,
+    "position": [
+      896,
+      0
+    ],
+    "alwaysOutputData": true,
+    "credentials": {
+      "httpCustomAuth": {
+        "id": "DpZbhUxkEbKeXIiJ",
+        "name": "supabase-service-role-key"
+      }
+    }
+  },
+  {
+    "parameters": {
+      "jsCode": "const context = $('Prepare Analytics Context').first().json;\nconst authUser = $('Verify Supabase Auth User').first().json;\nconst profile = $('Fetch Q-Ops User Profile').first().json || {};\nconst memberships = $input.all()\n  .map(item => item.json)\n  .filter(row => row && row.project_id)\n  .map(row => ({ projectId: row.project_id, role: row.project_role || 'viewer' }));\n\nif (!profile.id || profile.status !== 'active') throw new Error('Active Q-Ops user profile not found');\n\nconst pairs = [];\nfunction add(name, value) {\n  pairs.push(`${encodeURIComponent(name)}=${encodeURIComponent(value)}`);\n}\n\nadd('select', 'job_id,project_name,document_type,pipeline,event,status,duration_ms,word_count,chunk_count,total_files,tokens_input,tokens_output,tokens_total,estimated_cost_usd,error_message,metadata,created_at,requested_by,project_id');\nadd('created_at', `gte.${context.dateFrom}`);\nadd('order', 'created_at.desc');\nadd('limit', '1000');\n\nif (context.pipeline !== 'all') add('pipeline', `eq.${context.pipeline}`);\n\nlet scope = 'workspace';\nlet requestedByFilter = '';\nlet assignedProjectIds = [];\n\nif (profile.role === 'registered_user') {\n  requestedByFilter = profile.id;\n  assignedProjectIds = memberships.map(item => item.projectId);\n  scope = 'self_assigned_projects';\n} else if (profile.role === 'admin' && context.userIdFilter) {\n  requestedByFilter = context.userIdFilter;\n  scope = 'admin_user_filter';\n}\n\nif (requestedByFilter) add('requested_by', `eq.${requestedByFilter}`);\n\nif (context.projectIdFilter) {\n  if (profile.role === 'registered_user' && !assignedProjectIds.includes(context.projectIdFilter)) {\n    add('project_id', 'eq.__no_assigned_project__');\n  } else {\n    add('project_id', `eq.${context.projectIdFilter}`);\n  }\n} else if (profile.role === 'registered_user') {\n  if (assignedProjectIds.length) {\n    add('project_id', `in.(${assignedProjectIds.map(encodeURIComponent).join(',')})`);\n  } else {\n    add('project_id', 'eq.__no_assigned_project__');\n  }\n}\n\nreturn [{\n  json: {\n    url: `https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics?${pairs.join('&')}`,\n    context,\n    authUser,\n    profile,\n    scope,\n    assignedProjectIds,\n    memberships\n  }\n}];"
+    },
+    "id": "5cdf2aa6-8f0e-4e9d-83e9-751450d69bee",
+    "name": "Build Scoped Metrics Query",
+    "type": "n8n-nodes-base.code",
+    "typeVersion": 2,
+    "position": [
+      1344,
+      0
+    ]
+  },
+  {
+    "parameters": {
+      "url": "={{ $json.url }}",
+      "authentication": "genericCredentialType",
+      "genericAuthType": "httpCustomAuth",
+      "sendHeaders": true,
+      "specifyHeaders": "json",
+      "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+      "options": {}
+    },
+    "id": "fc27b5f5-3f1f-4810-8f29-05a52cc5a23e",
+    "name": "Fetch Scoped Metrics",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4.4,
+    "position": [
+      1568,
+      0
+    ],
+    "alwaysOutputData": true,
+    "credentials": {
+      "httpCustomAuth": {
+        "id": "DpZbhUxkEbKeXIiJ",
+        "name": "supabase-service-role-key"
+      }
+    }
+  },
+  {
+    "parameters": {
+      "jsCode": "const queryContext = $('Build Scoped Metrics Query').first().json;\nconst context = queryContext.context;\nconst profile = queryContext.profile;\nconst rows = $input.all().map(item => item.json).filter(row => row && row.job_id);\n\nfunction isCompletedEvent(row) {\n  return row.event === 'JOB_COMPLETED' || row.event === 'JOB_COMPLETED_WITH_WARNINGS';\n}\nconst completedRows = rows.filter(isCompletedEvent);\nconst failedRows = rows.filter(row =>\n  row.event === 'JOB_FAILED' ||\n  row.event === 'QUALITY_GATE_FAILED' ||\n  row.status === 'error'\n);\nconst generationCompleted = completedRows.filter(row => row.pipeline === 'generation');\nconst ingestionCompleted = completedRows.filter(row => row.pipeline === 'ingestion');\nconst terminalCount = completedRows.length + failedRows.length;\nconst successRate = terminalCount ? Math.round((completedRows.length / terminalCount) * 100) : 100;\n\nfunction sumNumber(items, field) {\n  return items.reduce((total, row) => total + (Number(row[field]) || 0), 0);\n}\n\nfunction avgNumber(items, field) {\n  const values = items.map(row => Number(row[field]) || 0).filter(value => value > 0);\n  return values.length ? Math.round(values.reduce((total, value) => total + value, 0) / values.length) : 0;\n}\n\nfunction roundMoney(value) {\n  return Number((Number(value) || 0).toFixed(6));\n}\n\nfunction metadataFileCount(row) {\n  const fileKeys = row.metadata?.file_keys;\n  if (Array.isArray(fileKeys)) return fileKeys.length;\n  if (typeof fileKeys === 'string' && fileKeys.trim()) {\n    return fileKeys.split(',').map(item => item.trim()).filter(Boolean).length;\n  }\n  return Number(row.total_files) || 0;\n}\n\nfunction meteredRank(row) {\n  if (isCompletedEvent(row)) return 5;\n  if (row.event === 'JOB_FAILED') return 4;\n  if (row.event === 'QUALITY_GATE_FAILED') return 3;\n  if (row.event === 'QUALITY_GATE_PASSED') return 2;\n  if ((Number(row.tokens_total) || 0) || (Number(row.estimated_cost_usd) || 0)) return 1;\n  return 0;\n}\n\nfunction meteredRowsFor(items) {\n  const byJob = new Map();\n  for (const row of items) {\n    if (!row || !row.job_id) continue;\n    const rank = meteredRank(row);\n    if (!rank) continue;\n    const key = `${row.pipeline || 'unknown'}|${row.job_id}`;\n    const existing = byJob.get(key);\n    const existingRank = existing ? meteredRank(existing) : -1;\n    const isNewer = String(row.created_at || '') > String(existing?.created_at || '');\n    if (!existing || rank > existingRank || (rank === existingRank && isNewer)) {\n      byJob.set(key, row);\n    }\n  }\n  return Array.from(byJob.values());\n}\n\nconst meteredRows = meteredRowsFor(rows);\n\nconst byTypeMap = new Map();\nfor (const row of generationCompleted) {\n  const key = row.document_type || 'unknown';\n  const current = byTypeMap.get(key) || {\n    documentType: key,\n    count: 0,\n    tokensTotal: 0,\n    estimatedCostUsd: 0\n  };\n  current.count += 1;\n  current.tokensTotal += Number(row.tokens_total) || 0;\n  current.estimatedCostUsd += Number(row.estimated_cost_usd) || 0;\n  byTypeMap.set(key, current);\n}\n\nfunction failureRateFor(pipeline) {\n  const completed = completedRows.filter(row => row.pipeline === pipeline).length;\n  const failed = failedRows.filter(row => row.pipeline === pipeline).length;\n  const total = completed + failed;\n  return total ? Math.round((failed / total) * 100) : 0;\n}\n\nconst terminalRows = rows\n  .filter(row => isCompletedEvent(row) || failedRows.includes(row))\n  .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));\n\nconst recentJobs = terminalRows.slice(0, 100).map(row => {\n  const failed = failedRows.includes(row);\n  return {\n    jobId: row.job_id,\n    projectName: row.project_name,\n    documentType: row.document_type,\n    pipeline: row.pipeline,\n    event: row.event,\n    status: failed ? 'failed' : row.status,\n    durationMs: row.duration_ms,\n    wordCount: row.word_count,\n    chunkCount: row.chunk_count,\n    totalFiles: row.total_files,\n    tokensTotal: row.tokens_total || 0,\n    estimatedCostUsd: Number(row.estimated_cost_usd) || 0,\n    errorMessage: failed ? (row.error_message || row.metadata?.message || row.metadata?.error || null) : null,\n    createdAt: row.created_at,\n    requestedBy: row.requested_by || null,\n    projectId: row.project_id || null\n  };\n});\n\nconst recentFailures = failedRows.slice(0, 10).map(row => ({\n  jobId: row.job_id,\n  projectName: row.project_name,\n  documentType: row.document_type,\n  pipeline: row.pipeline || 'unknown',\n  event: row.event,\n  status: row.status,\n  errorMessage: row.error_message || row.metadata?.message || row.metadata?.error || null,\n  createdAt: row.created_at,\n  requestedBy: row.requested_by || null,\n  projectId: row.project_id || null\n}));\n\nconst recentFailuresByPipelineMap = new Map();\nfor (const row of failedRows) {\n  const key = row.pipeline || 'unknown';\n  const current = recentFailuresByPipelineMap.get(key) || {\n    pipeline: key,\n    count: 0,\n    latestFailureAt: row.created_at || null,\n    latestJobId: row.job_id || null,\n    latestErrorMessage: row.error_message || row.metadata?.message || row.metadata?.error || null\n  };\n  current.count += 1;\n  if (!current.latestFailureAt || String(row.created_at || '') > String(current.latestFailureAt)) {\n    current.latestFailureAt = row.created_at || null;\n    current.latestJobId = row.job_id || null;\n    current.latestErrorMessage = row.error_message || row.metadata?.message || row.metadata?.error || null;\n  }\n  recentFailuresByPipelineMap.set(key, current);\n}\n\nconst completedJobsByPipeline = new Map();\nfor (const row of completedRows) {\n  const key = row.pipeline || 'unknown';\n  completedJobsByPipeline.set(key, (completedJobsByPipeline.get(key) || 0) + 1);\n}\n\nconst costByPipelineMap = new Map();\nfor (const row of meteredRows) {\n  const key = row.pipeline || 'unknown';\n  const current = costByPipelineMap.get(key) || {\n    pipeline: key,\n    jobs: completedJobsByPipeline.get(key) || 0,\n    tokensTotal: 0,\n    estimatedCostUsd: 0,\n    avgCostUsd: 0\n  };\n  current.tokensTotal += Number(row.tokens_total) || 0;\n  current.estimatedCostUsd += Number(row.estimated_cost_usd) || 0;\n  costByPipelineMap.set(key, current);\n}\nfor (const [key, jobs] of completedJobsByPipeline.entries()) {\n  if (!costByPipelineMap.has(key)) {\n    costByPipelineMap.set(key, { pipeline: key, jobs, tokensTotal: 0, estimatedCostUsd: 0, avgCostUsd: 0 });\n  }\n}\nconst costByPipeline = Array.from(costByPipelineMap.values()).map(item => ({\n  ...item,\n  estimatedCostUsd: roundMoney(item.estimatedCostUsd),\n  avgCostUsd: item.jobs ? roundMoney(item.estimatedCostUsd / item.jobs) : 0\n}));\n\nconst completedJobsByProject = new Map();\nfor (const row of completedRows) {\n  const key = row.project_id || row.project_name || 'unknown';\n  completedJobsByProject.set(key, (completedJobsByProject.get(key) || 0) + 1);\n}\n\nconst costByProjectMap = new Map();\nfor (const row of meteredRows) {\n  const key = row.project_id || row.project_name || 'unknown';\n  const current = costByProjectMap.get(key) || {\n    projectId: row.project_id || null,\n    projectName: row.project_name || 'Unknown project',\n    jobs: completedJobsByProject.get(key) || 0,\n    tokensTotal: 0,\n    estimatedCostUsd: 0,\n    avgCostUsd: 0\n  };\n  current.tokensTotal += Number(row.tokens_total) || 0;\n  current.estimatedCostUsd += Number(row.estimated_cost_usd) || 0;\n  costByProjectMap.set(key, current);\n}\nfor (const [key, jobs] of completedJobsByProject.entries()) {\n  if (!costByProjectMap.has(key)) {\n    const row = completedRows.find(item => (item.project_id || item.project_name || 'unknown') === key) || {};\n    costByProjectMap.set(key, {\n      projectId: row.project_id || null,\n      projectName: row.project_name || 'Unknown project',\n      jobs,\n      tokensTotal: 0,\n      estimatedCostUsd: 0,\n      avgCostUsd: 0\n    });\n  }\n}\nconst costByProject = Array.from(costByProjectMap.values())\n  .map(item => ({\n    ...item,\n    estimatedCostUsd: roundMoney(item.estimatedCostUsd),\n    avgCostUsd: item.jobs ? roundMoney(item.estimatedCostUsd / item.jobs) : 0\n  }))\n  .sort((a, b) => b.estimatedCostUsd - a.estimatedCostUsd)\n  .slice(0, 10);\n\nconst filesByKnowledgeBaseMap = new Map();\nfor (const row of ingestionCompleted) {\n  const key = row.project_id || row.project_name || row.job_id;\n  const current = filesByKnowledgeBaseMap.get(key) || {\n    projectId: row.project_id || null,\n    projectName: row.project_name || 'Unknown knowledge base',\n    jobs: 0,\n    filesProcessed: 0,\n    chunksIngested: 0,\n    latestJobId: row.job_id || null,\n    latestCompletedAt: row.created_at || null\n  };\n  current.jobs += 1;\n  current.filesProcessed += metadataFileCount(row);\n  current.chunksIngested += Number(row.chunk_count) || 0;\n  if (!current.latestCompletedAt || String(row.created_at || '') > String(current.latestCompletedAt)) {\n    current.latestCompletedAt = row.created_at || null;\n    current.latestJobId = row.job_id || null;\n  }\n  filesByKnowledgeBaseMap.set(key, current);\n}\nconst filesByKnowledgeBase = Array.from(filesByKnowledgeBaseMap.values())\n  .sort((a, b) => b.filesProcessed - a.filesProcessed)\n  .slice(0, 10);\n\nreturn [{\n  json: {\n    overview: {\n      totalJobsCompleted: completedRows.length,\n      totalDocumentsGenerated: generationCompleted.length,\n      totalIngestionJobsCompleted: ingestionCompleted.length,\n      totalJobsFailed: failedRows.length,\n      successRate,\n      totalCostUsd: roundMoney(sumNumber(meteredRows, 'estimated_cost_usd')),\n      avgCostPerDocument: generationCompleted.length ? roundMoney(sumNumber(generationCompleted, 'estimated_cost_usd') / generationCompleted.length) : 0,\n      totalTokensConsumed: sumNumber(meteredRows, 'tokens_total'),\n      totalChunksIngested: sumNumber(rows, 'chunk_count'),\n      totalWordsProcessed: sumNumber(completedRows, 'word_count'),\n      avgDurationMs: avgNumber(completedRows, 'duration_ms'),\n      avgIngestionDurationMs: avgNumber(ingestionCompleted, 'duration_ms'),\n      totalFilesProcessed: ingestionCompleted.reduce((total, row) => total + metadataFileCount(row), 0)\n    },\n    byDocumentType: Array.from(byTypeMap.values()).map(item => ({\n      ...item,\n      estimatedCostUsd: roundMoney(item.estimatedCostUsd)\n    })),\n    failureRate: {\n      generation: failureRateFor('generation'),\n      ingestion: failureRateFor('ingestion')\n    },\n    recentJobs,\n    ingestion: {\n      jobsCompleted: ingestionCompleted.length,\n      totalChunksIngested: sumNumber(ingestionCompleted, 'chunk_count'),\n      totalWordsProcessed: sumNumber(ingestionCompleted, 'word_count'),\n      avgProcessingDurationMs: avgNumber(ingestionCompleted, 'duration_ms'),\n      totalFilesProcessed: ingestionCompleted.reduce((total, row) => total + metadataFileCount(row), 0),\n      filesByKnowledgeBase\n    },\n    failures: {\n      recent: recentFailures,\n      byPipeline: Array.from(recentFailuresByPipelineMap.values())\n    },\n    costs: {\n      byPipeline: costByPipeline,\n      byProject: costByProject\n    },\n    meta: {\n      generatedAt: new Date().toISOString(),\n      dateFrom: context.dateFrom,\n      pipeline: context.pipeline,\n      daysRequested: context.days,\n      scope: queryContext.scope,\n      userRole: profile.role,\n      userId: profile.id,\n      projectId: context.projectIdFilter || null, assignedProjectIds: queryContext.assignedProjectIds || []\n    }\n  }\n}];"
+    },
+    "id": "ee075940-28bb-41d8-bb70-b71e3d421260",
+    "name": "Build Auth-Aware Analytics Response",
+    "type": "n8n-nodes-base.code",
+    "typeVersion": 2,
+    "position": [
+      1792,
+      0
+    ]
+  },
+  {
+    "parameters": {
+      "respondWith": "json",
+      "responseBody": "={{ $json }}",
+      "options": {
+        "responseHeaders": {
+          "entries": [
+            {
+              "name": "Access-Control-Allow-Origin",
+              "value": "*"
+            }
+          ]
+        }
+      }
+    },
+    "id": "9a70f4b7-568c-47d9-b707-882c9ade57b5",
+    "name": "Respond Analytics Summary",
+    "type": "n8n-nodes-base.respondToWebhook",
+    "typeVersion": 1.5,
+    "position": [
+      2016,
+      0
+    ]
+  },
+  {
+    "parameters": {
+      "respondWith": "json",
+      "responseBody": "{\"ok\":false,\"error\":\"unauthorized\",\"message\":\"Missing bearer token\"}",
+      "options": {
+        "responseCode": 401,
+        "responseHeaders": {
+          "entries": [
+            {
+              "name": "Access-Control-Allow-Origin",
+              "value": "*"
+            }
+          ]
+        }
+      }
+    },
+    "id": "aa12f31b-b4a3-44b1-b389-f47ae5e6258d",
+    "name": "Respond Unauthorized",
+    "type": "n8n-nodes-base.respondToWebhook",
+    "typeVersion": 1.5,
+    "position": [
+      672,
+      192
+    ]
+  },
+  {
+    "parameters": {
+      "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{ $json.id || \"00000000-0000-0000-0000-000000000000\" }}&select=project_id,project_role",
+      "authentication": "genericCredentialType",
+      "genericAuthType": "httpCustomAuth",
+      "sendHeaders": true,
+      "specifyHeaders": "json",
+      "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+      "options": {}
+    },
+    "id": "analytics-current-user-project-memberships",
+    "name": "Fetch Current User Project Memberships",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4.4,
+    "position": [
+      1120,
+      0
+    ],
+    "alwaysOutputData": true,
+    "credentials": {
+      "httpCustomAuth": {
+        "id": "DpZbhUxkEbKeXIiJ",
+        "name": "supabase-service-role-key"
+      }
+    }
+  }
+]

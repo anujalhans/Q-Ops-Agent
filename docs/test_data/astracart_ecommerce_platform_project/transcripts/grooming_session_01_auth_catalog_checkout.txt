@@ -1,0 +1,13 @@
+Grooming Session 01 - Identity, Discovery, and Checkout Foundation
+Date: 2026-05-20
+Participants: Product Owner, QA Lead, UX Designer, Frontend Lead, Backend Lead, Security Architect
+
+PO: The MVP must include registration, login, logout, forgot password, home page, product listing, product detail, cart, and checkout.
+QA Lead: For account flows, we need tests for duplicate registration, password strength, expired reset link, invalid reset token, logout after payment redirect, and session expiry mid-checkout.
+Security Architect: Password reset must not reveal whether an email exists. Login throttling and audit events are required.
+UX Designer: Home page needs hero campaign, category rails, recently viewed, and recommendation fallback. Listing must preserve filters in the URL.
+Frontend Lead: Product detail blocks Add to Cart until variant and delivery pincode are valid. We will expose disabled-state reasons to screen readers.
+Backend Lead: Checkout creates a quote id with item snapshot, inventory reservation intent, coupon validation, tax, shipping, and price-lock expiry.
+QA Lead: Add negative cases for coupon expiry, inventory unavailable after quote creation, address not serviceable, and product discontinued while in cart.
+Decision: Guest checkout is allowed for low-risk carts under configured threshold; high-risk carts require login before payment.
+Open question: Should COD be enabled for first order? Owner: Product.

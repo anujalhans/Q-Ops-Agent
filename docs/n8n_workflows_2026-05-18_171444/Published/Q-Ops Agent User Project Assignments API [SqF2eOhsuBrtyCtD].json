@@ -1,0 +1,568 @@
+{
+  "updatedAt": "2026-05-08T05:26:38.511Z",
+  "createdAt": "2026-05-08T05:22:04.205Z",
+  "id": "SqF2eOhsuBrtyCtD",
+  "name": "Q-Ops Agent User Project Assignments API",
+  "description": "PATCH /webhook/users/project-assignments endpoint. Requires an active admin JWT, replaces a registered user’s qops_project_members rows, and writes qops_audit_events.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "PATCH",
+        "path": "users/project-assignments",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "0e349bfc-16b2-4eae-9298-b166bc596707",
+      "name": "PATCH /users/project-assignments",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        176
+      ],
+      "webhookId": "b9266c4a-a9c8-46a8-b9a0-12e9ed79aa25"
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={ \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"{{ $json.headers.authorization || $json.headers.Authorization || \"\" }}\" }",
+        "options": {}
+      },
+      "id": "f92cdf07-8f01-4acd-b225-aaaf70e501fa",
+      "name": "Verify Supabase Auth User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        176
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,auth_user_id,email,name,role,status"
+            },
+            {
+              "name": "or",
+              "value": "=({{ $json.id ? \"auth_user_id.eq.\" + $json.id + \",email.eq.\" + $json.email : \"email.eq.__missing__\" }})"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "93d0eb12-19c8-4028-9915-63757886da85",
+      "name": "Fetch Current Q-Ops Admin",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        176
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,email,name,role,status"
+            },
+            {
+              "name": "id",
+              "value": "=eq.{{ encodeURIComponent($(\"PATCH /users/project-assignments\").first().json.body.userId || $(\"PATCH /users/project-assignments\").first().json.body.id || \"\") }}"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "3476f7a0-2f8e-477a-9576-e0ff0c03d014",
+      "name": "Fetch Target Q-Ops User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        176
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,name,status"
+            },
+            {
+              "name": "order",
+              "value": "name.asc"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "4ef8bbf1-3859-44b7-84f3-0e17378c166f",
+      "name": "Fetch Projects",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        176
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const auth = $('Verify Supabase Auth User').first().json || {};\nconst admin = $items('Fetch Current Q-Ops Admin').map(i => i.json).find(r => r && r.id);\nconst target = $items('Fetch Target Q-Ops User').map(i => i.json).find(r => r && r.id);\nconst body = $('PATCH /users/project-assignments').first().json.body || {};\nconst rawAssignments = Array.isArray(body.projectAssignments) ? body.projectAssignments : Array.isArray(body.projects) ? body.projects : [];\nconst projectMap = new Map($items('Fetch Projects').map(i => i.json).filter(p => p && p.id).map(p => [String(p.id), p]));\nconst normalized = [];\nconst seen = new Set();\nfor (const item of rawAssignments) {\n  const projectId = String(typeof item === 'string' ? item : item.projectId || item.id || '').trim();\n  if (!projectId || seen.has(projectId)) continue;\n  seen.add(projectId);\n  const role = ['owner', 'editor', 'viewer'].includes(item.role || item.projectRole) ? (item.role || item.projectRole) : 'editor';\n  normalized.push({ project_id: projectId, user_id: String(body.userId || body.id || '').trim(), project_role: role, updated_at: new Date().toISOString() });\n}\nconst missingProjects = normalized.map(a => a.project_id).filter(id => !projectMap.has(id));\nconst authorized = Boolean(auth.id && admin && admin.role === 'admin' && admin.status === 'active' && target && target.id && target.role !== 'admin' && missingProjects.length === 0);\nconst message = !auth.id ? 'Missing or invalid Supabase Auth token.' : !admin ? 'Authenticated user is not registered in qops_users.' : admin.role !== 'admin' ? 'Admin role is required.' : admin.status !== 'active' ? 'Admin profile is not active.' : !target ? 'Target user was not found.' : target.role === 'admin' ? 'Admin users do not need project assignments.' : missingProjects.length ? 'One or more selected projects no longer exist.' : 'Authorized.';\nreturn [{ json: { authorized, message, target, admin, assignments: normalized, hasAssignments: normalized.length > 0, projectNames: normalized.map(a => projectMap.get(a.project_id)?.name || a.project_id), audit: { actor_user_id: admin?.id || null, actor_name: admin?.name || admin?.email || auth.email || 'unknown', action: 'USER_PROJECT_ASSIGNMENTS_UPDATED', entity_type: 'qops_user', entity_id: target?.id || String(body.userId || body.id || ''), status: authorized ? 'success' : 'error', details: authorized ? 'Updated project assignments for ' + (target?.email || target?.id) : message, metadata: { source: 'ui', targetUserId: target?.id || null, projectIds: normalized.map(a => a.project_id), projectRoles: normalized.map(a => ({ projectId: a.project_id, role: a.project_role })) } } } }];"
+      },
+      "id": "e38e4970-6f5b-4002-8662-e111678c7840",
+      "name": "Prepare Project Assignments",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "authorized",
+              "leftValue": "={{ $json.authorized }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "0f1573af-158b-4b6f-b1fa-a3a52cdf8dd9",
+      "name": "Is Authorized Assignment Update",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1344,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{ encodeURIComponent($json.target.id) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "options": {}
+      },
+      "id": "4d8d9cf2-f022-4aed-8a80-bf93822a8e0a",
+      "name": "Delete Existing Project Assignments",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1568,
+        80
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "hasAssignments",
+              "leftValue": "={{ $(\"Prepare Project Assignments\").first().json.hasAssignments }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "7928699c-56d7-4209-a899-b5f33b67f2fe",
+      "name": "Has Project Assignments",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1792,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=representation\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $(\"Prepare Project Assignments\").first().json.assignments }}",
+        "options": {}
+      },
+      "id": "9c44777a-9cd9-40e5-84e6-7c3bc1c2376b",
+      "name": "Insert Project Assignments",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2016,
+        0
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $(\"Prepare Project Assignments\").first().json.audit }}",
+        "options": {}
+      },
+      "id": "0b0a880b-497a-41f6-a08a-abefd4db43e1",
+      "name": "Insert Assignment Audit Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2240,
+        80
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, userId: $(\"Prepare Project Assignments\").first().json.target.id, projectAssignments: $(\"Prepare Project Assignments\").first().json.assignments.map(a => ({ projectId: a.project_id, role: a.project_role })), projects: $(\"Prepare Project Assignments\").first().json.projectNames, message: \"Project assignments updated.\" } }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "d758f746-cd89-486f-953b-f0f24ba9dc13",
+      "name": "Respond Assignment Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2464,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, error: \"forbidden\", message: $json.message } }}",
+        "options": {
+          "responseCode": 403,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "060e4f14-7cd7-4fba-a007-52d8172ef697",
+      "name": "Reject Assignment Update",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1568,
+        272
+      ]
+    }
+  ],
+  "connections": {
+    "PATCH /users/project-assignments": {
+      "main": [
+        [
+          {
+            "node": "Verify Supabase Auth User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Supabase Auth User": {
+      "main": [
+        [
+          {
+            "node": "Fetch Current Q-Ops Admin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Current Q-Ops Admin": {
+      "main": [
+        [
+          {
+            "node": "Fetch Target Q-Ops User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Target Q-Ops User": {
+      "main": [
+        [
+          {
+            "node": "Fetch Projects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Projects": {
+      "main": [
+        [
+          {
+            "node": "Prepare Project Assignments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Project Assignments": {
+      "main": [
+        [
+          {
+            "node": "Is Authorized Assignment Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Authorized Assignment Update": {
+      "main": [
+        [
+          {
+            "node": "Delete Existing Project Assignments",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Assignment Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Existing Project Assignments": {
+      "main": [
+        [
+          {
+            "node": "Has Project Assignments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Project Assignments": {
+      "main": [
+        [
+          {
+            "node": "Insert Project Assignments",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert Assignment Audit Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Project Assignments": {
+      "main": [
+        [
+          {
+            "node": "Insert Assignment Audit Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Assignment Audit Event": {
+      "main": [
+        [
+          {
+            "node": "Respond Assignment Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": {},
+  "versionId": "4762d864-82ad-4caa-b285-76ef28ad83c4",
+  "activeVersionId": "4762d864-82ad-4caa-b285-76ef28ad83c4",
+  "versionCounter": 18,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-08T05:22:04.211Z",
+      "createdAt": "2026-05-08T05:22:04.211Z",
+      "role": "workflow:owner",
+      "workflowId": "SqF2eOhsuBrtyCtD",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 4762d864",
+    "description": ""
+  }
+}

@@ -1,0 +1,582 @@
+{
+  "updatedAt": "2026-05-11T10:45:07.729Z",
+  "createdAt": "2026-05-11T10:42:41.059Z",
+  "id": "pbxli3DNK16tIhOe",
+  "name": "DI - Recommendation Feedback API",
+  "description": "Authenticated PATCH /webhook/di/recommendations/feedback endpoint to update DI recommendation feedback/status and audit the action.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Delivery Intelligence Recommendation Feedback API\nPATCH /webhook/di/recommendations/feedback records viewed/accepted/dismissed/converted actions on di_recommendations and writes qops_audit_events. Isolated from QA generation.",
+        "height": 180,
+        "width": 2000,
+        "color": 6
+      },
+      "id": "6236c48f-de7f-4767-b231-5888401717f8",
+      "name": "Sticky Note 4c0fce28",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "PATCH",
+        "path": "di/recommendations/feedback",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "63c968e1-53bc-4a65-8113-8db5d317022f",
+      "name": "PATCH /di/recommendations/feedback",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        144
+      ],
+      "webhookId": "5f144ff3-91a4-441b-922c-34d1cc856bc8"
+    },
+    {
+      "parameters": {
+        "jsCode": "const headers = $json.headers || {};\nconst authHeader = headers.authorization || headers.Authorization || '';\nconst body = $json.body || {};\nconst actionMap = { viewed: 'viewed', accept: 'accepted', accepted: 'accepted', dismiss: 'dismissed', dismissed: 'dismissed', convert: 'converted', converted: 'converted' };\nconst recommendationId = body.recommendationId || body.recommendation_id || body.id;\nconst action = actionMap[String(body.action || '').toLowerCase()];\nif (!String(authHeader).toLowerCase().startsWith('bearer ')) return [{ json: { ok: false, statusCode: 401, errorCode: 'UNAUTHORIZED', message: 'Missing bearer token' } }];\nif (!recommendationId || !action) return [{ json: { ok: false, statusCode: 400, errorCode: 'INVALID_FEEDBACK', message: 'recommendationId and valid action are required' } }];\nreturn [{ json: { ok: true, token: String(authHeader).replace(/^Bearer\\s+/i, ''), recommendationId, action, comment: body.comment || body.reason || '', feedback: body.feedback || {} } }];"
+      },
+      "id": "dde06493-953f-4816-aa18-85d9f53093b2",
+      "name": "Prepare DI Feedback Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "44d7c8aa-fcb9-41c1-abaf-47e638bb2aff",
+      "name": "Valid DI Feedback Request?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={ \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"Bearer {{ $json.token }}\" }",
+        "options": {}
+      },
+      "id": "de9b7f55-90aa-4436-859e-831ce12aefdf",
+      "name": "Verify Feedback Supabase Auth User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        80
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{ $json.id || \"00000000-0000-0000-0000-000000000000\" }}&status=eq.active&select=id,email,name,role,status&limit=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "8cdb3f2c-d2fd-46d3-8202-97c00668dbc1",
+      "name": "Fetch Feedback Q-Ops User Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        80
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_recommendations?id=eq.{{ encodeURIComponent($(\"Prepare DI Feedback Request\").item.json.recommendationId) }}&select=id,project_id,title,status,assigned_to,feedback&limit=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "1134b112-122f-4692-bbd6-ab9ae05d9b82",
+      "name": "Fetch DI Recommendation For Feedback",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        80
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{ Array.isArray($(\"Fetch Feedback Q-Ops User Profile\").item.json) ? ($(\"Fetch Feedback Q-Ops User Profile\").item.json[0]?.id || \"00000000-0000-0000-0000-000000000000\") : ($(\"Fetch Feedback Q-Ops User Profile\").item.json.id || \"00000000-0000-0000-0000-000000000000\") }}&select=project_id,project_role",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "6cccee4e-86f2-445d-b0c4-a010002a9da8",
+      "name": "Fetch Feedback Project Memberships",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1344,
+        80
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const auth = $('Verify Feedback Supabase Auth User').first().json || {};\nconst rawProfile = $('Fetch Feedback Q-Ops User Profile').first().json;\nconst profile = Array.isArray(rawProfile) ? rawProfile[0] : rawProfile;\nconst rawRec = $('Fetch DI Recommendation For Feedback').first().json;\nconst rec = Array.isArray(rawRec) ? rawRec[0] : rawRec;\nconst req = $('Prepare DI Feedback Request').first().json;\nif (!auth.id) return [{ json: { ok: false, statusCode: 401, errorCode: 'UNAUTHORIZED', message: 'Invalid Supabase Auth token' } }];\nif (!profile?.id || profile.status !== 'active') return [{ json: { ok: false, statusCode: 403, errorCode: 'PROFILE_NOT_ACTIVE', message: 'Active Q-Ops user profile not found' } }];\nif (!rec?.id) return [{ json: { ok: false, statusCode: 404, errorCode: 'RECOMMENDATION_NOT_FOUND', message: 'Recommendation not found' } }];\nconst memberships = $items('Fetch Feedback Project Memberships').map(i => i.json.project_id).filter(Boolean);\nconst canUpdate = profile.role === 'admin' || rec.assigned_to === profile.id || !rec.project_id || memberships.includes(rec.project_id);\nif (!canUpdate) return [{ json: { ok: false, statusCode: 403, errorCode: 'RECOMMENDATION_ACCESS_DENIED', message: 'User cannot update this recommendation' } }];\nconst previousFeedback = rec.feedback && typeof rec.feedback === 'object' ? rec.feedback : {};\nconst patch = { status: req.action, feedback: { ...previousFeedback, lastAction: req.action, comment: req.comment, updatedBy: profile.email, updatedByUserId: profile.id, updatedAt: new Date().toISOString(), details: req.feedback }, updated_at: new Date().toISOString() };\nconst audit = { action: `DI_RECOMMENDATION_${req.action.toUpperCase()}`, entity_type: 'di_recommendation', entity_id: rec.id, project_id: rec.project_id, actor_user_id: profile.id, actor_name: profile.email, status: 'success', details: `${req.action}: ${rec.title}`, metadata: { recommendation_id: rec.id, previous_status: rec.status, new_status: req.action, comment: req.comment } };\nreturn [{ json: { ok: true, recommendationId: rec.id, patch, audit } }];"
+      },
+      "id": "904d3d08-0a2d-4c04-a186-affd2c18b5af",
+      "name": "Authorize DI Feedback",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4dc58498-188f-4ead-bba6-d86fdac61ff9",
+      "name": "DI Feedback Authorized?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1792,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_recommendations?id=eq.{{ encodeURIComponent($json.recommendationId) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=representation\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.patch) }}",
+        "options": {}
+      },
+      "id": "148f6590-d67e-471b-a6e5-ecb669937443",
+      "name": "Update DI Recommendation Feedback",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2016,
+        0
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($(\"Authorize DI Feedback\").item.json.audit) }}",
+        "options": {}
+      },
+      "id": "6b10756e-f7e5-4f9b-af8c-4402246f1c90",
+      "name": "Insert DI Feedback Audit Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2240,
+        0
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const updated = $('Update DI Recommendation Feedback').first().json || {};\nreturn [{ json: { ok: true, recommendationId: updated.id || $('Authorize DI Feedback').first().json.recommendationId, status: updated.status || $('Authorize DI Feedback').first().json.patch.status } }];"
+      },
+      "id": "f4d0aa75-437b-4d8a-8ae5-47ea95ac0223",
+      "name": "Map DI Feedback Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2464,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.ok ? $json : { ok: false, error: { code: $json.errorCode || \"DI_FEEDBACK_ERROR\", message: $json.message || \"Unable to update recommendation feedback\" } }) }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode || 200 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "71323a77-79fb-4e7c-a3dd-f0ffd355775f",
+      "name": "Respond DI Feedback",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2688,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "OPTIONS",
+        "path": "di/recommendations/feedback",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f18396dc-f27d-41c9-9529-20696c0f4a05",
+      "name": "OPTIONS /di/recommendations/feedback",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        368
+      ],
+      "webhookId": "505d4de4-7134-4d77-943f-7d71f3e50401"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true }) }}",
+        "options": {
+          "responseCode": 204,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "PATCH, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "authorization, content-type"
+              },
+              {
+                "name": "Access-Control-Max-Age",
+                "value": "86400"
+              }
+            ]
+          }
+        }
+      },
+      "id": "cac77122-a54f-44f7-a6e4-ec4478153c73",
+      "name": "Respond DI Feedback CORS",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        224,
+        368
+      ]
+    }
+  ],
+  "connections": {
+    "PATCH /di/recommendations/feedback": {
+      "main": [
+        [
+          {
+            "node": "Prepare DI Feedback Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare DI Feedback Request": {
+      "main": [
+        [
+          {
+            "node": "Valid DI Feedback Request?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid DI Feedback Request?": {
+      "main": [
+        [
+          {
+            "node": "Verify Feedback Supabase Auth User",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond DI Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Feedback Supabase Auth User": {
+      "main": [
+        [
+          {
+            "node": "Fetch Feedback Q-Ops User Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Feedback Q-Ops User Profile": {
+      "main": [
+        [
+          {
+            "node": "Fetch DI Recommendation For Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch DI Recommendation For Feedback": {
+      "main": [
+        [
+          {
+            "node": "Fetch Feedback Project Memberships",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Feedback Project Memberships": {
+      "main": [
+        [
+          {
+            "node": "Authorize DI Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authorize DI Feedback": {
+      "main": [
+        [
+          {
+            "node": "DI Feedback Authorized?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DI Feedback Authorized?": {
+      "main": [
+        [
+          {
+            "node": "Update DI Recommendation Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond DI Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update DI Recommendation Feedback": {
+      "main": [
+        [
+          {
+            "node": "Insert DI Feedback Audit Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert DI Feedback Audit Event": {
+      "main": [
+        [
+          {
+            "node": "Map DI Feedback Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map DI Feedback Success": {
+      "main": [
+        [
+          {
+            "node": "Respond DI Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPTIONS /di/recommendations/feedback": {
+      "main": [
+        [
+          {
+            "node": "Respond DI Feedback CORS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": {},
+  "versionId": "b9d4e048-276d-4f2e-a5c5-4505dbeb2764",
+  "activeVersionId": "b9d4e048-276d-4f2e-a5c5-4505dbeb2764",
+  "versionCounter": 14,
+  "triggerCount": 2,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-11T10:42:41.059Z",
+      "createdAt": "2026-05-11T10:42:41.059Z",
+      "role": "workflow:owner",
+      "workflowId": "pbxli3DNK16tIhOe",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version b9d4e048",
+    "description": ""
+  }
+}

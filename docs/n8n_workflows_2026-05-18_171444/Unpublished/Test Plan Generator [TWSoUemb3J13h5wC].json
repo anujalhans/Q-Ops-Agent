@@ -1,0 +1,255 @@
+{
+  "updatedAt": "2026-04-16T10:16:15.000Z",
+  "createdAt": "2025-10-30T05:01:16.581Z",
+  "id": "TWSoUemb3J13h5wC",
+  "name": "Test Plan Generator",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "fileSelector": "C:\\\\Users\\\\anujalhans01\\\\Downloads\\\\Business-Requirements-Document-BRD-Template.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "641a70ff-17b4-4973-8444-be72c098ec9c",
+      "name": "Read BRD Document",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e74ab976-80f6-4318-945e-8241dbf587e1",
+      "name": "Start"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {
+          "joinPages": false
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "0ca09b7a-ad5f-4cf5-9249-2f92d037176f",
+      "name": "Extract BRD Content"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are an experienced QA Test Manager responsible for creating professional Test Plans from Business Requirement Documents (BRDs). \nYour goal is to analyze the input text from the BRD and generate a detailed, structured Test Plan.\n"
+            },
+            {
+              "content": "=Create a comprehensive Test Plan based on the below extracted BRD content.\nInclude all standard Test Plan sections:\n1. Test Strategy\n2. Scope\n3. Test Objectives\n4. Test Deliverables\n5. Entry and Exit Criteria\n6. Test Schedule and Milestones\n7. Risks and Mitigation Plan\n8. Test Environment\n9. Tools and Resources\n10. Roles and Responsibilities\n11. Test Data and Configurations\n12. Reporting and Communication Plan\n\nBRD Content:\n{{$json[\"text\"]}}\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "maxTokens": 4000,
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "a4697ec5-b24e-4eb5-b2ff-22dd101dec10",
+      "name": "OpenAI ",
+      "credentials": {
+        "openAiApi": {
+          "id": "rdVg2Kks1mUCJf4R",
+          "name": "OpenAi Account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {},\n    binary: {\n      data: {\n        data: Buffer.from($input.first().json.output[0].content[0].text, \"utf8\"),\n        mimeType: \"text/markdown\",\n        fileName: \"BRD-TO-TEST-PLAN.md\"\n      }\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "1baf9417-bc18-4c09-9727-7a508f6888ea",
+      "name": "Prepare Markdown Content"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/convert",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "markdown",
+              "value": "={{ $('OpenAI ').item.json.output[0].content[0].text }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "77b72444-f032-4499-b9ae-8eeb9e301524",
+      "name": "Convert md to docx"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "C:\\Users\\anujalhans01\\Downloads\\Generated-Test-Plan.docx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1472,
+        0
+      ],
+      "id": "fc3a7c6a-309c-4d72-8a0b-f355def9dd1a",
+      "name": "Read/Write Files from Disk"
+    }
+  ],
+  "connections": {
+    "Read BRD Document": {
+      "main": [
+        [
+          {
+            "node": "Extract BRD Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Read BRD Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract BRD Content": {
+      "main": [
+        [
+          {
+            "node": "OpenAI ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI ": {
+      "main": [
+        [
+          {
+            "node": "Prepare Markdown Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Markdown Content": {
+      "main": [
+        [
+          {
+            "node": "Convert md to docx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert md to docx": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "23ee1146-4337-4088-9ff2-aaf023e1d499",
+  "activeVersionId": null,
+  "versionCounter": 2,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-10-30T05:01:16.581Z",
+      "createdAt": "2025-10-30T05:01:16.581Z",
+      "role": "workflow:owner",
+      "workflowId": "TWSoUemb3J13h5wC",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

@@ -1,6 +1,13 @@
 import unittest
 
-from extract_images_v2.main import _build_vision_config, _determine_content_mode, infer_doc_type
+from extract_images_v2.main import (
+    _build_vision_config,
+    _determine_content_mode,
+    infer_artifact_type,
+    infer_doc_type,
+    infer_document_category,
+    refine_doc_type_from_content,
+)
 from extract_images_v2.extractors.visual_detection import annotate_visual_candidate, limit_visual_candidates
 
 
@@ -8,7 +15,22 @@ class MainHelperTests(unittest.TestCase):
     def test_infer_doc_type(self) -> None:
         self.assertEqual(infer_doc_type("sample_brd.pdf"), "BRD")
         self.assertEqual(infer_doc_type("grooming_session.txt"), "TRANSCRIPT")
+        self.assertEqual(infer_doc_type("payment_gateway_openapi_spec.pptx", "supporting"), "API_SPEC")
+        self.assertEqual(infer_doc_type("checkout_data_dictionary.csv", "supporting"), "DATA_MODEL")
+        self.assertEqual(infer_doc_type("notes.docx", "supporting"), "SUPPORTING")
+        self.assertEqual(infer_doc_type("requirements.pdf", "brd"), "BRD")
         self.assertEqual(infer_doc_type("notes.docx"), "UNKNOWN")
+
+    def test_infer_supporting_metadata(self) -> None:
+        self.assertEqual(infer_document_category("API_SPEC"), "technical_design")
+        self.assertEqual(infer_artifact_type("API_SPEC"), "api_specification")
+        self.assertEqual(infer_document_category("SUPPORTING"), "supporting_context")
+        self.assertEqual(infer_artifact_type("SUPPORTING"), "supporting_document")
+
+    def test_refine_supporting_doc_type_from_content(self) -> None:
+        self.assertEqual(refine_doc_type_from_content("SUPPORTING", "OpenAPI endpoint request payload response payload"), "API_SPEC")
+        self.assertEqual(refine_doc_type_from_content("UNKNOWN", "Entity relationship and database schema notes"), "DATA_MODEL")
+        self.assertEqual(refine_doc_type_from_content("BRD", "OpenAPI endpoint"), "BRD")
 
     def test_determine_content_mode(self) -> None:
         self.assertEqual(_determine_content_mode("hello", []), "text-only")

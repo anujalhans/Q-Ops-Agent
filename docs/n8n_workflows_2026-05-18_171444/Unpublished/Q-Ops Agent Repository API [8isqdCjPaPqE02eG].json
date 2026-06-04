@@ -1,0 +1,1019 @@
+{
+  "updatedAt": "2026-05-07T05:55:15.000Z",
+  "createdAt": "2026-05-07T05:49:11.828Z",
+  "id": "8isqdCjPaPqE02eG",
+  "name": "Q-Ops Agent Repository API",
+  "description": "Additive UI repository API for Q-Ops projects, artifacts, generated documents, audit events, and artifact reprocess endpoints backed by Supabase.",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "id": "021aa421-2120-4f4c-93e3-87d81ba1952d",
+      "name": "GET /projects",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "path": "projects",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "b41e5f6e-4296-4f39-92d0-8724c5a856a8"
+    },
+    {
+      "id": "def63445-9949-4ff4-88e6-2e37fc59f1d4",
+      "name": "Fetch Projects",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,name,description,owner,module,release,tags,status,created_at,updated_at"
+            },
+            {
+              "name": "order",
+              "value": "updated_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "200"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "87a7674b-90ac-4b04-b39b-c1d1edc03ffa",
+      "name": "Map Projects Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const projects = $input.all().map(i => i.json).filter(p => p && p.id).map(p => ({\n  id: p.id,\n  name: p.name,\n  description: p.description || '',\n  owner: p.owner || 'Admin User',\n  module: p.module || '',\n  release: p.release || '',\n  tags: Array.isArray(p.tags) ? p.tags : [],\n  status: p.status || 'draft',\n  createdAt: p.created_at,\n  updatedAt: p.updated_at\n}));\nreturn [{ json: { projects } }];"
+      }
+    },
+    {
+      "id": "1653e7c9-a9b1-48ef-8d79-16dcd2ab5197",
+      "name": "Respond Projects",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "69a13a91-7107-41a7-9969-59d25798d42b",
+      "name": "POST /projects",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        224
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "projects",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "2a7900c5-ff0e-4902-b8d8-86004a7f99da"
+    },
+    {
+      "id": "6bde42e2-4fdc-45ed-859d-ecf3790da9c6",
+      "name": "Fetch Projects For Upsert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        224
+      ],
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,name"
+            },
+            {
+              "name": "limit",
+              "value": "1000"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "426b0e91-00cc-45f3-9af8-98bf809bc019",
+      "name": "Prepare Project Upsert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        224
+      ],
+      "parameters": {
+        "jsCode": "const body = $('POST /projects').item.json.body || {};\nconst name = String(body.name || '').trim();\nif (!name) throw new Error('Project name is required');\nconst existing = $input.all().map(i => i.json).find(p => p && p.id && String(p.name || '').toLowerCase() === name.toLowerCase());\nconst payload = {\n  name,\n  description: body.description || '',\n  owner: body.owner || 'Admin User',\n  module: body.module || '',\n  release: body.release || '',\n  tags: Array.isArray(body.tags) ? body.tags : [],\n  status: body.status || 'draft',\n  updated_at: new Date().toISOString()\n};\nif (!existing) payload.created_at = new Date().toISOString();\nreturn [{ json: {\n  method: existing ? 'PATCH' : 'POST',\n  url: existing ? `${supabaseUrl}/qops_projects?id=eq.${encodeURIComponent(existing.id)}` : `${supabaseUrl}/qops_projects`,\n  payload,\n  auditAction: existing ? 'PROJECT_UPDATED' : 'PROJECT_CREATED'\n} }];"
+      }
+    },
+    {
+      "id": "377e65c6-01d4-44a9-8f9a-1842f5a431ed",
+      "name": "Upsert Project",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        224
+      ],
+      "parameters": {
+        "method": "={{ $json.method }}",
+        "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=representation\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.payload }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "7a395a24-55a7-44d8-a78c-0d2c8f72b4d6",
+      "name": "Map Project Write Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        224
+      ],
+      "parameters": {
+        "jsCode": "const p = $input.first().json;\nconst action = $('Prepare Project Upsert').item.json.auditAction;\nreturn [{ json: {\n  id: p.id,\n  name: p.name,\n  description: p.description || '',\n  owner: p.owner || 'Admin User',\n  module: p.module || '',\n  release: p.release || '',\n  tags: Array.isArray(p.tags) ? p.tags : [],\n  status: p.status || 'draft',\n  createdAt: p.created_at,\n  updatedAt: p.updated_at,\n  audit: { action, entity_type: 'project', entity_id: p.id, project_id: p.id, actor_name: 'n8n', status: 'success', details: `${action}: ${p.name}`, metadata: { source: 'ui' } }\n} }];"
+      }
+    },
+    {
+      "id": "6ea1501d-b7b4-4d61-8646-4b97ade0af32",
+      "name": "Insert Project Audit Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        224
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.audit }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "b7ca3409-e328-4d9f-9c4a-e0d98b6f9896",
+      "name": "Respond Project Write",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1344,
+        224
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $(\"Map Project Write Response\").item.json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "bbb90996-1c03-4ebd-9078-a37fba1eac94",
+      "name": "GET /artifacts",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        448
+      ],
+      "parameters": {
+        "path": "artifacts",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "2ba7ea5c-f37e-492b-a74a-a7f85a06f1b6"
+    },
+    {
+      "id": "958ba90f-6e50-4f1c-a759-ff9bd9aa0f88",
+      "name": "Fetch Ingestion Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        448
+      ],
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "job_id,status,input,created_at,updated_at,error"
+            },
+            {
+              "name": "order",
+              "value": "created_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "200"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "2031429b-9211-4a7d-8a22-ec8898c1c40f",
+      "name": "Map Artifacts Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        448
+      ],
+      "parameters": {
+        "jsCode": "const artifacts = [];\nconst statusMap = { completed: 'processed', failed: 'failed', pending: 'processing', processing: 'processing' };\nfor (const item of $input.all()) {\n  const job = item.json;\n  if (!job || !job.job_id) continue;\n  const input = job.input || {};\n  const files = input.files || {};\n  for (const [type, url] of Object.entries(files)) {\n    const rawName = String(url).split('/').pop() || type;\n    artifacts.push({\n      id: `${job.job_id}:${type}`,\n      projectName: input.projectName || 'Unknown project',\n      type,\n      fileName: decodeURIComponent(rawName),\n      uploadedAt: job.created_at,\n      status: statusMap[job.status] || 'processing',\n      url,\n      jobId: job.job_id\n    });\n  }\n}\nreturn [{ json: { artifacts } }];"
+      }
+    },
+    {
+      "id": "0676ddc1-aefd-4b6a-84d8-7ebbfc1f2aaf",
+      "name": "Respond Artifacts",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        448
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "3f049192-7ed3-4f78-86a4-38719cb08240",
+      "name": "GET /generated-documents",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        672
+      ],
+      "parameters": {
+        "path": "generated-documents",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "5ad79c75-22e4-4dfb-978a-b5a049949eba"
+    },
+    {
+      "id": "0728dedb-bf54-44e4-8c73-7066d9ee4dcf",
+      "name": "Fetch QA Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        672
+      ],
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "job_id,status,input,output,created_at,updated_at"
+            },
+            {
+              "name": "order",
+              "value": "created_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "200"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "ef1e52f1-e8b7-4fdc-8fe3-8a517a03fa87",
+      "name": "Map Generated Documents Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        672
+      ],
+      "parameters": {
+        "jsCode": "const documents = $input.all().map(i => i.json).filter(j => j && j.job_id).map(j => ({\n  id: j.job_id,\n  jobId: j.job_id,\n  projectName: j.input?.projectName || 'Unknown project',\n  documentType: j.input?.documentType || '',\n  artifactLabel: j.input?.documentType || '',\n  createdAt: j.created_at,\n  status: j.status,\n  url: j.output?.url || j.output?.confluenceUrl || '',\n  output: j.output || null\n}));\nreturn [{ json: { documents } }];"
+      }
+    },
+    {
+      "id": "83046c71-7e6c-4b0c-b71d-0ab91631b03c",
+      "name": "Respond Generated Documents",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        672
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "05517406-c79b-48df-92fd-330a52a091dc",
+      "name": "GET /audit-events",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        896
+      ],
+      "parameters": {
+        "path": "audit-events",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "d86b725f-5d15-46aa-8abc-1996892dffca"
+    },
+    {
+      "id": "96e2f02b-eaba-4bbe-a616-f27ed8531a90",
+      "name": "Fetch Q-Ops Audit Events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        896
+      ],
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,actor_name,action,entity_type,entity_id,project_id,status,details,metadata,created_at"
+            },
+            {
+              "name": "order",
+              "value": "created_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "100"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "a3f83f87-3482-469c-81a3-b71284e219fd",
+      "name": "Fetch QA Job Metrics For Audit",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        896
+      ],
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,job_id,project_name,document_type,pipeline,event,status,error_message,created_at"
+            },
+            {
+              "name": "order",
+              "value": "created_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "100"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "0657ba78-adba-4095-bd47-aab6feb562ca",
+      "name": "Map Audit Events Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        896
+      ],
+      "parameters": {
+        "jsCode": "const explicitEvents = $items('Fetch Q-Ops Audit Events').map(i => i.json).filter(e => e && e.id).map(e => ({\n  id: e.id,\n  actor: e.actor_name || 'n8n',\n  action: e.action,\n  project: e.metadata?.projectName || e.project_id || '',\n  entity: e.entity_id || e.entity_type || '',\n  status: e.status || 'info',\n  timestamp: e.created_at,\n  details: e.details || '',\n  event: e.action\n}));\nconst metricEvents = $items('Fetch QA Job Metrics For Audit').map(i => i.json).filter(m => m && m.id).map(m => ({\n  id: `metric-${m.id}`,\n  actor: 'n8n',\n  action: m.event || 'JOB_EVENT',\n  project: m.project_name || '',\n  entity: m.job_id || '',\n  status: m.status === 'error' ? 'error' : m.event === 'JOB_COMPLETED' ? 'success' : 'info',\n  timestamp: m.created_at,\n  details: [m.pipeline, m.document_type, m.error_message].filter(Boolean).join(' | '),\n  event: m.event,\n  pipeline: m.pipeline,\n  jobId: m.job_id\n}));\nconst events = explicitEvents.concat(metricEvents).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)).slice(0, 150);\nreturn [{ json: { events } }];"
+      }
+    },
+    {
+      "id": "420d574e-3e7a-4cd6-9394-9765869d8c56",
+      "name": "Respond Audit Events",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        896,
+        896
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "70a6a756-40a9-4bf9-857a-25d6ee110e89",
+      "name": "POST /artifacts/:artifactId/reprocess",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        1120
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "artifacts/:artifactId/reprocess",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "298e6197-9a31-40f8-88b0-7e2710d42b8c"
+    },
+    {
+      "id": "ad69b4d4-a61c-4405-bee8-b432f891f1dc",
+      "name": "Prepare Reprocess Lookup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        1120
+      ],
+      "parameters": {
+        "jsCode": "const artifactId = $json.params?.artifactId || '';\nconst [jobId, fileKey] = artifactId.split(':');\nif (!jobId || !fileKey) throw new Error('Artifact id must be formatted as jobId:fileKey');\nreturn [{ json: { artifactId, jobId, fileKey } }];"
+      }
+    },
+    {
+      "id": "224437fb-5787-4a51-bbe3-244e12fd6de7",
+      "name": "Fetch Reprocess Source Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        1120
+      ],
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "job_id",
+              "value": "=eq.{{ $json.jobId }}"
+            },
+            {
+              "name": "select",
+              "value": "job_id,input,project_id,requested_by,settings_version,config_snapshot"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      }
+    },
+    {
+      "id": "0e63a407-f8c7-44f2-8ab8-bb29d07e14cb",
+      "name": "Prepare Reprocess Insert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1120
+      ],
+      "parameters": {
+        "jsCode": "const source = $input.first().json;\nconst lookup = $('Prepare Reprocess Lookup').item.json;\nconst input = source.input || {};\nconst files = input.files || {};\nconst url = files[lookup.fileKey];\nif (!source.job_id || !url) throw new Error('Source artifact was not found');\nconst now = new Date();\nconst datePart = now.toISOString().slice(2,10).replace(/-/g, '');\nconst randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();\nconst jobId = `ING-${datePart}-${randomPart}`;\nreturn [{ json: {\n  jobId,\n  payload: {\n    job_id: jobId,\n    status: 'pending',\n    input: { projectName: input.projectName || 'Unknown project', files: { [lookup.fileKey]: url }, reprocessOf: lookup.artifactId },\n    project_id: source.project_id || null,\n    requested_by: source.requested_by || null,\n    settings_version: source.settings_version || null,\n    config_snapshot: source.config_snapshot || null\n  },\n  metric: { job_id: jobId, project_name: input.projectName || 'Unknown project', pipeline: 'ingestion', event: 'JOB_REPROCESS_QUEUED', status: 'info', total_files: 1, metadata: { reprocessOf: lookup.artifactId, fileKey: lookup.fileKey } }\n} }];"
+      }
+    },
+    {
+      "id": "fca9ff64-c442-4363-a551-dce6d2976a3a",
+      "name": "Insert Reprocess Ingestion Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        1120
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.payload }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "629a2595-53f9-441b-8b57-9d237c90326e",
+      "name": "Insert Reprocess Metric",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        1120
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_job_metrics",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $(\"Prepare Reprocess Insert\").item.json.metric }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "5dc79c90-06cd-4110-91e4-8ca1df9eb420",
+      "name": "Respond Reprocess",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1344,
+        1120
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { jobId: $(\"Prepare Reprocess Insert\").item.json.jobId, status: \"queued\" } }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "GET /projects": {
+      "main": [
+        [
+          {
+            "node": "Fetch Projects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Projects": {
+      "main": [
+        [
+          {
+            "node": "Map Projects Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Projects Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Projects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /projects": {
+      "main": [
+        [
+          {
+            "node": "Fetch Projects For Upsert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Projects For Upsert": {
+      "main": [
+        [
+          {
+            "node": "Prepare Project Upsert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Project Upsert": {
+      "main": [
+        [
+          {
+            "node": "Upsert Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Project": {
+      "main": [
+        [
+          {
+            "node": "Map Project Write Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Project Write Response": {
+      "main": [
+        [
+          {
+            "node": "Insert Project Audit Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Project Audit Event": {
+      "main": [
+        [
+          {
+            "node": "Respond Project Write",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /artifacts": {
+      "main": [
+        [
+          {
+            "node": "Fetch Ingestion Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Ingestion Jobs": {
+      "main": [
+        [
+          {
+            "node": "Map Artifacts Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Artifacts Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Artifacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /generated-documents": {
+      "main": [
+        [
+          {
+            "node": "Fetch QA Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch QA Jobs": {
+      "main": [
+        [
+          {
+            "node": "Map Generated Documents Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Generated Documents Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Generated Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /audit-events": {
+      "main": [
+        [
+          {
+            "node": "Fetch Q-Ops Audit Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Q-Ops Audit Events": {
+      "main": [
+        [
+          {
+            "node": "Fetch QA Job Metrics For Audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch QA Job Metrics For Audit": {
+      "main": [
+        [
+          {
+            "node": "Map Audit Events Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Audit Events Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Audit Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /artifacts/:artifactId/reprocess": {
+      "main": [
+        [
+          {
+            "node": "Prepare Reprocess Lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Reprocess Lookup": {
+      "main": [
+        [
+          {
+            "node": "Fetch Reprocess Source Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Reprocess Source Job": {
+      "main": [
+        [
+          {
+            "node": "Prepare Reprocess Insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Reprocess Insert": {
+      "main": [
+        [
+          {
+            "node": "Insert Reprocess Ingestion Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Reprocess Ingestion Job": {
+      "main": [
+        [
+          {
+            "node": "Insert Reprocess Metric",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Reprocess Metric": {
+      "main": [
+        [
+          {
+            "node": "Respond Reprocess",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": null,
+  "versionId": "697f186e-23e3-4064-a730-a7d02d646573",
+  "activeVersionId": null,
+  "versionCounter": 2,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-07T05:49:11.835Z",
+      "createdAt": "2026-05-07T05:49:11.835Z",
+      "role": "workflow:owner",
+      "workflowId": "8isqdCjPaPqE02eG",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}
