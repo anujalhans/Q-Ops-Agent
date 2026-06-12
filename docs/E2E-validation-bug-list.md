@@ -5100,7 +5100,7 @@ Retest:
 
 ## BUG-E2E-074: Epics & User Stories Update Reuses Jira Correctly But Still Consumes Full Generation Budget
 
-Status: open
+Status: fixed - workflow smoke validated; pending next live Epics & User Stories update savings retest
 
 Severity: medium
 
@@ -5154,6 +5154,14 @@ Suggested Fix:
    - token/cost metadata indicating lightweight validation
 4. If only some coverage rows are `partial`, `missing`, or `unknown`, call the model with only those unresolved rows plus minimal parent context.
 5. Surface `no changes needed` or `coverage already complete` clearly in FE output cards and Confluence summary.
+
+Fix Implemented:
+
+- 2026-06-05: Patched active Epics & User Stories n8n workflow `Vwc6c8ehsRTF8svG` with a pre-model backlog delta gate.
+- The update path now has a lightweight no-model branch when existing backlog coverage is already clean and no source/update reasons require regeneration.
+- The no-model branch reuses existing epics/stories, emits a compact update summary, and records estimated token savings instead of spending a full backlog generation budget.
+- Create/full-generation behavior remains routed through the existing model path.
+- Workflow code compilation and connection smoke validation passed against the patched local n8n workflow.
 
 Retest:
 
@@ -5217,7 +5225,7 @@ Retest:
 
 ## BUG-E2E-076: Story Test Cases Job Remains Processing Without Visible n8n Progress
 
-Status: open
+Status: fixed - STC progress checkpoints and UI stage model implemented; pending next live long-running STC retest
 
 Severity: high
 
@@ -5342,6 +5350,29 @@ Suggested Fix:
    - make retry resume from existing idempotency labels instead of starting over
 7. If Jira publishing fails after generation succeeds, show a user-friendly `Publishing failed after coverage generation` state instead of a generic service error.
 
+Fix Implemented:
+
+- 2026-06-09: Patched active Story Test Cases generator workflow `SG7khcKlhHst48WH` with durable `qa_jobs.output.progress` checkpoints.
+- Added checkpoints at:
+  - planning scope
+  - planning coverage
+  - generating test cases
+  - linking traceability
+  - finalizing coverage
+- Patched Story Test Cases worker workflow `ivz13uFyjfCT8149` so locked STC jobs immediately show a `Preparing request` progress state.
+- Progress writes preserve the pre-Jira usage checkpoint shape, so failed-after-generation usage recovery remains intact.
+- Added FE stage model for active Story Test Cases jobs in Job Status and My Document Jobs:
+  - Preparing
+  - Planning coverage
+  - Generating cases
+  - Publishing to Jira
+  - Finalizing
+- Patch script:
+  - `scripts/patch_stc_progress_checkpoints_v1.cjs`
+- n8n backups created before patching:
+  - `docs/test_data/n8n_workflow_backups/stc_progress_before_stc_progress_checkpoints_v1_20260609055414.json`
+  - `docs/test_data/n8n_workflow_backups/stc_progress_before_stc_progress_checkpoints_v1_20260609055509.json`
+
 Retest:
 
 - Trigger Story Test Cases for `AstraCart E2E 20260528`.
@@ -5353,7 +5384,7 @@ Retest:
 
 ## BUG-E2E-077: Failed Story Test Cases Job Does Not Record Token/Cost Usage After Model Work Completed
 
-Status: open
+Status: fixed - workflow patched and worker smoke validated; pending next live failed-after-generation STC retest
 
 Severity: medium
 
@@ -5395,12 +5426,46 @@ Suggested Fix:
 3. On failure, include accumulated usage in the `JOB_FAILED` metric.
 4. Ensure FE usage modal can display failed usage for Story Test Cases just like other document jobs.
 
+Fix Implemented:
+
+- 2026-06-09: Patched active Story Test Cases generator workflow `SG7khcKlhHst48WH`.
+- Backup created before patching:
+  - `docs/test_data/n8n_workflow_backups/workflow_SG7khcKlhHst48WH_before_stc_failed_usage_checkpoint_v1_20260609035739.json`
+- Added a pre-Jira-publish usage checkpoint after `Merge Story Test Case Batches` and before `Expand Story Test Case Items`.
+- The checkpoint captures generated story count, planned/generated test case counts, word count, input/output/total tokens, estimated cost, and standard `tokenUsage`.
+- The checkpoint is persisted to `qa_jobs.output` while the job is still `processing`, so a later Jira publish/link failure has usage data to recover.
+- Story Test Case create/Jira publish logic was not changed; the patch only inserts a pass-through checkpoint before the existing Jira item expansion path.
+- Patched active Story Test Cases worker workflow `ivz13uFyjfCT8149`.
+- Backup created before patching:
+  - `docs/test_data/n8n_workflow_backups/workflow_ivz13uFyjfCT8149_before_stc_failed_usage_checkpoint_v1_20260609035739.json`
+- Worker failure path now fetches the persisted checkpoint and merges token/cost/word usage into:
+  - failed `qa_jobs.output.tokenUsage`,
+  - top-level failed output token/cost aliases,
+  - terminal `qa_job_metrics.JOB_FAILED` usage fields,
+  - failure metadata showing `failed_after_usage_checkpoint`.
+
+Verification:
+
+- n8n MCP confirms generator workflow `SG7khcKlhHst48WH` is active and updated at `2026-06-09T03:57:39.360Z`.
+- n8n MCP confirms worker workflow `ivz13uFyjfCT8149` is active and updated at `2026-06-09T03:57:39.368Z`.
+- Verified the active generator contains:
+  - `Build Story Test Case Usage Checkpoint`,
+  - `Persist Story Test Case Usage Checkpoint`,
+  - `Restore Story Test Case Usage Checkpoint Items`.
+- Verified the active worker contains:
+  - `Fetch Story Test Case Usage Checkpoint`,
+  - `Merge Story Test Case Failure Usage`,
+  - updated failed metric writer with token/cost fields.
+- Supabase check confirmed no pending/processing `STC-*` jobs before smoke execution.
+- Worker smoke execution `1057763` completed successfully through the `No Pending Story Test Case Jobs` branch.
+
 Retest:
 
 - Trigger Story Test Cases and force/simulate a Jira publishing failure after generation.
 - Confirm failed job records non-zero tokens/cost.
 - Confirm Analytics `Failed Generation Spend` includes the failed Story Test Cases spend.
 - Confirm My Document Jobs usage icon/modal shows usage recorded before failure.
+
 ## BUG-E2E-078: Story Test Cases Retry Reuses Same Job ID Instead of Creating Child Retry Job
 
 Status: Fixed - smoke validated; pending next live failed-retry validation
@@ -5779,7 +5844,7 @@ Validation Evidence:
 
 ## BUG-E2E-084: Story Test Cases Update Reports All Stories Partial After Successful Jira Link Coverage
 
-Status: open
+Status: fixed - workflow smoke validated; pending next live Story Test Cases update coverage retest
 
 Observed On: 2026-06-01
 
@@ -5836,6 +5901,15 @@ Suggested Fix:
 4. Keep `KAN-792` action detail explicit if it remains partial:
    - show missing categories and what the user/workflow should do next.
 5. Add a smoke query that confirms `coverageSummary.covered + partial + missing = total` and that pass/warning semantics match the final link state.
+
+Fix Implemented:
+
+- 2026-06-05: Patched active Story Test Cases n8n workflow `SG7khcKlhHst48WH` with a delta target gate before Jira issue fetch/model planning.
+- Update mode now builds a targeted story slice from source changes and previous partial/missing/review coverage instead of blindly planning every story as a fresh full slice.
+- Clean no-change updates can bypass the model and carry forward prior covered rows with an explicit no-change update summary and token-savings metadata.
+- Source-change updates without specific target detection fall back to the full current source story list to avoid silently reporting zero work.
+- Final coverage scoring now carries forward previously covered unchanged stories during update runs.
+- Workflow code compilation and connection smoke validation passed against the patched local n8n workflow.
 
 Validation Evidence:
 - Job: `STC-260601-5ZXZIK`
@@ -6794,3 +6868,5104 @@ Retest:
 - Open Coverage Review modal.
 - Confirm copy is not contradictory.
 - Confirm stored `coverageLedgerCount` matches the visible document ledger row count.
+
+## BUG-E2E-098: Shared Regenerate Anyway Update Claims Preserved Sections But Publishes Partial Document
+
+Status: fixed - workflow patched with V6 nested-section merge guard; pending final live Regenerate Anyway export
+
+Severity: critical
+
+Area:
+
+- Generate Documents
+- Shared Confluence document update mode
+- Regenerate Anyway / delta update
+- Test Strategy, Test Plan, Risk Matrix
+- Coverage ledger preservation and repair
+
+Observed During:
+
+- Test Strategy Regenerate Anyway update for `AstraCart E2E Scope Check 20260528`.
+- Update job: `PRO-260604-L9PE3P`.
+- Previous job: `PRO-260603-5GIQUU`.
+- Exported Confluence Word documents:
+  - Previous: `C:\Users\anujalhans01\Downloads\Test+Strategy+-+AstraCart+E2E+Scope+Check+20260528.doc`
+  - Latest: `C:\Users\anujalhans01\Downloads\Test+Strategy+-+AstraCart+E2E+Scope+Check+20260528 (1).doc`
+
+What Happened:
+
+- The job completed successfully in n8n, Supabase, metrics, audit logging, and the UI.
+- The UI update summary showed:
+  - `No changes needed`
+  - `Updated 0`
+  - `Preserved 13`
+  - `Removed 0`
+- Supabase stored `output.updateSummary.preservedSectionCount = 13`.
+- The actual latest Confluence export did not preserve the 13 sections.
+- The published document only contains the early Test Strategy content through `Automation Strategy & Roadmap`.
+- Several previously present sections disappeared, including environment, test data, metrics, risk, RACI, compliance, tooling, communication, and coverage ledger sections.
+- Supabase stored the current output with `coverageLedger = []` and `coverageSummary.gateStatus = warning`, even though the previous job had a parsed coverage ledger.
+- The latest export ends mid-sentence, indicating the generated patch/body was partial or truncated before publish.
+
+Expected:
+
+- Shared update behavior must be correct for all three shared Confluence documents:
+  - Test Strategy
+  - Test Plan
+  - Risk Matrix
+- Regenerate Anyway update must never publish a partial document while claiming sections were preserved.
+- If the model reports no changed sections, the final Confluence body should be the visible update summary plus the cleaned existing full document body.
+- If the model generates a full replacement document, the workflow should merge by canonical sections instead of replacing with a partial/truncated body.
+- If the previous generation had missing or partial coverage, the update should use the regenerated coverage/sections to fill those gaps rather than blindly preserving stale missing coverage.
+- Stored job output, metrics, and UI counts should reflect the final merged/published body, not only the raw model patch.
+
+Likely Root Cause:
+
+- The shared delta update V3 Confluence publish guard treats a patch that looks like a full document as the final body.
+- In the no-change update path, this allows a partial generated document to replace the full existing Confluence document.
+- The preservation counts are derived from `updateSummary`, not verified against the final HTML body before publish.
+- Coverage metadata is parsed from the raw model output before the final merge, so preserved coverage ledger rows can be lost from stored metadata.
+
+Suggested Fix:
+
+1. Keep create flow out of scope.
+2. In shared update mode only, remove the "full-looking patch replaces existing body" behavior.
+3. Build final HTML from one canonical ordered section map:
+   - existing Confluence sections are the base,
+   - generated patch sections replace matching base sections when present,
+   - missing patch sections preserve existing sections,
+   - if no changes are detected and the patch does not provide coverage repair, preserve the existing body.
+4. Add a final body guard before publish:
+   - claimed preserved sections must exist in the final HTML,
+   - document header count must not duplicate,
+   - coverage ledger must not be dropped when it existed before.
+5. Persist final merged coverage metadata, or at minimum carry forward previous coverage metadata when the final body preserves the previous coverage ledger.
+
+Fix Implemented - 2026-06-04:
+
+- Patched active workflow `fullRetrievalD01` with shared delta update V4.
+- Backup created before patching:
+  - `docs/test_data/n8n_workflow_backups/workflow_fullRetrievalD01_before_shared_doc_delta_update_v4_20260604075704.json`
+- `Get Page Details` now expands `body.storage`, so the update merge has the actual existing Confluence body available.
+- The shared update publish path no longer treats a full-looking generated patch as automatically authoritative.
+- The final shared update body is now built from canonical sections:
+  - complete generated replacement sections can repair a damaged current page,
+  - compact patch sections replace matching existing sections,
+  - true no-change updates preserve the cleaned existing body,
+  - create/upload logic is unchanged.
+- Added pre-publish guards for shared updates:
+  - duplicate enterprise document headers,
+  - claimed preserved sections missing from the final body,
+  - coverage ledger dropped from an existing/previously-covered document,
+  - incomplete final shared document when the existing page is already damaged or missing.
+- Updated shared update prompt instructions so previous missing/partial/no coverage is treated as coverage repair work, not as a no-change update.
+- Updated Quality Gate shared update summary to mark coverage repair as updated/needs-review instead of preserved/no-change.
+- Added coverage metadata fallback for true no-change updates so previous parsed coverage can be carried forward when the body is preserved.
+
+Validation - 2026-06-04:
+
+- Parsed the patched n8n code nodes and Confluence body expression successfully.
+- Verified n8n MCP reports active workflow `fullRetrievalD01` updated at `2026-06-04T07:57:04.495Z`.
+- Local merge simulation passed:
+  - complete existing page + no-change partial patch preserves all 13 Test Strategy sections,
+  - damaged existing page + no-change partial patch fails before publish,
+  - damaged existing page + complete regenerated patch publishes a complete repaired body.
+
+Additional Live Retest - 2026-06-04:
+
+- Triggered Test Strategy Regenerate Anyway job `PRO-260604-XXKP4U`.
+- Queue creator succeeded and generator execution `1030050` ran.
+- The model output was still truncated and ended inside the `Automation Strategy & Roadmap` table.
+- Confluence rejected the malformed body with:
+  - `Content body cannot be converted to new editor format`
+- Supabase marked the job failed and did not record a new Confluence URL/version for the failed job.
+- This confirmed the V4 token budget was still too low for a repair run and the malformed table should be caught before Confluence.
+
+Additional Fix Implemented - 2026-06-04:
+
+- Patched active workflow `fullRetrievalD01` with shared delta update V5.
+- Backup created before patching:
+  - `docs/test_data/n8n_workflow_backups/workflow_fullRetrievalD01_before_shared_doc_delta_update_v5_20260604090015.json`
+- Repair-mode shared updates now use the full configured model token budget instead of the compact update cap.
+- No-change/healthy shared updates still use a compact cap to preserve savings.
+- Added update-mode table normalization and truncation guards before Confluence publish.
+- Replayed the failed `PRO-260604-XXKP4U` inputs against V5 locally.
+- V5 now fails before publish with a clear guard:
+  - `Shared update merge guard failed: preserved section(s) missing from final body...`
+- n8n MCP confirmed active workflow `fullRetrievalD01` updated at `2026-06-04T09:00:15.700Z`.
+
+Additional Live Retest - 2026-06-04:
+
+- Triggered Test Strategy Regenerate Anyway job `PRO-260604-9FPMI5`.
+- Queue creator execution `1030527` and generator execution `1030532` completed successfully.
+- Supabase marked the job `completed` and stored:
+  - `output.updateSummary.version = shared-delta-update-v5`
+  - `updatedSections = ["Appendix / Coverage Ledger"]`
+  - `preservedSectionCount = 12`
+  - `coverageLedgerCount = 5`
+  - `coverageSummary.gateStatus = passed`
+- Confluence page `25886934` was updated to version `5` at `2026-06-04T09:19:36.576Z`.
+- The coverage ledger repair worked: the published body contains five clean covered ledger rows with no raw table metadata suffixes.
+- However, inspecting the published Confluence storage body found a remaining merge gap:
+  - sections `1` through `8` were present as h2 headings,
+  - their nested h3/h4 subsection content was dropped from the final published body,
+  - sections `9` through `12` and the Coverage Ledger retained content.
+- Root cause: the V5 section extractor used the next heading of any level as a section boundary. For canonical h2 sections, the first h3 subsection incorrectly ended the parent h2 section.
+
+Additional Fix Implemented - 2026-06-04:
+
+- Patched active workflow `fullRetrievalD01` with shared delta update V6.
+- Backup created before patching:
+  - `docs/test_data/n8n_workflow_backups/workflow_fullRetrievalD01_before_shared_doc_delta_update_v6_20260604092354.json`
+- Canonical section extraction now preserves nested subsection content:
+  - an h2 canonical section ends only at the next canonical heading at the same or higher heading level,
+  - child h3/h4/h5/h6 content remains inside the parent section body.
+- The final pre-publish guard now treats preserved sections as invalid when they are missing or content-thin, not merely when the heading is absent.
+- Local parser validation passed with representative h2/h3 HTML:
+  - nested h3 content stays inside `Introduction & Context`,
+  - the next h2 does not leak into the previous section.
+- Direct active workflow verification passed:
+  - updated at `2026-06-04T09:23:54.584Z`,
+  - contains `SHARED_DELTA_UPDATE_V6`,
+  - contains `shared-delta-update-v6`,
+  - contains the nested-heading boundary fix,
+  - contains the content-thin preserved-section guard.
+
+Additional Live Retest - 2026-06-04:
+
+- Triggered Test Strategy Regenerate Anyway job `PRO-260604-G2ZROQ`.
+- Queue creator metrics showed the job was queued as an update of `PRO-260604-9FPMI5`.
+- Generator execution `1030694` ran with shared delta update V6.
+- Supabase marked the job `failed` with `SHARED_GENERATOR_FAILED`.
+- n8n failed at `Update existing Document on Confluence` with:
+  - `Content body cannot be converted to new editor format`
+- The failed run did not publish a new Confluence version.
+- The V6 raw model output ended after a non-canonical `Appendix / Traceability Matrix` table with a trailing orphan pipe (`|`) and did not emit a fresh Coverage Ledger.
+- Root cause of this V6 miss:
+  - V6 preserved nested h3/h4 content correctly,
+  - but it only treated later canonical headings as section boundaries,
+  - therefore non-canonical peer headings such as `## 13. Appendix / Traceability Matrix` could be swallowed into the prior canonical h2 section,
+  - the swallowed appendix carried malformed table tail content into the final Confluence update.
+
+Additional Fix Implemented - 2026-06-04:
+
+- Patched active workflow `fullRetrievalD01` with shared delta update V7.
+- Backup created before patching:
+  - `docs/test_data/n8n_workflow_backups/workflow_fullRetrievalD01_before_shared_doc_delta_update_v7_20260604094138.json`
+- Section extraction now uses the correct boundary rule:
+  - ordinary child h3/h4/h5/h6 headings remain inside the parent canonical section,
+  - any same-or-higher peer heading ends the parent section even when the peer heading is not canonical,
+  - any later canonical heading, including a child `Coverage Ledger`, starts its own section.
+- Added sanitizer handling for orphan pipe characters immediately after generated HTML tables.
+- Local regression validation passed for the exact V6 failure shape:
+  - nested h3 content remains preserved,
+  - non-canonical h2 appendix content does not leak into section 12,
+  - Coverage Ledger is still extracted separately,
+  - orphan `</table>|` tails are stripped.
+- Direct active workflow verification passed:
+  - updated at `2026-06-04T09:41:38.903Z`,
+  - contains `SHARED_DELTA_UPDATE_V7`,
+  - contains `shared-delta-update-v7`,
+  - contains the peer-heading boundary fix,
+  - contains the orphan table-pipe sanitizer.
+
+Additional Live Retest - 2026-06-04:
+
+- Clicked Regenerate on failed job `PRO-260604-G2ZROQ`, creating retry job `PRO-260604-RDJFBB`.
+- This run executed as `generationMode = retry`, not as a normal update/delta job.
+- Generator execution `1030862` completed successfully.
+- Supabase marked `PRO-260604-RDJFBB` as `completed`.
+- Confluence page `25886934` was updated to version `6`.
+- Published body validation:
+  - all required Test Strategy sections are present,
+  - no required section is content-thin,
+  - no duplicate `Document: Enterprise Test Strategy` header,
+  - no orphan `</table>|` table tail,
+  - no trailing pipe at the end of the body,
+  - Coverage Ledger is present.
+- Coverage validation:
+  - `coverageLedgerCount = 9`,
+  - `coveredCount = 8`,
+  - `partialCount = 1`,
+  - `gateStatus = warning`.
+- Remaining warning:
+  - `C9 Environment & Data Management` is partial because the generated source reference lacks a concrete `chunkId`.
+- This retry repaired the visible Confluence document, but it does not fully validate the V7 delta-update path because retry mode bypassed `updateSummary` and produced a full regenerated document.
+
+Additional Live Retest - 2026-06-04:
+
+- Triggered Test Plan Regenerate Anyway job `PRO-260604-OFOPIK`.
+- This run executed as a true update/delta job:
+  - `generationMode = update`,
+  - `updateOfJobId = PRO-260603-FUW452`,
+  - `updateSummary.version = shared-delta-update-v7`.
+- Generator execution `1031119` completed successfully.
+- Supabase marked `PRO-260604-OFOPIK` as `completed`.
+- Confluence page `26083329` was updated to version `3`.
+- Published body validation:
+  - all 18 required Test Plan sections are present,
+  - no required section is content-thin,
+  - no duplicate canonical sections,
+  - no duplicate `Document: Enterprise Test Plan` header,
+  - no orphan `</table>|` table tail,
+  - no trailing pipe at the end of the body,
+  - one Coverage Ledger heading is present.
+- Coverage validation:
+  - `coverageLedgerCount = 8`,
+  - `coveredCount = 6`,
+  - `partialCount = 2`,
+  - `gateStatus = warning`.
+- Remaining coverage warnings:
+  - `005 Order Tracking & Support` is partial because coverage focuses on timeline accuracy and support links with less automation,
+  - `006 Accessibility Compliance` is partial because it combines manual verification with automated scans.
+- Remaining metadata/UI gap:
+  - `updatedSections` contains `Appendix / Coverage Ledger` twice,
+  - `updatedSectionCount = 2` even though only one unique Coverage Ledger section is present in the published body.
+- This is not a document-corruption issue, but should be cleaned up so the UI count reflects unique updated sections.
+
+Additional Live Retest - 2026-06-04:
+
+- Triggered Risk Matrix Regenerate Anyway job `PRO-260604-4S23OS`.
+- This run executed as a true update/delta job:
+  - `generationMode = update`,
+  - `updateOfJobId = PRO-260603-SMK27Q`,
+  - `updateSummary.version = shared-delta-update-v7`.
+- Generator execution `1031223` failed at `Update existing Document on Confluence`.
+- Confluence rejected the update with:
+  - `Content body cannot be converted to new editor format`
+- Supabase marked the job `failed` with `SHARED_GENERATOR_FAILED`.
+- The failed run did not publish a new Confluence version.
+- Root cause:
+  - the generated Risk Detail Register table had a 6-column header,
+  - each data row had 9 cells because source-reference metadata such as `chunkId...\ | 7\ | 0\ | table` was split into separate table cells,
+  - this malformed table survived until Confluence publish.
+
+Additional Fix Implemented - 2026-06-04:
+
+- Patched active workflow `fullRetrievalD01` with shared delta update V8.
+- Backup created before patching:
+  - `docs/test_data/n8n_workflow_backups/workflow_fullRetrievalD01_before_shared_doc_delta_update_v8_20260604102026.json`
+- Update-mode table normalization now repairs source-reference spillover:
+  - detects tables with a `Source Reference` column,
+  - rejoins extra metadata cells into the source-reference cell,
+  - preserves the real trailing semantic columns such as mitigation, contingency, and detection strategy,
+  - keeps row cell counts aligned with the header before Confluence publish.
+- Local regression validation passed using the exact Risk Detail Register failure shape:
+  - 9-cell malformed row repaired to 6 cells,
+  - source reference rejoined as `chunkId... - 7 - 0 - table`,
+  - mitigation, contingency, and detection columns preserved.
+- Direct active workflow verification passed:
+  - updated at `2026-06-04T10:20:26.317Z`,
+  - contains `SHARED_DELTA_UPDATE_V8`,
+  - contains `shared-delta-update-v8`,
+  - contains the source-reference spillover repair.
+
+Additional Live Retest - 2026-06-04:
+
+- Clicked Regenerate on failed Risk Matrix job `PRO-260604-4S23OS`, creating retry job `PRO-260604-WTPJIP`.
+- This run executed as `generationMode = retry`, not as a normal update/delta job.
+- Generator execution `1031322` completed successfully.
+- Supabase marked `PRO-260604-WTPJIP` as `completed`.
+- Confluence page `26083346` was updated to version `3`.
+- Coverage metadata:
+  - `coverageLedgerCount = 7`,
+  - `coveredCount = 6`,
+  - `partialCount = 1`,
+  - `gateStatus = warning`.
+- Remaining coverage warning:
+  - `Environment / Infrastructure redundancy and graceful degradation` is partial because direct evidence on environment instability is limited.
+- Published body structural validation failed:
+  - missing canonical `Executive Summary` heading,
+  - missing canonical `Top Critical Risks Analysis` heading,
+  - duplicate Coverage Ledger sections,
+  - two malformed tables remain with inconsistent row cell counts.
+- Root cause:
+  - retry mode used the create/full-regeneration path,
+  - V8 table repair is currently scoped to shared update publishing only,
+  - the retry/create path can still publish malformed tables and duplicate coverage ledger sections.
+- This confirms V8 is not yet sufficient as a full shared document safety fix unless the create/retry publish path is also protected or retry is forced through update-style final-body guards for existing shared pages.
+
+Retest:
+
+- Re-run Regenerate Anyway for the latest Test Strategy document, specifically as an update/delta job rather than retry.
+- Export the Confluence document.
+- Confirm all 13 Test Strategy sections are present exactly once.
+- Confirm the Coverage Ledger is present and parsed into stored metadata.
+- Confirm the document does not contain appended duplicate full bodies.
+- Repeat the same update smoke validation for Test Plan and Risk Matrix.
+
+Related Bugs:
+
+- `BUG-E2E-092`
+- `BUG-E2E-094`
+- `BUG-E2E-095`
+- `BUG-E2E-097`
+
+## BUG-E2E-099: Shared Document Create/Retry Path Can Publish Structurally Invalid Documents
+
+Status: fixed - workflow/build/export-smoke validated; pending next live shared-doc export retest
+
+Severity: critical
+
+Area:
+
+- Generate Documents
+- Shared Confluence document generation
+- First Time Create, Create-Retry, Update, Update-Retry
+- Test Strategy, Test Plan, Risk Matrix
+- n8n workflow `fullRetrievalD01`
+
+Observed During:
+
+- Professional document review after the 2026-06-04 Regenerate Anyway runs for `AstraCart E2E Scope Check 20260528`.
+- Exported documents:
+  - `C:\Users\anujalhans01\Downloads\Test+Strategy+-+AstraCart+E2E+Scope+Check+20260528 (1).doc`
+  - `C:\Users\anujalhans01\Downloads\Test+Plan+-+AstraCart+E2E+Scope+Check+20260528 (2).doc`
+  - `C:\Users\anujalhans01\Downloads\Risk+Matrix+-+AstraCart+E2E+Scope+Check+20260528 (1).doc`
+- Latest Risk Matrix retry job: `PRO-260604-WTPJIP`.
+
+What Happened:
+
+- `PRO-260604-WTPJIP` completed and published Confluence page `26083346` version `3`, but the exported Risk Matrix is not professionally acceptable.
+- The Risk Matrix export is missing expected canonical sections:
+  - `Executive Summary`
+  - `Top Critical Risks Analysis`
+  - clear `Coverage Ledger` heading
+- The Risk Matrix export contains duplicate or ambiguous Coverage Ledger content.
+- The Risk Matrix export contains malformed tables with inconsistent row cell counts.
+- Supabase stores the job as `completed`; `qa_job_metrics` stores `JOB_COMPLETED`; UI therefore presents it as successful.
+- This happened because the retry ran as `input.generationMode = retry` and `output.generationMode = create`, not through the V8 shared update merge/publish guards.
+
+Expected:
+
+- All shared document operation modes must pass the same final professional document gate before a Confluence publish is considered successful:
+  - First Time Create
+  - Create-Retry
+  - Update
+  - Update-Retry
+- A job can have amber coverage, but it must not publish a structurally invalid document.
+- Required canonical sections, table shape, duplicate ledger checks, and final Confluence body sanity checks should be operation-mode independent.
+- Retry should not bypass fixes that protect update mode.
+
+Likely Root Cause:
+
+- The shared delta update V8 guard is scoped to update publish path only.
+- Create/retry publish path still relies on earlier quality-gate checks that are too shallow for final Confluence body validation.
+- `QUALITY_GATE_PASSED` validates model output coverage/word count before final Confluence shape is known; it does not prove that the exported page is professionally valid.
+
+Suggested Fix:
+
+1. Extract a shared final document validator used by create, create-retry, update, and update-retry.
+2. Validate final Confluence storage body immediately before publish:
+   - canonical required sections by document type,
+   - duplicate document title/header,
+   - duplicate or missing Coverage Ledger,
+   - malformed table row shapes,
+   - orphan pipes/truncated table tails,
+   - minimum content per required section.
+3. If a retry targets an existing shared Confluence page, route it through the same update-style merge/guard path or apply the same guard to the full regenerated body.
+4. Do not mark `qa_jobs.status = completed` or emit `JOB_COMPLETED` unless final document validation passes after publish.
+
+Retest:
+
+- Run first create, create retry, update, and update retry for Test Strategy, Test Plan, and Risk Matrix.
+- Export each Confluence page.
+- Confirm all required sections are present exactly once.
+- Confirm no malformed tables or duplicate Coverage Ledger sections exist.
+- Confirm Supabase/UI completion only occurs after final validation passes.
+
+Fix Implemented:
+
+- 2026-06-04: Patched active n8n workflow `fullRetrievalD01` with shared final validation V9.
+- Create/create-retry shared docs now pass through final HTML validation, canonical section repair, Coverage Ledger insertion, table normalization, and durable `finalValidation`/`diagnostics` persistence before completion.
+- FE now reads final validation metadata and surfaces admin-review state on completed document cards, job rows, Analytics, and Work Review Center.
+- No live paid generation was run for validation; exported existing documents were used as smoke fixtures.
+- 2026-06-04 live Test Strategy update `PRO-260604-9E21L7` exposed a V9 Set-node expression bug: `Restore Quality Gate Output` referenced future node `Convert MD -> Confluence Formatted HTML`, causing n8n `No path back to referenced node`.
+- V10 hotfix applied: restore node no longer references the future converter; downstream completion/failure bodies read converter validation via unpaired item access.
+- 2026-06-04 update retry `PRO-260604-U333PF` still executed the V9 snapshot because the active worker had not refreshed the patched workflow entity. Workflow was explicitly re-published/deactivated/activated at `2026-06-04 11:32:56` to refresh the active execution snapshot.
+- 2026-06-04 retry `PRO-260604-9UIKW3` proved executions were still reading `workflow_history.versionId=4b63abdf-f3a8-42a4-b199-7ee8610a5d62`, not only `workflow_entity.nodes`. Active `workflow_history` snapshot was patched to match V10 and verified clean.
+- 2026-06-04 retry `PRO-260604-CU23P8` validated the patched active snapshot: job completed, updated Confluence page `25886934`, persisted `finalValidation`, `diagnostics`, and `operationMode=update_repair`.
+
+## BUG-E2E-100: Table Integrity Is Not Enforced Across All Shared Document Outputs
+
+Status: fixed - workflow/build/export-smoke validated; pending next live shared-doc export retest
+
+Severity: critical
+
+Area:
+
+- Confluence document formatting
+- Markdown/HTML table conversion
+- Source reference normalization
+- Test Strategy, Test Plan, Risk Matrix
+
+Observed During:
+
+- Professional review of the three exported documents from 2026-06-04.
+
+What Happened:
+
+- Test Strategy export contains malformed tables with inconsistent row widths.
+- Risk Matrix export contains malformed Risk Detail Register / ledger-style tables where rows have more cells than the header.
+- The known source-reference spillover shape can split metadata such as `chunkId | page | row | table` into separate cells.
+- V8 repairs this in update mode, but retry/create output can still publish malformed tables.
+- Test Plan export did not show malformed row counts in this sample, but the same generator/converter pipeline is shared and should be guarded consistently.
+
+Expected:
+
+- Every generated table should have stable headers and row values aligned to the same column count.
+- Source references should be normalized into a single cell and should not leak metadata delimiters into adjacent semantic columns.
+- Confluence publish should be blocked or repaired before publish when table rows are malformed.
+
+Likely Root Cause:
+
+- Table normalization is not centralized across all document operation modes.
+- Quality-gate checks are focused on coverage metadata and broad required sections, not strict table shape.
+- The create/retry path bypasses the V8 source-reference spillover repair.
+
+Suggested Fix:
+
+1. Move table normalization into a shared pre-publish utility used by all shared document paths.
+2. Make malformed table detection a hard final quality gate.
+3. For tables with a `Source Reference` column, rejoin extra metadata fragments into that column while preserving trailing semantic cells.
+4. Persist table validation results in `qa_jobs.output.finalValidation` and `qa_job_metrics.metadata.final_validation`.
+
+Retest:
+
+- Export all three documents after create, retry, update, and update-retry.
+- Parse all tables.
+- Confirm every table has one header shape and all body rows match it.
+
+Fix Implemented:
+
+- 2026-06-04: Added V9 shared-doc HTML table normalization for create/create-retry and update patch bodies.
+- Rows with source-reference spillover are repaired into the expected cell count before Confluence publish.
+- Smoke against the existing 2026-06-04 exports reproduced malformed rows across all three docs, confirming the validator targets the observed defect class.
+
+## BUG-E2E-101: Coverage Ledger And Coverage Review Note Are Missing, Duplicated, Or Not Reliably Visible
+
+Status: fixed - workflow/build/export-smoke validated; pending next live shared-doc export retest
+
+Severity: high
+
+Area:
+
+- Coverage Ledger generation
+- Coverage Review Note
+- Update Summary / Coverage Review UI
+- Test Strategy, Test Plan, Risk Matrix
+
+Observed During:
+
+- Review of exported documents from 2026-06-04 and recent Supabase outputs.
+
+What Happened:
+
+- Test Strategy export did not expose a clear canonical `Coverage Ledger` heading in the exported document scan, even though coverage rows/status values were present.
+- Test Plan update metadata contains duplicate `updatedSections` entries for `Appendix / Coverage Ledger`, causing `updatedSectionCount = 2` for one unique section.
+- Risk Matrix retry/create output showed duplicate or ambiguous Coverage Ledger content while still completing successfully.
+- No exported document showed a clear Coverage Review Note that explains amber coverage items and what business/QA review remains.
+
+Expected:
+
+- Every shared QA document should have one clear Coverage Ledger section.
+- If coverage is amber, the document should include a professional Coverage Review Note with the specific partial/missing/excluded items and recommended reviewer action.
+- UI counters should deduplicate section names before displaying updated/preserved counts.
+- Coverage metadata should match the final published document, not only raw model output.
+
+Likely Root Cause:
+
+- Coverage ledger parsing, final-body insertion, and UI summary counting are handled in separate places.
+- Final published body is not re-parsed to reconcile coverage metadata and visible document sections.
+- Update summary arrays are not normalized/deduplicated before persistence/display.
+
+Suggested Fix:
+
+1. Make Coverage Ledger a canonical required section for all three shared documents.
+2. Add a Coverage Review Note section or paragraph whenever coverage status is warning/amber.
+3. Re-parse the final Confluence body before `JOB_COMPLETED` to reconcile:
+   - coverage row count,
+   - covered/partial/missing/excluded counts,
+   - duplicate ledger sections,
+   - source-reference quality warnings.
+4. Deduplicate `updatedSections`, `preservedSections`, `addedSections`, and `removedSections` before storing `updateSummary` and before rendering the FE modal.
+
+Retest:
+
+- Generate all three document types in all four operation modes.
+- Confirm exactly one visible Coverage Ledger.
+- Confirm amber coverage is explained in the document and in UI.
+- Confirm section counters match unique visible sections.
+
+Fix Implemented:
+
+- 2026-06-04: V9 final validation treats Coverage Ledger as canonical for Test Strategy, Test Plan, and Risk Matrix.
+- Added Coverage Review Note injection when coverage metadata is warning/failed/not parsed.
+- Update summary arrays are deduped in the active `Quality Gate` workflow node and also defensively deduped in FE rendering for historical rows.
+
+## BUG-E2E-102: Failed Generation Jobs Do Not Persist Enough Admin Diagnostics
+
+Status: fixed - workflow/build/Supabase-smoke validated; pending next live failure-path retest
+
+Severity: high
+
+Area:
+
+- Supabase `qa_jobs`
+- Supabase `qa_job_metrics`
+- n8n failure handling
+- Admin/support loop
+- FE failure details
+
+Observed During:
+
+- Failed update jobs:
+  - `PRO-260604-G2ZROQ`
+  - `PRO-260604-4S23OS`
+- Supabase and metrics inspection on 2026-06-04.
+
+What Happened:
+
+- Failed shared update jobs persisted generic output:
+  - `errorType = SHARED_GENERATOR_FAILED`
+  - `message = Generation workflow failed before producing an output.`
+- `qa_job_metrics` failure rows had little or no actionable `error_message`.
+- The root cause was only discoverable by manually inspecting n8n execution/body details:
+  - Test Strategy V6 failed on malformed Confluence body/orphan table pipe.
+  - Risk Matrix V7 failed because a malformed table reached Confluence publish.
+- There is no dedicated admin diagnostics table or first-class persisted diagnostic object.
+
+Expected:
+
+- Any production failure should create an admin/support loop with enough details to triage without asking the user to retry blindly.
+- The UI can hide technical detail from regular users, but admin/support should see:
+  - job id,
+  - document type,
+  - operation mode,
+  - retry/update source job id,
+  - n8n workflow id and execution id,
+  - failed node name,
+  - raw error message/status code,
+  - Confluence page id/version attempted,
+  - model/token/cost usage before failure,
+  - final validation errors,
+  - malformed table details,
+  - coverage gate result,
+  - recommended remediation.
+
+Likely Root Cause:
+
+- Failure handlers normalize many downstream errors into one generic shared-generator failure.
+- `qa_jobs.output` and `qa_job_metrics.metadata` are not used as durable diagnostic envelopes.
+- FE Error Details can only display whatever thin output the backend persisted.
+
+Suggested Fix:
+
+1. Add a durable diagnostics object to `qa_jobs.output.diagnostics` and `qa_job_metrics.metadata.diagnostics`, or create a dedicated `qa_job_diagnostics`/`qops_admin_work_items` table.
+2. Capture node-level n8n error details before replacing them with user-friendly messages.
+3. Add an admin-only diagnostics view/filter for failed or `completed_with_warnings` jobs.
+4. Include the final validation report for both failed and completed jobs.
+
+Retest:
+
+- Force a malformed table failure in a test workflow.
+- Confirm the user sees a safe message.
+- Confirm admin/support can see node, execution, validation, and remediation detail from Supabase/UI without manual n8n spelunking.
+
+Fix Implemented:
+
+- 2026-06-04: Completion and failure handlers now persist `diagnostics`, `operationMode`, and `finalValidation` envelopes to `qa_jobs.output` and `qa_job_metrics.metadata`.
+- Generator and Confluence failure paths now include structured diagnostics instead of only generic shared-generator failure text.
+- FE Work Review Center adds an Admin validation lane for completed outputs that require support review.
+- 2026-06-04 live retest `PRO-260604-9E21L7` still surfaced generic parent failure because the child workflow failed before V9 diagnostics could be restored; V10 removes that premature failure point.
+- 2026-06-04 retry `PRO-260604-U333PF` confirmed the parent failure wrapper still appears when the child workflow crashes before its failure handlers. Root reason was stale V9 active execution snapshot; workflow publish refresh completed before next retry.
+- 2026-06-04 retry `PRO-260604-9UIKW3` confirmed publish refresh alone did not update `workflow_history`; active version history was patched directly and verified with V10 marker/no invalid future-node reference.
+- 2026-06-04 retry `PRO-260604-CU23P8` completed with diagnostics in both `qa_jobs.output` and `qa_job_metrics.metadata`.
+
+## BUG-E2E-103: Update And Update-Retry Cost Controls Are Not Enforced End-To-End
+
+Status: fixed - workflow/build/Supabase-smoke validated; pending next live update/retry token-savings retest
+
+Severity: high
+
+Area:
+
+- Update/Regenerate Anyway
+- Token and cost governance
+- Update Summary UI
+- n8n shared generator
+
+Observed During:
+
+- Test Plan update job `PRO-260604-OFOPIK`.
+- Test Strategy retry job `PRO-260604-RDJFBB`.
+- Risk Matrix retry job `PRO-260604-WTPJIP`.
+
+What Happened:
+
+- Test Plan true update used `12.6k` tokens and reported only `395` estimated tokens saved (`3%`) against the previous baseline.
+- Retry jobs for Test Strategy and Risk Matrix executed as create/full-regeneration outputs rather than update-patch outputs:
+  - `input.generationMode = retry`
+  - `output.generationMode = create`
+  - `updateSummary = null`
+- The Update Summary UI only appears for update-mode outputs, so retry/repair cost behavior is not visible as update cost/savings.
+- Current update token cap is conditional: repair mode uses full configured max tokens when previous coverage needs repair. That is valid for damaged pages, but it needs explicit policy and telemetry so small patches do not silently become full regenerations.
+
+Expected:
+
+- Update and update-retry should default to compact patch generation and use only the tokens needed for changed/repair sections.
+- Full regeneration should be a deliberate `repair` fallback, not an implicit retry behavior.
+- The UI should distinguish:
+  - delta update,
+  - update repair,
+  - full retry/create.
+- Cost/savings should be calculated against a meaningful baseline and displayed consistently.
+
+Likely Root Cause:
+
+- FE retry logic can send either update or retry mode based on available metadata and update reasons.
+- Backend retry handling can produce create-mode output for existing Confluence pages.
+- Token savings are estimated from previous token usage, but repair-mode full generation can make savings low or negative without being labeled as a repair.
+
+Suggested Fix:
+
+1. Define operation modes explicitly:
+   - `create`
+   - `create_retry`
+   - `update_delta`
+   - `update_repair`
+   - `update_retry`
+2. For existing shared documents, prefer `update_retry`/`update_repair` over generic create retry.
+3. Persist `operationMode`, `patchMode`, `repairMode`, `baselineTokens`, `tokensUsed`, `tokensSaved`, and `savingsPercent`.
+4. Add a token budget guard:
+   - compact healthy update cap,
+   - repair cap only when previous/final validation demands it,
+   - alert/admin diagnostic when update tokens exceed a configured threshold.
+
+Retest:
+
+- Trigger update for an unchanged healthy document.
+- Trigger update when coverage has amber gaps.
+- Trigger retry after an update failure.
+- Confirm token/cost behavior and UI labels match the actual operation.
+
+Fix Implemented:
+
+- 2026-06-04: Active workflow now persists `operationMode` for create/create-retry/update_delta/update_repair style reporting.
+- Shared update summaries now dedupe section arrays and distinguish repair update vs delta update in FE.
+- Update Summary UI now labels `Tokens used` and `Usage and estimated savings` to avoid implying all values are savings.
+- Historical Supabase smoke confirmed old Test Plan duplicate `Appendix / Coverage Ledger` rows are normalized by FE without rerunning paid jobs.
+
+## BUG-E2E-104: Final Published Document Validation Is Not Reflected In FE Completion State
+
+Status: fixed - UI/build smoke validated; pending next live finalValidation metadata retest
+
+Severity: high
+
+Area:
+
+- Frontend job status
+- Generated document cards
+- Update Summary modal
+- Backend status contract
+
+Observed During:
+
+- Risk Matrix retry job `PRO-260604-WTPJIP`.
+- Test Plan update job `PRO-260604-OFOPIK`.
+
+What Happened:
+
+- FE displays completion based on backend `status = completed`.
+- There is no visible distinction between:
+  - completed and professionally valid,
+  - completed with amber coverage,
+  - completed but structurally invalid,
+  - completed with safe rollback/no publish.
+- `UpdateSummaryButton` trusts backend `updateSummary` counts directly; it does not deduplicate sections or show final validation status.
+- Failed-card retry pausing exists after repeated attempts, but no equivalent admin-review state exists for completed-but-invalid documents.
+
+Expected:
+
+- FE should display final document validation separately from job execution status.
+- A completed job with amber coverage can be green/yellow, but a structurally invalid document must not appear as a normal success.
+- Users should not keep retrying deterministic failures without admin diagnostics.
+
+Likely Root Cause:
+
+- Backend status contract has only broad terminal status and optional coverage metadata.
+- FE completion cards do not consume a final body validation contract because the backend does not persist one.
+
+Suggested Fix:
+
+1. Add backend fields such as:
+   - `finalValidation.status = passed|warning|failed`
+   - `finalValidation.structuralStatus`
+   - `finalValidation.coverageStatus`
+   - `finalValidation.issues[]`
+2. Update FE cards/modals to show:
+   - `Document valid`
+   - `Coverage needs review`
+   - `Admin review required`
+   - `No publish; previous page preserved`
+3. Gate Confluence open-link prominence behind structural validation pass.
+
+Retest:
+
+- Publish a valid amber-coverage document and confirm it shows as completed with review needed.
+- Simulate malformed final body and confirm the user/admin sees admin-review state, not normal success.
+
+Fix Implemented:
+
+- 2026-06-04: FE now consumes `finalValidation`/`diagnostics` metadata, shows a Document Validation modal, and uses warning/error card tone for completed documents that need validation review.
+- Dashboard, Quality Coverage, Analytics, My Document Jobs, and Work Review Center now include final validation state.
+- Build validated with `npm.cmd run build`.
+- 2026-06-04: V10 hotfix applied after live Test Strategy retest failed at `Restore Quality Gate Output`; pending rerun is required to validate final metadata persistence.
+- 2026-06-04: V10 patch was published after retry `PRO-260604-U333PF` proved the worker was still executing the V9 snapshot.
+- 2026-06-04: Active `workflow_history` snapshot patched after retry `PRO-260604-9UIKW3`; both entity and history now contain V10 and no invalid future-node reference.
+- 2026-06-04: Test Strategy update retry `PRO-260604-CU23P8` completed with `finalValidation.status=passed`, `mergeGuard=passed`, and `operationMode=update_repair`. V11 metadata cleanup patched future merge-pass outputs to persist `structuralStatus=passed`.
+
+## BUG-E2E-105: Shared Document Public Output Exposes Internal Evidence IDs And Plain Dash Lists
+
+Status: closed
+
+Severity: medium
+
+Area:
+
+- Test Strategy, Test Plan, Risk Matrix shared document publishing
+- n8n markdown-to-Confluence conversion
+- Public Confluence document quality
+
+Observed During:
+
+- Test Strategy export `Test Strategy - AstraCart E2E Scope Check 20260528 (2).doc`.
+
+What Happened:
+
+- Some generated sections used plain dash-prefixed lines instead of real HTML/Confluence bullet lists.
+- Public document content exposed internal `chunkId` references and validator wording such as `missing concrete chunkId`.
+- These values are useful for backend evidence validation but not appropriate for business-facing readers.
+
+Expected:
+
+- Dash/numbered markdown list blocks should render as real `<ul>/<ol>` list structures in Confluence exports.
+- Internal chunk IDs should remain available to backend validation but should not appear in user-facing published documents.
+- Evidence-review wording should be business-readable.
+
+Fix Implemented:
+
+- 2026-06-04: V12 n8n workflow patch applied to both `workflow_entity` and active `workflow_history` snapshot.
+- Converter now turns markdown `- item` and `1. item` blocks into real HTML lists before Confluence publish.
+- Create/update publish paths now sanitize public HTML to remove `chunkId` values and replace internal validator phrasing with support-friendly wording.
+- 2026-06-04: Follow-up patch added loose existing-HTML list repair, so preserved Confluence content with `<br/>- item` lines is converted into real lists during the next shared-document update.
+- 2026-06-04: Live Test Strategy repair update `PRO-260604-ZEYIA3`, Test Plan repair update `PRO-260604-UV7DQX`, and Risk Matrix repair update `PRO-260604-WP2VO3` were validated after the shared list/chunk cleanup patches.
+- Published/export body checks found no public `chunkId`, no `missing concrete chunkId`, no literal dash-list residue, and no malformed table shapes for the latest successful shared document outputs.
+
+Retest:
+
+- Trigger one shared document update/regenerate.
+- Export from Confluence and confirm the highlighted dash lines render as bullets/numbers.
+- Search the exported document for `chunkId` and `missing concrete chunkId`; both should be absent.
+
+## BUG-E2E-106: Document Jobs Validation UI Is Too Technical And Icon Row Wraps Poorly
+
+Status: closed
+
+Severity: low
+
+Area:
+
+- Dashboard document job cards
+- Validation Passed / Document Check modal
+- Job status iconography
+
+Observed During:
+
+- My Document Jobs panel after adding the final validation icon.
+
+What Happened:
+
+- Validation modal displayed backend-style validation fields and labels that were not user-friendly.
+- Validation Passed icon and Recovered Job icon both used the shield visual.
+- The extra validation icon made the Job ID and icon row feel cramped in the right-side document panels.
+
+Expected:
+
+- Validation details should explain publish readiness in user-facing language.
+- Recovered jobs should use a distinct icon.
+- Job ID and icons should remain aligned at common desktop widths.
+
+Fix Implemented:
+
+- 2026-06-04: Validation UI renamed to Document Check and simplified to Result, Document state, Operation, and Support details.
+- Recovered job status now uses the Archive Restore icon.
+- Documents workspace right column is wider on desktop, and job-card headers use a stable ID/action grid.
+- 2026-06-04: Frontend validation passed with `.\node_modules\.bin\tsc.cmd --noEmit`.
+- 2026-06-04: UI smoke confirmed the updated job-card icon row, distinct recovered icon, and cleaner Document Check presentation in the document jobs panel.
+
+Retest:
+
+- Run frontend build.
+- Open My Document Jobs and confirm job cards stay aligned with six visible icons.
+- Open the Document Check modal and confirm the content is understandable without backend terminology.
+
+## BUG-E2E-107: Test Plan Update Publishes Valid Body But Coverage Metadata And Export List Polish Need Repair
+
+Status: closed
+
+Severity: medium
+
+Area:
+
+- Test Plan shared document update
+- n8n final merged body metadata extraction
+- Public Confluence / exported document formatting
+
+Observed During:
+
+- Test Plan Regenerate Anyway update job `PRO-260604-I7LVSB`.
+- Confluence page `26083329`, published version `6`.
+
+What Happened:
+
+- The job completed successfully as `operationMode = update_repair`.
+- Final validation passed with `shared-final-validation-v13` and `structuralStatus = passed`.
+- The public Confluence body scan found:
+  - all required Test Plan sections present,
+  - no public `chunkId`,
+  - no public `missing concrete chunkId`,
+  - no malformed table shapes,
+  - a valid Coverage Ledger table with eight data rows.
+- Supabase output metadata still stored `coverageLedgerCount = 0`.
+- User review also found remaining dash-prefixed content that should render as real bullets/numbered points, matching the Test Strategy polish.
+
+Expected:
+
+- For shared updates, stored coverage metadata should reflect the final merged/published document body, not only the raw generated patch.
+- If the final body contains a valid Coverage Ledger table, Supabase should persist non-zero `coverageLedger` and `coverageLedgerCount`.
+- Plain dash-prefixed list content in Test Plan exports should be converted to real bullets or numbered lists.
+
+Likely Root Cause:
+
+- The final shared update body can preserve or merge a valid Coverage Ledger even when the raw model patch coverage parser returns zero rows.
+- The final validation guard verifies structure but does not currently re-parse the final merged body and persist the final ledger.
+- The public list converter handles common markdown and `<br/>- item` cases, but Test Plan export still exposes at least one dash-list shape not covered by the current converter.
+
+Suggested Fix:
+
+1. In shared update mode only, re-parse the final merged/published HTML body for Coverage Ledger rows after the merge guard passes.
+2. Persist final-body coverage metadata when it is stronger than raw patch metadata.
+3. Extend the final public HTML list-polish pass to cover remaining dash-prefixed Test Plan body shapes.
+4. Keep create logic out of scope.
+
+Fix Implemented:
+
+- 2026-06-04: V14 n8n workflow patch applied to both `workflow_entity` and active `workflow_history` snapshot.
+- Shared update completion now re-parses the final Confluence response body for Coverage Ledger rows when raw patch metadata has zero rows.
+- Supabase `output.coverageLedger`, `output.coverageSummary`, `output.batchSummary`, `output.updateSummary.coverageSummary`, and job metrics coverage counts now prefer final-published-body metadata when it is stronger than raw patch metadata.
+- Public list cleanup now also handles paragraph/div-wrapped dash list shapes such as `<p>- item</p>` in addition to markdown lines and `<br/>- item` content.
+- Local parser simulation against Test Plan execution `1033313` returned 8 final-body Coverage Ledger rows: 6 covered and 2 partial.
+- 2026-06-04: Live retest job `PRO-260604-UV7DQX` completed with final validation passed and public body checks clean: no public chunk IDs, no literal dash-list patterns, no malformed tables.
+- `PRO-260604-UV7DQX` persisted `coverageLedger` with 8 rows from `final_published_body`; a follow-up V15 patch fixed future top-level `output.coverageSummary` persistence.
+- Current `PRO-260604-UV7DQX` row was repaired in Supabase by copying the correct `updateSummary.coverageSummary` to top-level `coverageSummary`, yielding `coverageLedgerCount = 8`, `coveredCount = 6`, and `partialCount = 2`.
+
+Retest:
+
+- Trigger Test Plan Regenerate Anyway/update.
+- Confirm Supabase output has `coverageLedgerCount > 0`.
+- Confirm the exported document has bullets/numbered lists instead of literal `-` prefixes.
+- Confirm public body still has no `chunkId`, no malformed tables, and final validation passes.
+
+## BUG-E2E-108: Risk Matrix Update Document Fails At Confluence Publish For Markdown-In-HTML Patch
+
+Status: closed
+
+Severity: high
+
+Area:
+
+- Risk Matrix shared document update
+- n8n markdown-to-Confluence conversion
+- Confluence publish guard
+
+Observed During:
+
+- Risk Matrix Update Document job `PRO-260604-SB4F5J`.
+- Previous Risk Matrix job `PRO-260604-WTPJIP`.
+- n8n execution `1033639`.
+
+What Happened:
+
+- The Risk Matrix update reached the generator and quality gate successfully.
+- Quality gate passed with warning-level coverage metadata, but the job failed at `Update existing Document on Confluence`.
+- Atlassian returned: `Content body cannot be converted to new editor format`.
+- The converter output still contained `<br/>`-separated markdown headings and pipe-table rows instead of HTML headings/tables.
+- The update merge guard also did not recognize `Top 5 Critical Risks Analysis` as the canonical `Top Critical Risks Analysis` section.
+
+Expected:
+
+- Risk Matrix Update Document and Update Retry should publish valid Confluence storage HTML.
+- Markdown headings and pipe tables should be converted before the update merge/publish step.
+- Numbered section wording such as `Top 5 Critical Risks Analysis` should map to the canonical Risk Matrix section.
+- Test Strategy and Test Plan update behavior should remain unchanged.
+
+Root Cause:
+
+- The shared converter sanitized `<br/>` line breaks before markdown headings/tables were parsed, leaving Risk Matrix patch content in a markdown-in-HTML shape.
+- The shared update section-key normalization did not account for the Risk Matrix `Top N Critical Risks Analysis` title variant.
+
+Fix Implemented:
+
+- 2026-06-04: V16 n8n workflow patch prepared for both `workflow_entity` and active `workflow_history` snapshot.
+- Converter now normalizes `<br/>` back to line breaks before markdown heading/table/list conversion.
+- Update merge section-key normalization now maps `Top N Critical Risks` to `Top Critical Risks`.
+- Scope is limited to formatting/section normalization; no prompt or create-path business logic was changed.
+- 2026-06-04: Live retry job `PRO-260604-2QU068` still failed at Confluence publish because the generated Risk Matrix update started at `Risk Register Summary` and omitted an explicit `Executive Summary` heading.
+- V17 added a Risk Matrix-only synthetic Executive Summary fallback when neither the patch nor existing page exposes a canonical Executive Summary section, and strips trailing `End of document` headings.
+- V18 updated the mostly-complete patch merge branch to fall back to preserved/synthetic sections for any missing canonical section instead of publishing an incomplete body.
+- No-token replay of failed execution `1033812` now produces proper headings/tables, no raw pipe rows, no raw markdown headings, no `chunkId`, no dash-list residue, and no malformed table shapes.
+- No-token smoke replays for the recent successful Test Strategy (`1033166`) and Test Plan (`1033528`) update executions still pass after V18.
+- 2026-06-04: Live retry job `PRO-260604-WP2VO3` completed successfully.
+- n8n execution `1034034` succeeded and published Confluence page `26083346` version `6`.
+- Supabase persisted `operationMode = update_repair`, `finalValidation.status = passed`, `structuralStatus = passed`, `mergeGuard = passed`, `coverageLedgerCount = 10`, and `coverageSummary.gateStatus = passed`.
+- Published body scan found no raw pipe-table rows, no raw markdown headings, no `chunkId`, no `missing concrete chunkId`, no dash-list residue, no trailing `End of document`, and no malformed table shapes.
+
+Retest:
+
+- Retry the failed Risk Matrix Update Document job.
+- Confirm Confluence publish succeeds.
+- Confirm public body has HTML headings/tables, no raw pipe-table rows, no raw markdown headings, no malformed table shapes, and final validation passes.
+
+## BUG-E2E-109: Update Retry Jobs Complete But Retry Metadata Is Not Persisted
+
+Status: fixed - UI/workflow smoke validated; pending next live update-retry lineage retest
+
+Severity: medium
+
+Area:
+
+- Document job retry traceability
+- My Document Jobs / Output Panel retry action
+- n8n/Supabase job metadata contract
+
+Observed During:
+
+- Risk Matrix failed update jobs `PRO-260604-SB4F5J` and `PRO-260604-2QU068`.
+- Successful live retry `PRO-260604-WP2VO3`.
+
+What Happened:
+
+- The user clicked Retry from a failed Risk Matrix update job.
+- The new job completed successfully and behaved as an update repair against previous document `PRO-260604-WTPJIP`.
+- Supabase stored the new job with:
+  - `generationMode = update`
+  - `retry_of_job_id = null`
+  - `retryContext.retryMode = false`
+  - `retryContext.retryOfJobId = null`
+- This makes the operation functionally correct but not auditable as an Update Retry.
+
+Expected:
+
+- When Retry is clicked from a failed update job, the new job should preserve update semantics and also persist retry lineage.
+- The job should be classifiable as Update Retry in backend metadata, UI details, admin support views, and analytics.
+
+Suggested Fix:
+
+1. Preserve `generationMode = update` so the job continues to patch the existing document.
+2. Add retry lineage fields:
+   - `retry_of_job_id = <failed update job id>`
+   - `retryContext.retryMode = true`
+   - `retryContext.retryOfJobId = <failed update job id>`
+   - optional `retryContext.previousStatus`, `previousError`, and `retryInstruction`
+3. Surface operation display as `Update Retry` when both update mode and retry lineage are present.
+4. Ensure Dashboard/Analytics can distinguish Update, Regenerate Anyway/Repair Update, and Update Retry without double-counting.
+
+Fix Implemented:
+
+- 2026-06-05: Patched `DashboardPage.tsx` so retry submissions preserve `generationMode = update` while also sending `retryJobId` and structured `retryContext`.
+- Patched active shared queue workflow `yPgr7mtUnL3E8QQP` so update retries keep update semantics and persist retry lineage instead of being normalized into plain update jobs.
+- Patched active Story Test Cases queue workflow `8nuhDEewnnunXSbF` to forward `retryContext` and persist `retry_of_job_id`.
+- TypeScript validation passed with `.\node_modules\.bin\tsc.cmd --noEmit`.
+- Frontend production build passed with `npm.cmd run build`.
+- n8n workflow code compilation and retry-lineage wiring smoke validation passed locally.
+
+Retest:
+
+- Fail or simulate an update job.
+- Click Retry from the output panel.
+- Confirm the new job patches the existing document and persists retry lineage to Supabase.
+
+## BUG-E2E-110: Failed/Recovered Document Job Usage Icon Can Disappear Even When Metrics Exist
+
+Status: closed
+
+Severity: medium
+
+Area:
+
+- My Document Jobs usage icon
+- Failed/recovered document job auditability
+- Frontend analytics/metrics enrichment
+
+Observed During:
+
+- Failed Risk Matrix update jobs `PRO-260604-SB4F5J` and `PRO-260604-2QU068`.
+- Recovered Risk Matrix path after successful retry `PRO-260604-WP2VO3`.
+
+What Happened:
+
+- The failed jobs did not have token/cost usage persisted in `qa_jobs.output`.
+- Usage was recorded in `qa_job_metrics` on `QUALITY_GATE_PASSED` rows:
+  - `PRO-260604-SB4F5J`: 8,455 tokens, estimated US$0.007466.
+  - `PRO-260604-2QU068`: 9,282 tokens, estimated US$0.008789.
+- Because failed `qa_jobs.output` only stores the failure payload, the My Document Jobs usage icon can disappear if the frontend does not receive/merge the metric row.
+
+Expected:
+
+- Failed and recovered document job cards should show the compact usage icon when any recorded usage exists before failure.
+- The modal should show failed-attempt words, tokens, and estimated cost.
+- Completed retry usage should remain separate from failed-attempt usage.
+
+Root Cause:
+
+- The frontend enrichment path primarily uses analytics summary rows.
+- `fetchGenerationJobMetrics()` did not directly query `qa_job_metrics`, and its analytics-summary mapping dropped metric metadata.
+- Failed usage can therefore be present in Supabase but absent from the card-level usage enrichment.
+
+Fix Implemented:
+
+- 2026-06-04: Frontend API helper now merges analytics-summary generation metrics with direct Supabase `qa_job_metrics` rows when authenticated.
+- Metric metadata is preserved so update/retry lineage enrichment is not lost.
+- Existing card behavior remains unchanged: the compact usage icon appears only when usage values exist.
+- 2026-06-04: Historical failed Risk Matrix rows `PRO-260604-SB4F5J` and `PRO-260604-2QU068` were repaired by copying their recorded `QUALITY_GATE_PASSED` usage into `qa_jobs.output.tokenUsage`.
+- 2026-06-04: My Document Jobs enrichment now also applies metric data to current/local job records, not only to rows returned by the generated-documents endpoint. This covers failed/recovered cards that remain visible from local state while backend document rows are missing or sparse.
+- TypeScript validation passed with `.\node_modules\.bin\tsc.cmd --noEmit`.
+- 2026-06-04: Supabase verification confirmed historical failed rows `PRO-260604-SB4F5J` and `PRO-260604-2QU068` now carry the expected token/cost usage payload, and future failed/recovered cards can be enriched from direct `qa_job_metrics` rows.
+
+Retest:
+
+- Open My Document Jobs after failed Risk Matrix attempts are present.
+- Confirm failed/recovered cards with `QUALITY_GATE_PASSED` metrics show the usage icon.
+- Open usage details and confirm tokens/cost match `qa_job_metrics`.
+
+## BUG-E2E-111: Dashboard And Analytics Show Conflicting Success Rates
+
+Status: closed
+
+Severity: high
+
+Area:
+
+- Dashboard Operational Pulse
+- Dashboard Pipeline Health
+- Analytics Operations Overview
+- n8n analytics summary contract
+
+Observed During:
+
+- 2026-06-04 post-fix validation for `AstraCart E2E Scope Check 20260528`.
+- Latest successful shared document jobs:
+  - Test Strategy `PRO-260604-ZEYIA3`
+  - Test Plan `PRO-260604-UV7DQX`
+  - Risk Matrix `PRO-260604-WP2VO3`
+
+What Happened:
+
+- Dashboard Operational Pulse showed `Success rate 88%`.
+- Analytics Operations Overview showed `Success rate 84%`.
+- Dashboard Pipeline Health showed `Success rate 70%`.
+- All three values were visible for the same user/project/time window.
+
+Expected:
+
+- The same scope should use one clearly defined success-rate formula.
+- Dashboard, Pipeline Health, and Analytics should not show conflicting KPI values unless their labels explicitly describe different scopes.
+- Historical failed attempts, active retry-ready failures, and recovered failures should be separated instead of blended into one ambiguous success KPI.
+
+Likely Root Cause:
+
+- n8n `/webhook/analytics-summary` returns `overview.successRate` from raw completed vs failed metric rows.
+- Analytics page recalculates success rate from frontend `completedWorkload` and currently actionable failed jobs.
+- Dashboard Operational Pulse uses generated outputs plus knowledge jobs and retry-ready counts from local/UI state.
+
+Suggested Fix:
+
+1. Define a canonical KPI contract:
+   - current outcome success rate,
+   - historical attempt success rate,
+   - retry-ready count,
+   - recovered count.
+2. Return those fields from the analytics endpoint.
+3. Update Dashboard and Analytics to display the same canonical value for the same label.
+4. Rename any intentionally different KPI so users can understand the denominator.
+
+Fix Implemented:
+
+- 2026-06-05: Dashboard Operational Pulse now uses the live analytics completed-job count plus current retry-ready job count for current success rate.
+- 2026-06-05: Dashboard Pipeline Health now uses the same current-success formula instead of the historical raw analytics success rate.
+- 2026-06-05: Analytics Operations Overview continues to show historical failed attempts as context, but current success is based on completed jobs plus retry-ready jobs.
+
+Validation:
+
+- TypeScript validation passed with `.\node_modules\.bin\tsc.cmd --noEmit`.
+- Playwright smoke after login showed Dashboard Operational Pulse `Success rate 84%` and Pipeline Health `Success rate 84%`.
+- Analytics smoke showed `Success rate 84%` with detail `7 need retry now, 13 failed attempts recorded`.
+
+Retest:
+
+- Open Dashboard and Analytics for `AstraCart E2E Scope Check 20260528`.
+- Confirm the same success-rate label shows the same value across screens.
+- Confirm any historical-attempt success metric is separately labelled.
+
+## BUG-E2E-112: Analytics Failure Counts Double-Count Jobs With Both Quality Gate And Job Failure Events
+
+Status: closed
+
+Severity: high
+
+Area:
+
+- n8n analytics workflow `Q-Ops-Agent-Analytics-Summary` (`tcKSeScJRiWtRx77`)
+- Analytics Failure Watchlist
+- Analytics failed spend and failure-rate accounting
+
+Observed During:
+
+- 2026-06-04 Analytics validation for `AstraCart E2E Scope Check 20260528`.
+
+What Happened:
+
+- Supabase `qa_jobs` has 13 failed generation jobs in the 30-day project scope.
+- `qa_job_metrics` has 16 error rows because three failed jobs logged both:
+  - `QUALITY_GATE_FAILED`
+  - `JOB_FAILED`
+- Analytics Failure Watchlist displayed `Generation 16 failures`.
+
+Expected:
+
+- A single failed job should count once in failure KPIs.
+- `QUALITY_GATE_FAILED` can remain as a diagnostic event, but terminal failure counts should dedupe by `pipeline + job_id`.
+- Failed spend should use one metered failure row per failed job, preferably `JOB_FAILED` when present.
+
+Likely Root Cause:
+
+- The analytics workflow builds `failedRows` directly from all rows where `event` is `JOB_FAILED`, `QUALITY_GATE_FAILED`, or `status = error`.
+- Failure watchlist and failure-rate calculations use raw rows rather than a deduped terminal job set.
+
+Suggested Fix:
+
+1. Build `terminalFailedRows` by grouping on `pipeline + job_id`.
+2. Prefer `JOB_FAILED` over `QUALITY_GATE_FAILED` for the same job.
+3. Use the deduped failed set for:
+   - `overview.totalJobsFailed`,
+   - `failures.byPipeline`,
+   - `failures.recent`,
+   - failure rates,
+   - active failure count.
+4. Keep quality gate failures available in diagnostics if needed.
+
+Fix Implemented:
+
+- 2026-06-05: Patched active n8n workflow `Q-Ops-Agent-Analytics-Summary` (`tcKSeScJRiWtRx77`) with terminal failure dedupe in `Build Auth-Aware Analytics Response`.
+- The analytics workflow now groups failed terminal rows by `pipeline + job_id` and prefers `JOB_FAILED` over `QUALITY_GATE_FAILED` for the same job.
+- The workflow now also exposes `totalJobsFailedHistorical`, `successRateHistorical`, and `avgGenerationDurationMs` in `overview`.
+- Backup created: `docs/test_data/n8n_workflow_backups/workflow_tcKSeScJRiWtRx77_before_analytics_terminal_failure_dedupe_v2_20260605-092810.json`.
+
+Validation:
+
+- Supabase baseline confirmed 13 distinct failed generation jobs vs 16 raw generation error rows.
+- Playwright Analytics smoke showed Failure Watchlist `Generation 13 failures`, not 16.
+- Failed spend remained correct at `13 attempts`, `37.8K tokens`, and `$0.0296`.
+
+Retest:
+
+- Compare Analytics Failure Watchlist against `qa_jobs.status = failed`.
+- Confirm `Generation failures` is 13 for the current AstraCart 30-day dataset, not 16.
+
+## BUG-E2E-113: Analytics Recovered Count Is Not Recovery-Aware For Document Retries
+
+Status: closed
+
+Severity: high
+
+Area:
+
+- Analytics recovered-job KPI
+- Dashboard recovered-job KPI
+- n8n analytics summary
+- Document retry lineage
+
+Observed During:
+
+- 2026-06-04 Dashboard and Analytics validation for `AstraCart E2E Scope Check 20260528`.
+
+What Happened:
+
+- Analytics summary text showed `0 recovered`.
+- Dashboard Operational Pulse showed `Recovered jobs 6`.
+- Supabase `qa_jobs` showed recovered failed jobs via `retry_status = recovered`, plus newer successful update repair jobs that functionally recovered failed attempts but lacked retry lineage.
+
+Expected:
+
+- Recovered count should be computed from a consistent backend source.
+- Analytics and Dashboard should agree on recovered job count for the same scope.
+- Functionally recovered update retries should be auditable through retry lineage and counted as recovered.
+
+Likely Root Cause:
+
+- n8n analytics summary reads only `qa_job_metrics`, which does not contain reliable recovery state.
+- Frontend derives some recovery state from local/generated output retry relationships.
+- BUG-E2E-109 previously left some update retry jobs without persisted retry metadata; it is now fixed pending live lineage retest.
+
+Suggested Fix:
+
+1. Make analytics recovery-aware by joining or supplementing from `qa_jobs`.
+2. Use `retry_status = recovered`, `retried_by_job_id`, and completed child retry jobs to compute recovered source failures.
+3. Retest BUG-E2E-109 with the next live update retry to confirm retry lineage persists at the source.
+4. Return `overview.totalJobsRecovered` and `overview.totalJobsFailedActive` from analytics.
+
+Fix Implemented:
+
+- 2026-06-05: Analytics page now reconciles recovered document jobs from the loaded generated-output retry/display state, in addition to recovered ingestion artifacts.
+- Dashboard and Analytics now both show the same recovered-job count for the current workspace state.
+- Backend retry lineage gaps for update-retry jobs were patched under `BUG-E2E-109`; the next live update retry should confirm persisted lineage.
+
+Validation:
+
+- Playwright Dashboard smoke showed `Recovered jobs 6`.
+- Playwright Analytics smoke showed summary text `38 completed jobs, 7 need retry, 6 recovered, and 0 currently active`.
+
+Retest:
+
+- Open Dashboard and Analytics after recovered document retries exist.
+- Confirm both screens show the same recovered count.
+- Confirm recovered failures are not shown as active retry-ready failures.
+
+## BUG-E2E-114: Analytics Completed Generation Duration Includes Failed Attempt Durations
+
+Status: closed
+
+Severity: medium
+
+Area:
+
+- Analytics Pipeline Performance
+- Generation throughput KPI
+- Frontend Analytics duration calculation
+
+Observed During:
+
+- 2026-06-04 Analytics validation for `AstraCart E2E Scope Check 20260528`.
+
+What Happened:
+
+- Analytics Generation card showed average duration `1m 20s`.
+- Supabase completed generation `JOB_COMPLETED` rows average about `65,845 ms`, or approximately `1m 06s`.
+- The displayed value appears to include failed generation durations in a card labelled for completed generation throughput.
+
+Expected:
+
+- `Average duration` in the completed Generation pipeline card should use completed generation jobs only.
+- Failed-attempt average duration should remain in the Failed Generation Spend section.
+
+Likely Root Cause:
+
+- `avgGenerationDuration` is calculated from all `generationJobs` with `durationMs`, not only `completedGenerationJobs`.
+
+Suggested Fix:
+
+1. Change frontend `avgGenerationDuration` to use completed generation jobs only.
+2. Keep failed duration aggregation in the failed spend section.
+3. Consider using backend `overview.avgGenerationDurationMs` if added to the analytics contract.
+
+Fix Implemented:
+
+- 2026-06-05: n8n analytics summary now emits `overview.avgGenerationDurationMs` from completed generation rows only.
+- 2026-06-05: Frontend Analytics uses completed generation jobs only for the Generation pipeline average duration fallback.
+- Failed-attempt duration remains isolated in the Failed Generation Spend section.
+
+Validation:
+
+- Supabase completed generation average duration for AstraCart was `65,845 ms`.
+- Playwright Analytics smoke showed Generation `Average duration 1m 6s`.
+- Failed Generation Spend continued to show failed-attempt average duration separately as `1m 39s`.
+
+Retest:
+
+- Open Analytics for AstraCart.
+- Confirm completed Generation average duration is approximately `1m 06s`.
+- Confirm Failed Generation Spend still shows failed-attempt duration separately.
+
+## BUG-E2E-115: Coverage Health KPI Uses An Unclear Denominator Across Dashboard And Analytics
+
+Status: closed
+
+Severity: medium
+
+Area:
+
+- Dashboard Quality Coverage
+- Analytics Coverage Health
+- Generated output coverage metadata
+
+Observed During:
+
+- 2026-06-04 Dashboard and Analytics validation for `AstraCart E2E Scope Check 20260528`.
+
+What Happened:
+
+- Dashboard Quality Coverage showed:
+  - `Coverage passed 5`
+  - `Needs review 12`
+- Analytics showed `Coverage Health 36%`.
+- The UI does not explain whether coverage health is:
+  - passed documents / coverage-parsed documents,
+  - covered ledger rows / total ledger rows,
+  - latest document state only,
+  - all historical completed outputs.
+
+Expected:
+
+- Coverage Health should have an explicit, consistent denominator.
+- Dashboard and Analytics should either show the same value for the same definition or use distinct labels.
+- For document quality, the recommended KPI is latest-current-output health by document type, with historical coverage trends shown separately.
+
+Likely Root Cause:
+
+- Dashboard and Analytics derive coverage rollups from generated outputs in different display contexts.
+- Historical completed outputs are mixed with current latest document state.
+- Coverage ledger row-level and document-level coverage are not separated in the KPI labels.
+
+Suggested Fix:
+
+1. Define two coverage metrics:
+   - latest document coverage health,
+   - historical generation coverage trend.
+2. Make the Analytics KPI label and tooltip state the denominator.
+3. Consider showing row-level coverage separately from document-level pass/review/fail.
+
+Fix Implemented:
+
+- 2026-06-05: Analytics KPI cards now render their `detail` text.
+- Coverage Health now displays the denominator and review count directly under the percentage.
+- The KPI remains document/output-level coverage health; row-level coverage can be added later as a separate trend if needed.
+
+Validation:
+
+- TypeScript validation passed with `.\node_modules\.bin\tsc.cmd --noEmit`.
+- Playwright Analytics smoke showed `Coverage Health 36%` with detail `5 passed, 9 need review of 14 parsed outputs`.
+
+Retest:
+
+- Open Dashboard and Analytics for AstraCart.
+- Confirm coverage counts and percentages can be reconciled from visible labels/tooltips.
+
+## BUG-E2E-116: Epics & User Stories First-Time Create Fails From Truncated Backlog JSON
+
+Status: fixed - live create retry validated
+
+Severity: high
+
+Area:
+
+- Epics & User Stories first-time create
+- n8n backlog generator
+- OpenAI output token ceiling
+- Admin diagnostics
+
+Observed During:
+
+- Project: `AstraCart E2E Scope Check 20260528`
+- Job: `PRO-260605-WCAFE6`
+- Workflow: `Vwc6c8ehsRTF8svG`
+- n8n execution: `1036050`
+
+What Happened:
+
+- First-time Epics & User Stories create correctly entered `generationMode = create`.
+- The workflow retrieved 40 Chroma chunks and generated a large backlog response.
+- The model response was truncated before a complete balanced JSON object was produced.
+- The robust backlog parser failed safely before Jira or Confluence creation.
+- Supabase marked the job failed with `PROFESSIONAL_BACKLOG_FAILED`.
+
+Failure Evidence:
+
+- Prompt chars: `93,265`
+- Output chars: `76,828`
+- Previous max output tokens: `16,000`
+- Parser message: `Backlog parser detected incomplete or truncated model JSON`
+- No Jira issues or Confluence page were created before the failure.
+
+Expected:
+
+- First-time Epics & User Stories create should complete without truncating the backlog JSON.
+- Retry should create Jira epics/stories and then persist usage, coverage, and output metadata.
+- Update/delta paths must keep compact token behavior and should not regress into full-generation spending.
+
+Fix Implemented:
+
+- 2026-06-05: Patched active backlog workflow `Vwc6c8ehsRTF8svG` with `BACKLOG_CREATE_CAPACITY_V1`.
+- Create-like backlog runs now use a 30k output token ceiling.
+- Update-mode backlog runs retain the compact 16k floor so delta-update savings remain protected.
+- Parser remediation text now points to the create-specific 30k ceiling.
+- Workflow code compilation and active workflow verification passed.
+- Backup created before patching:
+  - `docs/test_data/n8n_workflow_backups/workflow_Vwc6c8ehsRTF8svG_before_backlog_create_capacity_v1_20260605060036.json`
+
+Retest:
+
+- 2026-06-05: Retried failed job `PRO-260605-WCAFE6`, creating retry job `PRO-260605-UX4SYB`.
+- Retry lineage persisted:
+  - child job `retry_of_job_id = PRO-260605-WCAFE6`,
+  - parent job `retry_status = recovered`.
+- n8n execution `1036252` completed successfully and confirmed `maxTokens = 30000`.
+- Jira created `6` epics and `18` stories:
+  - epics `KAN-970` through `KAN-975`,
+  - stories `KAN-976` through `KAN-993`.
+- Confluence page was created:
+  - `https://anujalhans1.atlassian.net/wiki/spaces/QD/pages/27131905/Professional+QA+Backlog+-+AstraCart+E2E+Scope+Check+20260528`
+- Coverage passed:
+  - `coverageLedgerCount = 6`,
+  - `coveredCount = 6`,
+  - `partialCount = 0`,
+  - `missingCount = 0`,
+  - `gateStatus = passed`.
+- Usage was recorded:
+  - `tokensInput = 23,317`,
+  - `tokensOutput = 16,422`,
+  - `tokensTotal = 39,739`,
+  - `estimatedCostUsd = 0.035602`.
+
+## BUG-E2E-117: All Document Jobs Need Attempt Usage Checkpoint And Diagnostics UI
+
+Status: fixed - live retry validated
+
+Severity: high
+
+Area:
+
+- My Document Jobs panel
+- Usage Details modal
+- Failed job supportability
+- Admin diagnostics
+- All document generation workflows
+- n8n/Supabase failure metadata display
+
+Observed During:
+
+- Failed Epics & User Stories create job `PRO-260605-WCAFE6`.
+- Failed Story Test Cases create job `STC-260605-XPHHHM`.
+- Failed Story Test Cases create-retry job `STC-260605-8TIILM`.
+
+What Happened:
+
+- Some jobs failed before producing a complete final output and before usage metrics were recorded.
+- In `STC-260605-8TIILM`, the expensive AI generation stage had already run, but the workflow failed later during Jira issue linking with HTTP `429`.
+- Provider token usage/cost was likely incurred, but Supabase metrics still showed empty `tokens_total` and `estimated_cost_usd` because the final success payload was never reached.
+- My Document Jobs correctly did not show the Usage icon because persisted token/cost values were not available.
+- The UI only showed a generic failure message:
+  - `Generation workflow failed before producing an output.`
+- The actionable diagnostics were available in n8n execution details but not visible from the UI:
+  - failing node,
+  - parser failure reason,
+  - prompt chars,
+  - output chars,
+  - max token ceiling,
+  - selected retrieval chunk count,
+  - remediation hint.
+
+Expected:
+
+- Every document generation workflow should persist an intermediate attempt usage checkpoint after AI/model generation and before external publishing steps such as Jira or Confluence.
+- This should apply consistently to all supported document types:
+  - Test Strategy,
+  - Test Plan,
+  - Risk Matrix,
+  - Epics & User Stories,
+  - Story Test Cases,
+  - Requirements Traceability Matrix.
+- The checkpoint should cover all operation types:
+  - Create,
+  - Create-Retry,
+  - Update,
+  - Update-Retry,
+  - Regenerate Anyway / repair update where applicable.
+- If the job later completes, the final usage record should update/confirm the checkpointed usage rather than creating conflicting duplicate values.
+- If the job fails after AI generation, Usage Details should still be available and clearly labeled as `Attempt usage` or `Failed attempt usage`.
+- Failed jobs with no token/cost checkpoint should still not show the normal Usage icon, but they should show a separate Attempt Diagnostics icon when structured diagnostics exist.
+- The diagnostics modal should help admin/support understand whether the failure was due to truncation, parser failure, Confluence publish failure, Jira failure, missing config, timeout, or metrics failure.
+
+Suggested Fix:
+
+1. Add a shared attempt usage checkpoint contract across all document workflows.
+2. Persist checkpointed token/cost values to `qa_job_metrics` and/or a stable `qa_jobs.output.attemptUsage` field immediately after model usage can be estimated.
+3. Use a clear event name such as `ATTEMPT_USAGE_RECORDED` or `AI_GENERATION_USAGE_RECORDED`.
+4. On final success, reconcile the final usage payload with the checkpoint:
+   - update the final `JOB_COMPLETED` usage values,
+   - avoid double-counting in Dashboard/Analytics,
+   - retain the checkpoint for diagnostics/audit if useful.
+5. Persist structured failure diagnostics in `qa_jobs.output.diagnostics` or a similar stable field.
+6. Add a compact Attempt Diagnostics icon distinct from Usage, Retry, Validation, and Update Summary icons.
+7. Show Usage Details for failed jobs when attempt usage exists, with copy that makes it clear the usage is for a failed/interrupted attempt.
+8. Show the Attempt Diagnostics icon for failed/recovered jobs when diagnostics exist, even if token usage does not.
+9. Include support-ready diagnostic fields:
+   - job id,
+   - workflow id/execution id when available,
+   - failed node,
+   - error type,
+   - error message,
+   - prompt/output size if available,
+   - remediation,
+   - whether external artifacts were created before failure.
+
+Retest:
+
+- Smoke-test all document types with existing output data where possible.
+- For each document type, force or inspect a post-AI failure path and confirm attempt usage is persisted.
+- Confirm failed jobs with attempt usage show Usage Details as failed-attempt usage.
+- Confirm failed jobs without token/cost data keep Usage hidden but show Attempt Diagnostics when diagnostics exist.
+- Confirm successful jobs still show one coherent final usage/cost value and are not double-counted in Dashboard/Analytics.
+
+## BUG-E2E-118: Coverage Review Modal Shows Workflow Progress As Coverage Score
+
+Status: fixed - UI/build validated; pending next live Coverage Review retest
+
+Severity: medium
+
+Area:
+
+- Coverage Review modal
+- Generated output coverage display
+- Epics & User Stories / backlog coverage UI
+
+Observed During:
+
+- Completed Epics & User Stories retry job `PRO-260605-UX4SYB`.
+
+What Happened:
+
+- Coverage Review modal showed:
+  - `Coverage passed`
+  - `6 of 6 parsed coverage items are covered`
+  - `Covered = 6`
+  - `Needs Review = 0`
+  - `Missing = 0`
+  - `Ledger Rows = 6`
+  - but also showed `82% coverage score`.
+- The stored coverage data indicates full coverage:
+  - `coverageLedgerCount = 6`
+  - `coveredCount = 6`
+  - `partialCount = 0`
+  - `missingCount = 0`
+  - `gateStatus = passed`
+- The `82%` value comes from workflow `progressPercent` at stage `coverage_reviewed`, not from coverage math.
+
+Expected:
+
+- Coverage score should be computed from coverage ledger values, for example `coveredCount / coverageLedgerCount`.
+- For this job, the displayed coverage score should be `100%`.
+- Workflow progress should be labeled separately as workflow/progress status if it is shown at all.
+
+Suggested Fix:
+
+1. In the Coverage Review modal, stop using `progress.progressPercent` as coverage score.
+2. Compute coverage score from parsed coverage summary:
+   - denominator: `coverageLedgerCount` or `covered + partial + missing + unknown + excluded`, whichever is reliable for the output type.
+   - numerator: `coveredCount`.
+3. If workflow progress is displayed, label it as `workflow progress`, not `coverage score`.
+4. Add smoke coverage for passed/amber/failed ledger combinations.
+
+Retest:
+
+- Open Coverage Review for `PRO-260605-UX4SYB`.
+- Confirm `6 / 6 covered` displays as `100% coverage score`.
+- Confirm any workflow progress value is not mislabeled as coverage.
+
+Fix Implemented:
+
+- 2026-06-08: Patched `src/pages/DashboardPage.tsx` so `coverageScorePercent()` computes from canonical coverage counts before falling back to any explicit score field.
+- When `coverageLedgerCount` or covered/partial/missing counts are available, the modal now calculates the score from those values instead of trusting progress-like metadata.
+- Build validation passed with `npm run build`.
+
+## BUG-E2E-119: Story Test Cases Create Fails Whole Job On Transient LLM Batch 503
+
+Status: fixed - live retry validated
+
+Severity: high
+
+Area:
+
+- Story Test Cases generation
+- n8n batch generation resilience
+- Create / Create-Retry job reliability
+- Admin diagnostics and usage visibility
+
+Observed During:
+
+- Story Test Cases create job `STC-260605-XPHHHM`.
+
+What Happened:
+
+- The job started successfully and used completed Epics & User Stories job `PRO-260605-UX4SYB` as source.
+- The generator processed many story/batch LLM calls successfully.
+- Near the final batches, n8n execution `1036409` failed in node `Story Test Case Batch Generator`.
+- Error:
+  - `503 upstream connect error or disconnect/reset before headers. reset reason: connection termination`
+- Worker execution `1036406` marked the Supabase job as failed:
+  - `status = failed`
+  - `errorType = STORY_TEST_CASES_FAILED`
+  - `failed_at = 2026-06-05T06:34:43.273Z`
+- No final output, Confluence document, Jira test case summary, or token/cost usage payload was persisted.
+
+Expected:
+
+- A transient upstream LLM 503 should not permanently fail the entire Story Test Cases create job after most batches have succeeded.
+- Batch-level retry/backoff should recover from transient `503`, `429`, timeout, and connection reset errors.
+- If all retry attempts are exhausted, the failure should persist structured diagnostics and any available partial usage/attempt information for support.
+- Retry from the UI should be safe and should not create duplicate Jira/Confluence artifacts.
+
+Suggested Fix:
+
+1. Add robust retry/backoff around Story Test Case batch generation, especially the `Story Test Case Batch Generator` path.
+2. Consider smaller detail batches or per-story checkpointing so one failed batch can be retried without redoing the entire job.
+3. Persist structured attempt diagnostics:
+   - workflow id/execution id,
+   - failed node,
+   - batch/story key if available,
+   - upstream status code,
+   - retry count,
+   - whether external artifacts were created.
+4. Preserve idempotency labels and artifact guards so create-retry remains duplicate-safe.
+5. Record available attempt usage when possible, even if final document publishing does not happen.
+
+Mitigation Applied:
+
+- 2026-06-05: Added n8n node-level retry/backoff to the live Story Test Cases generator workflow `SG7khcKlhHst48WH`.
+- Patched nodes:
+  - `Story Test Case Generator`: `retryOnFail = true`, `maxTries = 3`, `waitBetweenTries = 10000`.
+  - `OpenAI Chat Model`: `retryOnFail = true`, `maxTries = 3`, `waitBetweenTries = 10000`.
+  - `Story Test Case Batch Generator`: `retryOnFail = true`, `maxTries = 4`, `waitBetweenTries = 15000`.
+  - `OpenAI Chat Model - Batch`: `retryOnFail = true`, `maxTries = 4`, `waitBetweenTries = 15000`.
+  - `Story Test Case Batch Retry Generator`: `retryOnFail = true`, `maxTries = 4`, `waitBetweenTries = 15000`.
+  - `OpenAI Chat Model - Batch Retry`: `retryOnFail = true`, `maxTries = 4`, `waitBetweenTries = 15000`.
+- Backup:
+  - `docs/test_data/n8n_workflow_backups/workflow_SG7khcKlhHst48WH_before_stc_ai_node_retry_v1_20260605064130.json`
+- 2026-06-05: UI retry job `STC-260605-8TIILM` validated the AI retry/backoff mitigation:
+  - retry job was created from `STC-260605-XPHHHM`,
+  - batch LLM transient failures were retried automatically,
+  - generation continued beyond the previous `Story Test Case Batch Generator` failure point.
+- 2026-06-05: Subsequent live retry job `STC-260605-2PCPPV` completed E2E after the Jira publishing resilience patch tracked in `BUG-E2E-120`.
+- The STC AI retry/backoff path is therefore considered live validated for the observed transient LLM failure class.
+
+Retest:
+
+- Retry `STC-260605-XPHHHM` from the UI.
+- Confirm the retry creates a child job with retry lineage.
+- Confirm the retry completes with generated Story Test Cases for all source stories.
+- Confirm no duplicate Jira/Confluence artifacts are created from the failed attempt.
+
+## BUG-E2E-120: Story Test Cases Retry Fails During Jira Issue Linking Rate Limit
+
+Status: fixed - live retry validated
+
+Severity: high
+
+Area:
+
+- Story Test Cases create-retry
+- Jira publishing resilience
+- n8n HTTP Request retry/backoff
+- Partial artifact recovery and idempotency
+- Admin diagnostics and failed attempt usage visibility
+
+Observed During:
+
+- Parent job: `STC-260605-XPHHHM`
+- Retry job: `STC-260605-8TIILM`
+- Worker workflow: `ivz13uFyjfCT8149`
+- Worker execution: `1036754`
+- Generator workflow: `SG7khcKlhHst48WH`
+- Generator execution: `1036756`
+
+What Happened:
+
+- The retry job started correctly in `generationMode = retry`.
+- The parent job persisted retry lineage:
+  - `retried_by_job_id = STC-260605-8TIILM`,
+  - `retry_status = retry_failed`.
+- The AI generation stage passed the previous transient LLM failure point after the retry/backoff mitigation.
+- The generator then failed during Jira publishing at node `Link Created Test Case To Story`.
+- Jira returned HTTP `429`:
+  - `The request has been rate-limited. Please try again later.`
+- n8n surfaced the error as:
+  - `The service is receiving too many requests from you`.
+- The failing request attempted to link a created test case to a source story:
+  - inward/story issue: `KAN-986`,
+  - outward/test case issue: `KAN-1170`,
+  - link type: `Relates`.
+- The failure occurred after many Jira test cases had already been created, so the run left partial Jira artifacts before Supabase marked the job failed.
+- Supabase metrics recorded `JOB_FAILED` for `STC-260605-8TIILM` with duration `2,904,640 ms`, but token/cost fields remained empty.
+
+Expected:
+
+- Jira 429 rate limits should not permanently fail a long-running Story Test Cases job after AI generation and partial Jira publishing have succeeded.
+- Jira publishing nodes should use retry/backoff and rate-aware pacing for create, update, search, and issue-link operations.
+- A retry after a partial Jira publish should be idempotent:
+  - reuse existing test cases discovered by stable labels,
+  - create only missing test cases,
+  - create missing issue links without duplicating existing links,
+  - persist mappings only after confirmed Jira artifacts exist.
+- If publishing still fails after retries, the job should persist structured diagnostics showing the failed Jira node, HTTP status, story key, test case key, and whether partial Jira artifacts were created.
+- Failed-attempt usage/diagnostics should be visible to admin/support even when final output was not created.
+
+Suggested Fix:
+
+1. Add robust retry/backoff to Jira HTTP nodes in the Story Test Cases generator:
+   - `Search Existing Test Case By Stable Label`,
+   - `Create Jira Test Case`,
+   - `Update Existing Jira Test Case`,
+   - `Link Created Test Case To Story`,
+   - any existing-test-case link/update branches.
+2. Add rate-aware pacing around Jira writes and issue-link calls so large STC batches do not burst into Atlassian rate limits.
+3. Before linking, check whether the issue link already exists or handle duplicate-link responses as success.
+4. On retry, verify the stable-label lookup can recover the partial test cases created in `STC-260605-8TIILM`, including `KAN-1170`.
+5. Persist structured failed-attempt diagnostics for Jira publishing failures, including `httpCode = 429`, failed node, item index, story key, test case key, and retry count.
+
+Retest:
+
+- Do not click another Story Test Cases retry until the Jira publishing resilience fix is applied.
+- After patching, retry from the UI.
+- Confirm the retry reuses already-created Jira test cases instead of creating duplicates.
+- Confirm missing links are created successfully after rate-aware pacing.
+- Confirm the job completes E2E with Confluence output, Supabase output metadata, usage/cost metrics, retry lineage, and coverage summary.
+
+Fix Implemented:
+
+- 2026-06-05: Patched active Story Test Cases generator workflow `SG7khcKlhHst48WH` with STC Jira publish resilience V1.
+- Backup created before the final applied patch:
+  - `docs/test_data/n8n_workflow_backups/workflow_SG7khcKlhHst48WH_before_stc_jira_publish_resilience_v1_20260605081004.json`
+- Added retry/backoff and sequential batching to Jira HTTP nodes:
+  - `Search Existing Test Case By Stable Label`: `maxTries = 6`, `waitBetweenTries = 20000`, `batchSize = 1`, `batchInterval = 1500`.
+  - `Create Jira Test Case`: `maxTries = 8`, `waitBetweenTries = 30000`, `batchSize = 1`, `batchInterval = 2500`.
+  - `Update Existing Jira Test Case`: `maxTries = 6`, `waitBetweenTries = 30000`, `batchSize = 1`, `batchInterval = 2500`.
+  - `Link Created Test Case To Story`: `maxTries = 8`, `waitBetweenTries = 45000`, `batchSize = 1`, `batchInterval = 3000`.
+  - `Fetch Existing Test Case Story Links`: `maxTries = 6`, `waitBetweenTries = 20000`, `batchSize = 1`, `batchInterval = 1500`.
+- Added a pre-link publish checkpoint:
+  - `Upsert Story Test Case Publish Checkpoint`.
+- Added payload recovery after the checkpoint so downstream Jira link checks continue with the normalized test case payload, not the Supabase response body:
+  - `Recover Story Test Case Publish Checkpoint Items`.
+- Added existing-link verification before posting a Jira issue link:
+  - `Fetch Existing Test Case Story Links`,
+  - `Detect Existing Story Test Case Link`,
+  - `Story Test Case Link Needed?`.
+- Existing/reused and updated test cases now also flow through link verification, so partial Jira artifacts from failed runs can be linked on retry instead of merely being reused without a story link.
+- Final `qa_story_testcase_links` upsert now records final link status metadata after link verification.
+- AI generation, batch generation, prompt logic, and shared document flows were left unchanged.
+
+Validation:
+
+- Active workflow verification passed through n8n MCP:
+  - workflow updated at `2026-06-05T08:10:04.059Z`,
+  - new checkpoint/link verification nodes are present,
+  - Jira retry/backoff and batching settings are present,
+  - created/reused/updated paths route through checkpoint and link verification before final mapping.
+- Pinned no-live-call n8n smoke execution `1037817` completed successfully:
+  - no OpenAI token spend,
+  - no real Jira calls,
+  - no real Supabase writes,
+  - exercised generated output through create -> checkpoint -> recover payload -> fetch links -> detect missing link -> link -> final mapping -> completion.
+
+Next Live Retest:
+
+- Wait for the Jira rate-limit window to cool down, then retry `STC-260605-XPHHHM` from the UI.
+- Expect the run to take longer because Jira writes and links are intentionally paced.
+- Confirm existing partial Jira test cases are reused by stable labels and missing story links are created.
+
+Live Validation:
+
+- 2026-06-05: User triggered retry job `STC-260605-2PCPPV` from failed parent `STC-260605-8TIILM`.
+- n8n executions completed successfully:
+  - worker workflow `ivz13uFyjfCT8149`, execution `1037932`,
+  - generator workflow `SG7khcKlhHst48WH`, execution `1037935`.
+- Supabase job state:
+  - `STC-260605-2PCPPV` completed,
+  - `STC-260605-8TIILM` retained `status = failed` but was marked `retry_status = recovered`,
+  - retry lineage remained intact through `retried_by_job_id = STC-260605-2PCPPV`.
+- Generated output persisted:
+  - `documentType = story_test_cases`,
+  - `generationMode = retry`,
+  - `testCases = 280`,
+  - `mappings = 280`,
+  - `tokensTotal = 215,520`,
+  - `estimatedCostUsd = 0.243502`.
+- Jira publish recovery worked:
+  - `qa_story_testcase_links` recorded `280` final mappings,
+  - `93` links were created/confirmed as newly linked during the retry,
+  - `187` links were detected as already linked and treated as success,
+  - no rows remained at `jira_publish_pre_link`.
+- Per-story final mapping counts reconciled across stories `KAN-976` through `KAN-993`.
+- Remaining metrics hygiene issue from the live run is tracked separately as `BUG-E2E-121`.
+
+## BUG-E2E-121: Story Test Cases Retry Writes Duplicate Completion Metrics With Negative Duration
+
+Status: fixed - workflow/build validated; pending next live STC retry/update metrics retest
+
+Severity: medium
+
+Area:
+
+- Story Test Cases worker/generator metrics
+- Dashboard and Analytics input quality
+- `qa_job_metrics`
+- Retry completion observability
+
+Observed During:
+
+- Live Story Test Cases retry job `STC-260605-2PCPPV`.
+- Worker execution `1037932`.
+- Generator execution `1037935`.
+- Live Story Test Cases update job `STC-260606-PUPHPE`.
+
+What Happened:
+
+- The retry completed successfully and persisted final output.
+- `qa_job_metrics` recorded two `JOB_COMPLETED` rows for the same job:
+  - metric ids `960` and `961`,
+  - both with `tokens_total = 215,520`,
+  - both with `estimated_cost_usd = 0.243502`.
+- Both completion rows had invalid negative durations:
+  - `duration_ms = -1`,
+  - `duration_ms = -2`.
+- The same pattern repeated for update job `STC-260606-PUPHPE`:
+  - two duplicate `JOB_COMPLETED` rows were recorded in `qa_job_metrics`,
+  - both rows carried `tokens_total = 109,167`,
+  - both rows carried `estimated_cost_usd = 0.122137`,
+  - completion durations were again invalid negative values: `-1` and `-2`.
+- This can distort Dashboard/Analytics if aggregation does not dedupe terminal job metrics and clamp/ignore invalid durations.
+
+Expected:
+
+- Each job should emit one canonical terminal completion metric, or Dashboard/Analytics should have a deterministic dedupe rule for duplicate terminal metrics.
+- `duration_ms` should be non-negative and should represent elapsed time from the actual job start to completion.
+- Retry jobs should not double-count token/cost usage when both child generator and parent worker paths log completion.
+
+Suggested Fix:
+
+1. Identify whether duplicate `JOB_COMPLETED` rows are emitted by both the STC generator and STC worker completion paths.
+2. Choose one canonical writer for final completion usage, or add an idempotent `on_conflict` / unique-key strategy for terminal metrics.
+3. Fix duration calculation to use a reliable timestamp pair:
+   - queued/started timestamp from the job row or `JOB_STARTED` metric,
+   - completion timestamp from the terminal event,
+   - clamp negative values to `0` only as a last-resort guard.
+4. Ensure Analytics and Dashboard dedupe terminal metrics by job id + terminal event until the writer is fully idempotent.
+5. Add smoke coverage using `STC-260605-2PCPPV` so cost/tokens are counted once and duration is not negative.
+
+Retest:
+
+- Trigger or replay a Story Test Cases retry completion path.
+- Confirm one effective `JOB_COMPLETED` metric is used for job-level analytics.
+- Confirm `duration_ms >= 0`.
+- Confirm Dashboard/Analytics token and cost totals do not double-count `STC-260605-2PCPPV`.
+
+Fix Implemented:
+
+- 2026-06-08: Patched active STC generator workflow `SG7khcKlhHst48WH`.
+- Backup:
+  - `docs/test_data/n8n_workflow_backups/workflow_SG7khcKlhHst48WH_before_stc_update_gate_usage_summary_v1_20260608053836.json`
+- Terminal metric writer now clamps `duration_ms` to a non-negative value.
+- Terminal metric metadata now includes a deterministic `metric_key` and coverage repair details so Dashboard/Analytics can consume one effective terminal metric per job.
+- Final output now persists canonical `output.tokenUsage`, reducing fallback/double-count risk in Usage, Dashboard, and Analytics.
+- Build validation passed with `npm run build`.
+
+## BUG-E2E-122: Story Test Cases Coverage Review Double-Counts Planned Cases And Shows Composite Category Tags
+
+Status: closed
+
+Severity: medium
+
+Area:
+
+- Story Test Cases coverage rollup
+- Coverage Review modal
+- `Finalize Story Test Case Result`
+- `src/pages/DashboardPage.tsx`
+
+Observed During:
+
+- Live Story Test Cases retry job `STC-260605-2PCPPV`.
+
+What Happened:
+
+- The STC retry successfully published/reused `280` Jira test cases and persisted `280` mappings.
+- Coverage Review still showed `18` partial rows and a `50%` score.
+- Most stories showed generated counts exactly half of planned counts, for example `14 / 28`, `17 / 34`, `20 / 40`.
+- Some category chips showed raw composite values such as `Accessibility | Compatibility`, `Sanity | Smoke`, and `Authorization | Security`, while other rows showed summary chips such as `9 categories covered`.
+- The modal header and category chips wrapped poorly in narrower layouts.
+
+Root Cause:
+
+- The final STC coverage rollup seeded each story planned count from per-story metrics and then added the same detail-batch plan items again.
+- The coverage score treated every row with `generatedTestCases < plannedTestCases` as partial, so the doubled denominator created a false amber `50%` score.
+- Category comparison/display used raw model labels, including pipe-delimited composite labels.
+
+Fix:
+
+- Patched active n8n workflow `SG7khcKlhHst48WH`, node `Finalize Story Test Case Result`, using `scripts/patch_stc_coverage_rollup_planned_count_v1.cjs`.
+- Planned count now falls back to per-story metrics only when detail batches are unavailable, avoiding double-counting.
+- Category comparison now splits pipe-delimited labels into atomic category labels before checking missing categories.
+- Updated `src/pages/DashboardPage.tsx` so the Coverage Review modal:
+  - normalizes pipe-delimited category chips,
+  - keeps category chips compact,
+  - uses a tighter responsive table layout,
+  - left-aligns the top review card.
+
+Validation:
+
+- n8n patch applied successfully at `2026-06-05T10:09:58Z`.
+- Re-running the patch reported `already up to date`.
+- Frontend production build passed with `npm.cmd run build`.
+- Playwright smoke confirmed the Coverage Review modal renders in the updated table-style layout.
+- 2026-06-08 live STC create job `STC-260608-JXHMX3` validated the corrected count behavior:
+  - `18` stories represented.
+  - `279` Jira test cases created.
+  - `279` mappings linked.
+  - Coverage no longer showed the earlier false `50%` double-count symptom.
+  - Amber rows correctly represented category gaps, not generated/planned test-case count gaps.
+- 2026-06-08 frontend presentation-layer cleanup completed:
+  - STC Coverage Review now uses story-level cards.
+  - Test-case count and category coverage are displayed separately.
+  - Missing categories are shown as readable chips.
+  - `npm.cmd run build` passed.
+
+Retest:
+
+- Closed after live STC create validation and frontend build validation.
+
+## BUG-E2E-123: Document Job Panel Can Lag Before Showing Newly Queued RTM Job
+
+Status: fixed - workflow patched; pending next live STC update validation
+
+Severity: low
+
+Area:
+
+- Generate Documents UI
+- My Document Jobs panel
+- Job Status panel refresh
+- Frontend polling / optimistic job insertion
+
+Observed During:
+
+- RTM create job `PRO-260605-AJQEN7`.
+- User triggered RTM create for `AstraCart E2E Scope Check 20260528`.
+
+What Happened:
+
+- Immediately after triggering RTM, the UI did not refresh with the new RTM job id.
+- The job appeared after a delay.
+- Backend persistence was ultimately successful:
+  - `JOB_QUEUED` metric at `2026-06-05 10:24:00Z`,
+  - `JOB_STARTED` metric at `2026-06-05 10:24:19Z`,
+  - job row `PRO-260605-AJQEN7` moved to `processing` and then `completed`.
+
+Expected:
+
+- After the generate action returns a job id, the UI should immediately show that job in Job Status and My Document Jobs, even before the next polling interval.
+- Polling should reconcile the optimistic row with backend state once Supabase/n8n updates arrive.
+
+Suggested Fix:
+
+1. Inspect the RTM create trigger response path in the frontend.
+2. If the API returns `jobId`, add/update an optimistic `GeneratedOutput` row immediately.
+3. Trigger a targeted `fetchGeneratedDocuments` refresh after successful queue response.
+4. Keep normal polling as reconciliation, not the only way the new job appears.
+
+Retest:
+
+- Trigger RTM create/update/retry.
+- Confirm the new job id appears immediately after the trigger response.
+- Confirm the same job row transitions from queued/pending to processing/completed without duplicate cards.
+
+## BUG-E2E-124: RTM Create Completion Metadata Labels Operation Mode As update_repair
+
+Status: fixed - workflow patched; pending next live STC update validation
+
+Severity: low
+
+Area:
+
+- Shared document generator
+- RTM create output metadata
+- Update Summary modal
+- Analytics/metrics metadata
+
+Observed During:
+
+- RTM create job `PRO-260605-AJQEN7`.
+
+What Happened:
+
+- The job correctly recorded:
+  - `generation_mode = create`,
+  - `updateSummary.mode = create`,
+  - `finalValidation.operationMode = create`.
+- However, some metadata incorrectly used update terminology:
+  - `output.updateSummary.operationMode = update_repair`,
+  - `qa_job_metrics.metadata.operation_mode = update_repair`.
+
+Expected:
+
+- RTM first-time create should consistently use create terminology:
+  - `operationMode = create`,
+  - no repair/update label unless the job is an actual update or retry repair.
+
+Impact:
+
+- The generated document completed successfully.
+- Coverage and final validation passed.
+- This is currently a metadata/UX accuracy issue, but it can confuse Update Summary, Dashboard, and Analytics classifications.
+
+Suggested Fix:
+
+1. Patch shared RTM/create summary builder so `operationMode` follows actual generation mode.
+2. Ensure create jobs do not inherit `update_repair` from shared delta/update defaults.
+3. Verify Test Strategy, Test Plan, Risk Matrix update-repair behavior remains unchanged.
+
+Retest:
+
+- Trigger RTM create in a clean project.
+- Confirm `generation_mode`, `updateSummary.mode`, `updateSummary.operationMode`, final validation, and metrics metadata all say `create`.
+
+## BUG-E2E-125: Backlog Update Fails When AI Response Truncates Full Backlog JSON
+
+Status: fixed - live retry validation passed
+
+Severity: high
+
+Area:
+
+- Epics & User Stories update
+- n8n professional backlog workflow
+- Delta update prompt sizing
+- AI output parsing guardrail
+
+Observed During:
+
+- Backlog update job `PRO-260605-1IVOOA` for `AstraCart E2E Scope Check 20260528`.
+
+What Happened:
+
+- The job correctly entered update mode:
+  - `documentType = user_stories`,
+  - `generationMode = update`,
+  - `updateOfJobId = PRO-260605-UX4SYB`.
+- Retrieval, live Jira backlog lookup, and live Confluence lookup completed.
+- The workflow failed at `Robust Backlog JSON Parser` before Jira/Confluence publish.
+- n8n execution `1040473` shows the OpenAI response hit the output ceiling:
+  - completion tokens: `15,999`,
+  - prompt tokens: `51,440`,
+  - total tokens: `67,439`,
+  - response ended mid-JSON inside `acceptanceCriteria`.
+- Parser detected unbalanced JSON and stopped before any Jira or Confluence writes.
+
+Expected:
+
+- Update mode should not ask the model to regenerate the full existing backlog.
+- It should return compact delta-only epics/stories for new or changed requirements.
+- Existing live Jira epics/stories should be merged by the workflow after parsing.
+- Parser should continue blocking malformed JSON before publish.
+
+Root Cause:
+
+- The update prompt included verbose snapshots of existing epics/stories and instructed the model to return the full current backlog.
+- After the four new AstraCart delta documents were ingested, the model attempted to output unchanged backlog plus new deltas, exceeded max output, and produced truncated JSON.
+
+Fix Applied:
+
+- Patched n8n workflow `Vwc6c8ehsRTF8svG`, node `Professional Prompt Library`.
+- Backup created:
+  - `docs/test_data/n8n_workflow_backups/workflow_Vwc6c8ehsRTF8svG_before_backlog_update_delta_compact_prompt_v1_20260605173405.json`
+- Patch behavior:
+  - update mode now sends compact previous epic/story snapshots,
+  - update mode limits prompt evidence size,
+  - update mode instructs the model to return only new/materially changed delta epics/stories,
+  - unchanged live Jira backlog remains merged downstream by the validator,
+  - create mode instructions remain unchanged.
+
+Retest:
+
+- Click Retry on `PRO-260605-1IVOOA`.
+- Confirm the retry remains update/update-retry against `PRO-260605-UX4SYB`.
+- Confirm output contains new delta requirements:
+  - `FRD-LOY-007`, `FRD-LOY-008`,
+  - `FRD-MKT-009`, `FRD-MKT-010`,
+  - `FRD-RISK-011`, `FRD-PRIV-012`, `FRD-SUP-013`.
+- Confirm token usage is recorded and lower than a full recreate-style backlog run.
+- Confirm Jira/Confluence publish only happens after parser/validation pass.
+
+Retest Note:
+
+- 2026-06-05: First live retry child `PRO-260605-P1YZIV` did not exercise this fix because it was queued as generic `generationMode = retry` with empty `updateContext`.
+- That retry-lineage issue is tracked separately under `BUG-E2E-126`.
+
+## BUG-E2E-126: Backlog Update Retry Loses Update Lineage And Queues As Generic Retry
+
+Status: fixed - live retry validation passed
+
+Severity: high
+
+Area:
+
+- Epics & User Stories update-retry
+- Document retry UI
+- n8n professional queue creator
+- Delta update cost control
+
+Observed During:
+
+- User clicked Regenerate/Retry after failed Backlog update job `PRO-260605-1IVOOA`.
+- Child retry job created: `PRO-260605-P1YZIV`.
+
+What Happened:
+
+- Original failed job `PRO-260605-1IVOOA` was a valid update attempt:
+  - `generationMode = update`,
+  - `updateMode = true`,
+  - `updateOfJobId = PRO-260605-UX4SYB`,
+  - `updateContext.previousJobId = PRO-260605-UX4SYB`.
+- Retry child `PRO-260605-P1YZIV` lost that lineage:
+  - `generationMode = retry`,
+  - `updateMode = false`,
+  - `updateOfJobId = null`,
+  - `updateContext = {}`.
+- The retry therefore bypassed the compact delta-update path and failed almost immediately before useful output.
+
+Expected:
+
+- A retry of a failed update must remain an update-retry.
+- It must preserve the original successful target job id.
+- It must reuse update semantics, delta prompt sizing, and duplicate-prevention behavior.
+- It must not fall back to a create-style retry unless the original failed job was truly a create job.
+
+Root Cause:
+
+- The UI normalizer did not read update metadata from `qa_jobs.input`, where failed jobs often retain the real lineage.
+- The professional queue creator trusted the incoming retry payload and did not hydrate retry lineage from the stored failed `qa_jobs` row before persisting the child job.
+
+Fix Applied:
+
+- Frontend:
+  - Added `input` to `ApiGeneratedDocument`.
+  - Updated `normalizeGeneratedDocument` to derive `generationMode` and `updateOfJobId` from `input`, `input.updateContext`, and `input.retryContext` before falling back to output metadata.
+- n8n:
+  - Patched active workflow `yPgr7mtUnL3E8QQP`, `PRO QA Generation Queue Creator - Ready Draft`.
+  - Added `Fetch Retry Source QA Job`.
+  - Added `Hydrate Retry Update Lineage`.
+  - The queue now checks the direct retry source and any original job where `retried_by_job_id` points at the child failed retry.
+  - If the source chain contains an update job, the new child is forced back to:
+    - `generationMode = update`,
+    - `updateMode = true`,
+    - preserved `updateOfJobId`,
+    - hydrated `updateContext`,
+    - update-repair retry instruction.
+- Backup created:
+  - `docs/test_data/n8n_workflow_backups/workflow_yPgr7mtUnL3E8QQP_before_retry_update_lineage_v1_20260605174943.json`
+
+Verification:
+
+- Frontend build passed with `npm.cmd run build`.
+- Static n8n workflow check confirmed:
+  - `Prepare Runtime Config Request -> Fetch Retry Source QA Job`,
+  - `Fetch Retry Source QA Job -> Hydrate Retry Update Lineage`,
+  - `Hydrate Retry Update Lineage -> Runtime Request Ready?`.
+- Supabase smoke query confirmed retrying `PRO-260605-P1YZIV` now exposes both:
+  - the bad child retry row, and
+  - original update job `PRO-260605-1IVOOA` with `updateOfJobId = PRO-260605-UX4SYB`.
+- 2026-06-05: Live retry child `PRO-260605-EZM0TL` still queued as generic retry because the hydrator read only the first n8n item returned by the Supabase fetch. Patched `Hydrate Retry Update Lineage` to scan `$input.all()` and choose the first row with update lineage before falling back to the direct child row.
+- 2026-06-05: Live retry child `PRO-260605-HM2KF7` still queued as generic retry because the retry chain had grown to multiple levels (`HM2KF7 -> EZM0TL -> P1YZIV -> 1IVOOA`). Patched `Fetch Retry Source QA Job` and `Hydrate Retry Update Lineage` to fetch recent project jobs, filter to the same document type, walk `retry_of_job_id` ancestors, and choose the first ancestor with update lineage.
+- 2026-06-05: Live retry child `PRO-260605-UD3S2Z` still queued as generic retry. Added frontend retry-chain walking so the UI payload can directly send the original `updateOfJobId` even when the visible failed card is several retry levels downstream.
+- 2026-06-05: Live retry child `PRO-260605-D8XHCD` still queued as generic retry because `Combine Job And Runtime` was reading the stale `Prepare Runtime Config Request` output and discarding the hydrated lineage. Patched `Combine Job And Runtime` to read `Hydrate Retry Update Lineage` with a fallback to the original runtime request.
+- 2026-06-05: Live retry child `PRO-260605-K9IZMB` correctly queued as update-retry with `updateOfJobId = PRO-260605-UX4SYB` and `retryLineageHydrated = true`. It then failed inside the Backlog generator at `Professional Prompt Library` with `Cannot access 'promptRetrievalContext' before initialization`. Patched `Professional Prompt Library` so retrieval/grouped evidence text is built after `promptRetrievalContext` and `promptGroupedEvidence` are declared.
+- 2026-06-05: Live retry child `PRO-260605-HZ8T0S` correctly queued as update-retry with `generationMode = update`, `updateMode = true`, and `updateOfJobId = PRO-260605-UX4SYB`, then completed successfully. This validates the retry lineage fix. Remaining semantic delta behavior is tracked separately under `BUG-E2E-127`.
+
+Retest:
+
+- Click Retry again from either `PRO-260605-1IVOOA` or `PRO-260605-P1YZIV`.
+- Confirm the newly queued child row has:
+  - `input.generationMode = update`,
+  - `input.updateMode = true`,
+  - `input.updateOfJobId = PRO-260605-UX4SYB`,
+  - `input.updateContext.retryLineageHydrated = true` when hydrated by n8n.
+- Confirm the Backlog generator reaches the compact delta update path from `BUG-E2E-125`.
+
+## BUG-E2E-127: Backlog Update Completes But Does Not Apply Supporting-Document Delta
+
+Status: fixed - workflow smoke validated; pending next live Backlog update retest
+
+Severity: high
+
+Area:
+
+- Epics & User Stories update
+- Backlog delta detection
+- Update cost control
+- Coverage gate consistency
+- Confluence/Jira update semantics
+
+Observed During:
+
+- Backlog update-retry job `PRO-260605-HZ8T0S` for `AstraCart E2E Scope Check 20260528`.
+
+What Happened:
+
+- The retry lineage fix worked and the job completed as a true update-retry:
+  - `generationMode = update`,
+  - `updateMode = true`,
+  - `updateOfJobId = PRO-260605-UX4SYB`.
+- The job updated the existing Confluence page and passed the quality gate.
+- However, the update did not apply the newly ingested supporting-document delta:
+  - `epics_created = 0`,
+  - `epics_updated = 0`,
+  - `stories_created = 0`,
+  - `stories_updated = 0`,
+  - all existing `6` epics and `18` stories were reused.
+- Token usage remained high for an intended targeted update:
+  - `55.2k` total tokens,
+  - estimated cost `US$0.076001`.
+- Coverage metadata was internally inconsistent:
+  - overall coverage gate reported `passed`,
+  - coverage summary reported `missingCount = 0`,
+  - but batch progress marked `Delta Risk and Fraud Enhancement` as `missing`.
+
+Expected:
+
+- When source knowledge is updated after the previous Backlog output, update mode should either:
+  - create/update only the affected epics/stories for the new delta requirements, or
+  - explicitly report no changes needed with source-grounded evidence explaining why.
+- It should not silently reuse every existing epic/story while also claiming the update passed.
+- Delta update should use materially fewer tokens than a full create-style backlog run.
+- Coverage summary and batch progress must agree; a missing delta batch cannot coexist with an unconditional passed gate.
+
+Impact:
+
+- Users may believe the Backlog was updated for newly ingested requirements when no Jira backlog items changed.
+- Downstream Story Test Cases and RTM updates may run from stale backlog coverage.
+- Token/cost savings expectations for Backlog update are not met.
+- Coverage Review can display misleading health.
+
+Suggested Fix:
+
+1. Strengthen Backlog update delta extraction so newly ingested supporting documents after `previousCreatedAt` are promoted into explicit delta targets.
+2. Restrict update-mode evidence to new or materially changed source chunks before the model call.
+3. Require the model/workflow to emit a deterministic no-op explanation if no backlog change is needed.
+4. Add a validation guard that fails or needs-review when `batchSummary.missingBatches > 0` but coverage summary says passed.
+5. Record update savings only when the workflow actually avoids full regeneration-style token usage.
+
+Fix Implemented:
+
+- 2026-06-05: Patched active Backlog generator workflow `Vwc6c8ehsRTF8svG`.
+- Backup created:
+  - `docs/test_data/n8n_workflow_backups/workflow_Vwc6c8ehsRTF8svG_before_backlog_update_delta_semantic_v1_20260605182926.json`
+- Patch scope is Backlog/Epics & User Stories update mode only.
+- Retrieval quality node now:
+  - treats `SUPPORTING` as valid secondary evidence for Backlog updates,
+  - boosts supporting/delta/addendum/change-request chunks only when `generationMode = update`,
+  - marks delta candidates and exposes `updateDeltaCandidateCount`,
+  - adds a dedicated grouped `delta` evidence bucket.
+- Prompt library now:
+  - promotes delta/supporting chunks ahead of older FRD/BRD/UI fallback chunks,
+  - includes delta target source names in the update context,
+  - tells the model that delta target evidence is authoritative,
+  - requires a no-change reason only when every delta target is already covered by existing Jira keys.
+- Validator now:
+  - prevents missing/partial delta batches from appearing as a green passed update,
+  - downgrades such cases to needs-review/warning metadata instead of silently claiming complete coverage.
+
+Smoke Validation:
+
+- Active n8n code nodes compiled successfully:
+  - `Check Chroma Retrieval Quality`,
+  - `Professional Prompt Library`,
+  - `Backlog Delta Gate`,
+  - `Validate Team Managed Backlog`.
+- Synthetic update prompt test passed:
+  - supporting delta chunks placed after old FRD chunks were promoted into the prompt,
+  - `FRD-LOY-007` and `FRD-MKT-009` evidence appeared before old FRD fallback evidence.
+
+Live Retest Note:
+
+- 2026-06-05: Backlog update job `PRO-260605-QJNYA4` validated that V1 was active and materially improved behavior:
+  - `updateDeltaCandidateCount = 23`,
+  - total tokens reduced from `55.2k` on `PRO-260605-HZ8T0S` to `26.6k`,
+  - created Jira story `KAN-1292`,
+  - resolved `FRD-RISK-011`.
+- Remaining gap: V1 still allowed older fraud-related FRD/test-case evidence to dominate the delta target set, so the update repaired the fraud/risk delta only and did not account for all supporting-document IDs:
+  - `FRD-LOY-007`,
+  - `FRD-LOY-008`,
+  - `FRD-MKT-009`,
+  - `FRD-MKT-010`,
+  - `FRD-PRIV-012`,
+  - `FRD-SUP-013`.
+
+Additional Fix Implemented:
+
+- 2026-06-05: Patched active Backlog generator workflow `Vwc6c8ehsRTF8svG` with semantic delta V2.
+- Backup created:
+  - `docs/test_data/n8n_workflow_backups/workflow_Vwc6c8ehsRTF8svG_before_backlog_update_delta_semantic_v2_20260605183958.json`
+- V2 narrows update-mode delta detection:
+  - `SUPPORTING` / supporting-file / addendum-file evidence gets highest priority,
+  - explicit requirement IDs are extracted into a deterministic delta target list,
+  - generic old FRD keywords such as fraud/risk are no longer enough to classify a chunk as a primary delta target.
+- Prompt now exposes `updateDeltaTargets.requirementIds` and instructs the model to account for every target ID.
+- Validator now marks skipped expected delta target IDs as needs-review instead of allowing a green partial repair.
+
+V2 Smoke Validation:
+
+- Active n8n code nodes compiled successfully after V2.
+- Synthetic prompt test with old fraud FRD chunks plus all supporting AstraCart delta chunks confirmed all expected target IDs are extracted:
+  - `FRD-LOY-007`,
+  - `FRD-LOY-008`,
+  - `FRD-MKT-009`,
+  - `FRD-MKT-010`,
+  - `FRD-RISK-011`,
+  - `FRD-PRIV-012`,
+  - `FRD-SUP-013`.
+- Supporting evidence is ordered before old fraud FRD fallback evidence.
+
+Additional Live Retest Note:
+
+- 2026-06-05: Backlog update job `PRO-260605-AZIBEF` queued correctly as update of `PRO-260605-QJNYA4`, but failed before model usage.
+- Root cause: the existing `Backlog Delta Gate` still allowed the no-model reuse shortcut because `QJNYA4` looked coverage-clean and no new ingestion occurred after it.
+- That shortcut reused the partial fraud-only update output and did not force generation for remaining expected delta IDs.
+
+Additional Fix Implemented:
+
+- 2026-06-05: Patched active Backlog generator workflow `Vwc6c8ehsRTF8svG`, node `Backlog Delta Gate`.
+- Backup created:
+  - `docs/test_data/n8n_workflow_backups/workflow_Vwc6c8ehsRTF8svG_before_backlog_delta_gate_expected_targets_v1_20260605184605.json`
+- The no-model path now reads `Professional Prompt Library.updateDeltaTargets.requirementIds`.
+- No-model reuse is allowed only when every detected delta target ID is already accounted for by previous update summary or previous coverage metadata.
+- If any expected delta IDs are missing, the workflow forces model generation even when `contextUpdated = false`.
+
+Gate Smoke Validation:
+
+- Synthetic gate test with previous summary containing only `FRD-RISK-011` correctly blocked no-model reuse.
+- Missing IDs detected:
+  - `FRD-LOY-007`,
+  - `FRD-LOY-008`,
+  - `FRD-MKT-009`,
+  - `FRD-MKT-010`,
+  - `FRD-PRIV-012`,
+  - `FRD-SUP-013`.
+
+Additional Live Retest Note:
+
+- 2026-06-05: Backlog update retry job `PRO-260605-4CNP3X` correctly bypassed the no-model shortcut and entered the model path.
+- n8n execution `1041578` failed in `Validate Team Managed Backlog` before Jira publishing.
+- The model produced the intended delta themes:
+  - Loyalty Wallet and Store Credit,
+  - Marketplace Sellers Cart Grouping and Checkout,
+  - Risk-Based Step-Up Verification,
+  - Support Event Replay and Sensitive Data Protection.
+- Failure cause was validator shape handling, not Jira publishing:
+  - the model returned `epics` and top-level `stories` separately,
+  - top-level stories lacked exact parent epic fields and were not attached back to the matching epics,
+  - `document.coverageLedger` was omitted,
+  - validator then reported zero-story epics and missing coverage ledger.
+
+Additional Fix Implemented:
+
+- 2026-06-05: Patched active Backlog generator workflow `Vwc6c8ehsRTF8svG`, node `Validate Team Managed Backlog`.
+- Backup created:
+  - `docs/test_data/n8n_workflow_backups/workflow_Vwc6c8ehsRTF8svG_before_backlog_update_delta_validator_shape_v1_20260605132422.json`
+- Patch scope is update-mode validation/normalization only.
+- Validator now:
+  - attaches top-level stories to delta epics by source traceability overlap,
+  - falls back to conservative lexical matching when no explicit parent epic field is present,
+  - lets unmatched story group epics inherit source references from their child stories,
+  - synthesizes an update-mode coverage ledger from expected delta/source traceability when the model omits `document.coverageLedger`.
+
+Validator Smoke Validation:
+
+- Synthetic replay of the failed `4CNP3X` output shape passed:
+  - `KAN-EPIC-07` mapped to `2` stories,
+  - `KAN-EPIC-08` mapped to `1` story,
+  - `KAN-EPIC-09` mapped to `1` story,
+  - `KAN-EPIC-10` mapped to `1` story,
+  - all seven expected delta IDs were represented in the synthesized coverage ledger,
+  - no zero-story epics remained.
+
+Additional Live Retest Note:
+
+- 2026-06-05: Backlog update retry job `PRO-260605-UN9NVZ` completed and validated the validator-shape fix.
+- n8n execution `1041776` completed successfully.
+- Jira output:
+  - created epics `KAN-1293`, `KAN-1294`, `KAN-1295`,
+  - created stories `KAN-1296`, `KAN-1297`, `KAN-1298`, `KAN-1299`.
+- Usage improved versus earlier full-size update attempts:
+  - `20,686` total tokens,
+  - estimated cost `US$0.016695`,
+  - duration `86,836 ms`.
+- Remaining gap: the job completed with `quality_gate_status = passed_with_warnings`.
+- Missing/partial delta IDs still reported:
+  - `FRD-MKT-010`,
+  - `FRD-PRIV-012`,
+  - `FRD-SUP-013`.
+- The job created real delta backlog coverage for loyalty, fraud, and marketplace grouping, but did not yet fully account for seller-specific split-shipment/coupon behavior, privacy/consent, and support-operations replay.
+
+Additional Fix Implemented:
+
+- 2026-06-05: Patched active Backlog generator workflow `Vwc6c8ehsRTF8svG`, node `Professional Prompt Library`.
+- Backup created:
+  - `docs/test_data/n8n_workflow_backups/workflow_Vwc6c8ehsRTF8svG_before_backlog_update_retry_missing_delta_focus_v1_20260605135005.json`
+- Patch scope is update-retry prompt targeting only.
+- Prompt library now:
+  - carries `previousCoverageSummary.missingDeltaTargetIds` into `updateDeltaTargets.requirementIds`,
+  - promotes retry-focus evidence before broad delta evidence,
+  - expands update-mode excerpts to preserve additional requirement IDs in the same supporting chunk,
+  - explicitly instructs update repair to cover missing delta IDs first while reusing existing Jira items.
+
+Retry-Focus Smoke Validation:
+
+- Active prompt code compiled successfully.
+- Synthetic previous coverage summary with:
+  - `FRD-MKT-010`,
+  - `FRD-PRIV-012`,
+  - `FRD-SUP-013`
+  was converted into retry-focus delta targets.
+
+Additional Live Retest Note:
+
+- 2026-06-05: Backlog Regenerate Anyway job `PRO-260605-VV9B3V` queued correctly as an update of `PRO-260605-UN9NVZ`, but failed in `Validate Team Managed Backlog`.
+- n8n execution `1042004` showed that the prompt fix worked semantically:
+  - generated coverage rows for `FRD-MKT-010`, `FRD-PRIV-012`, and `FRD-SUP-013`,
+  - generated repair stories for marketplace split shipment, consent/preferences, and support event replay.
+- Failure cause was idempotency validation:
+  - the repair output included `Implement Seller-Aware Cart Grouping and Split Shipment Visibility`,
+  - that summary already existed from prior successful job `PRO-260605-UN9NVZ`,
+  - validator treated the duplicate summary as fatal instead of merging it into the existing Jira story.
+
+Additional Fix Implemented:
+
+- 2026-06-05: Patched active Backlog generator workflow `Vwc6c8ehsRTF8svG`, node `Validate Team Managed Backlog`.
+- Backup created:
+  - `docs/test_data/n8n_workflow_backups/workflow_Vwc6c8ehsRTF8svG_before_backlog_update_duplicate_story_merge_v1_20260605142355.json`
+- Patch scope is update-mode validation/normalization only.
+- Validator now:
+  - collapses update-mode duplicate story summaries into the retained existing Jira story,
+  - preserves the retained story correlation/Jira identity,
+  - merges acceptance criteria, source references, traceability, flows, and test notes from the repair story,
+  - rewrites coverage ledger `mappedStoryIds` from dropped temporary IDs to the retained story ID,
+  - keeps duplicate summary as fatal in create mode and for non-merged duplicates.
+
+Duplicate-Merge Smoke Validation:
+
+- Synthetic replay of the `PRO-260605-VV9B3V` duplicate pattern passed:
+  - existing `KAN-STORY-23` was retained,
+  - temporary repair ID `KAN-STORY-1299` was mapped back to `KAN-STORY-23`,
+  - coverage ledger `FRD-MKT-010` was rewritten to the retained story ID,
+  - only one marketplace story remained after merge.
+
+Additional Live Retest Note:
+
+- 2026-06-05: Backlog retry job `PRO-260605-7YR7AT` completed successfully as update-retry of `PRO-260605-VV9B3V`, with `updateOfJobId = PRO-260605-UN9NVZ`.
+- n8n execution `1042364` completed successfully.
+- Jira output:
+  - reused epics `KAN-1293`, `KAN-1294`, and `KAN-975`,
+  - created stories `KAN-1300`, `KAN-1301`, and `KAN-1302`,
+  - reused existing related stories including `KAN-1299` and `KAN-1297`.
+- The duplicate story merge fix worked; the marketplace split-shipment repair did not fail on the existing story summary.
+- Usage:
+  - `35,103` total tokens,
+  - estimated cost `US$0.034603`,
+  - duration `85,607 ms`.
+- Remaining reporting issue: the compact repair output correctly resolved `FRD-MKT-010`, `FRD-PRIV-012`, and `FRD-SUP-013`, but the validator still marked earlier already-covered IDs as partial because it expected them to be restated in the compact repair coverage ledger:
+  - `FRD-LOY-007`,
+  - `FRD-LOY-008`,
+  - `FRD-MKT-009`,
+  - `FRD-RISK-011`.
+
+Additional Fix Implemented:
+
+- 2026-06-05: Patched active Backlog generator workflow `Vwc6c8ehsRTF8svG`, node `Validate Team Managed Backlog`.
+- Backup created:
+  - `docs/test_data/n8n_workflow_backups/workflow_Vwc6c8ehsRTF8svG_before_backlog_update_delta_accounting_v1_20260605143052.json`
+- Patch scope is update-mode coverage accounting only.
+- Validator now accepts `document.updateSummary.resolvedCoverageIds` and `document.updateSummary.unchangedCoverageIds` as valid accounting for expected delta target IDs.
+- Compact update repairs no longer need to restate already-covered ledger rows just to avoid a false amber status.
+
+Metadata Repair:
+
+- Since `PRO-260605-7YR7AT` had already created the correct Jira items, its stored job metadata was repaired without another model call.
+- `qa_jobs.output.qualityGate.coverageLedger` now combines:
+  - 4 prior covered rows from `PRO-260605-UN9NVZ`,
+  - 3 latest covered rows from `PRO-260605-7YR7AT`.
+- Final repaired coverage state:
+  - `coverageLedgerCount = 7`,
+  - `coveredCount = 7`,
+  - `partialCount = 0`,
+  - `missingCount = 0`,
+  - `gateStatus = passed`.
+- `qa_job_metrics` events for `QUALITY_GATE_PASSED` and `JOB_COMPLETED` were also repaired from `passed_with_warnings` to `passed`.
+
+Retest:
+
+- Ingest new supporting documents that introduce Backlog-relevant delta requirements.
+- Trigger Backlog Update Document or update-retry.
+- Confirm the update creates/updates the expected delta epics/stories or returns a clear no-op reason.
+- Confirm the quality gate, coverage summary, and batch progress agree.
+- Confirm token usage is lower than full create/retry generation for the same Backlog.
+
+## BUG-E2E-128: Story Test Cases Update Completes Even Though Coverage Gate Failed
+
+Status: fixed - workflow patched; pending next live STC update validation
+
+Severity: high
+
+Area:
+
+- Story Test Cases update workflow
+- Coverage gate enforcement
+- Job terminal status
+- My Document Jobs / Output Panel completion state
+
+Observed During:
+
+- Live Story Test Cases update job `STC-260606-PUPHPE`.
+- Source STC output: `STC-260605-2PCPPV`.
+- Latest Backlog source: `PRO-260605-7YR7AT`.
+
+What Happened:
+
+- The STC update job persisted `qa_jobs.status = completed`.
+- Stored coverage metadata for the same job reported a failed gate:
+  - `coverageSummary.gateStatus = failed`,
+  - `coverageSummary.status = failed`,
+  - coverage score `69%`,
+  - `5` covered, `1` partial, `2` missing out of `8` delta stories.
+- The terminal job state therefore says the update completed while the quality/coverage contract says the update failed.
+
+Expected:
+
+- A Story Test Cases update should not be treated as a successful terminal completion when required in-scope stories have missing generated/published test coverage.
+- The UI should show a clear failure or needs-review state and preserve a retry/regenerate path targeted at the missing coverage.
+- Dashboard and Analytics should not count this as a clean successful STC update.
+
+Suggested Fix:
+
+1. Align STC terminal status with the final coverage gate:
+   - `passed` can complete,
+   - `warning` can complete with needs-review where accepted by product rules,
+   - `failed` should mark the job failed or blocked-for-repair, not cleanly completed.
+2. Ensure My Document Jobs, Output Panel, Dashboard, and Analytics all consume the same canonical terminal state.
+3. Persist enough structured coverage failure detail to drive retry/update-repair without re-running successful publish work.
+
+Retest:
+
+- Trigger STC Update Document against a backlog delta with one deliberately uncovered story.
+- Confirm the job does not show as cleanly completed.
+- Confirm the coverage modal, output card, My Document Jobs card, Dashboard, and Analytics agree on the terminal state.
+
+Fix Implemented:
+
+- 2026-06-08: Patched active STC generator workflow `SG7khcKlhHst48WH`.
+- Backup:
+  - `docs/test_data/n8n_workflow_backups/workflow_SG7khcKlhHst48WH_before_stc_update_gate_usage_summary_v1_20260608053836.json`
+- `Finalize Story Test Case Result` now derives `terminalStatus` from the final coverage gate.
+- If final STC coverage is `failed`, `Mark Direct Story Test Case Job Completed` persists `qa_jobs.status = failed` with the generated output, coverage ledger, repair targets, token usage, and an actionable error message.
+- The terminal metric is now emitted as `JOB_FAILED` for failed coverage, preventing Dashboard/Analytics from treating the run as a clean success.
+
+## BUG-E2E-129: Story Test Cases Delta Update Skips In-Scope Stories Instead Of Repairing Missing Coverage
+
+Status: fixed - workflow patched; pending next live STC update-retry validation
+
+Severity: high
+
+Area:
+
+- Story Test Cases delta update planning
+- Story-level coverage repair
+- Jira test case generation/publishing
+- `qa_story_testcase_links`
+
+Observed During:
+
+- Live Story Test Cases update job `STC-260606-PUPHPE`.
+
+What Happened:
+
+- The update selected `8` delta stories but generated/published test cases for only `6` of them.
+- Missing stories:
+  - `KAN-1301`: `0 / 17` planned test cases published,
+  - `KAN-1302`: `0 / 25` planned test cases published.
+- Partial story:
+  - `KAN-1300`: `9 / 15` planned test cases published.
+- Missing categories included important coverage types such as `Functional`, `Security`, `Authorization`, `Accessibility`, `Performance`, `Integration`, `Boundary`, `Observability`, `Network`, and `Data`.
+- Jira checkpointing itself looked healthy for generated cases:
+  - `138` generated mappings,
+  - `138` rows in `qa_story_testcase_links`,
+  - all generated rows had `linked` status,
+  - no duplicate story/testcase link rows were found.
+- This suggests the publish/linking path worked for generated cases, but the generation/repair path did not produce cases for all required in-scope stories.
+
+Expected:
+
+- STC delta update should generate, reuse, or repair coverage for every in-scope delta story before completing.
+- If the first generation pass omits any selected story, batch retry/repair should isolate those stories and generate the missing categories.
+- A retry should be able to resume from the successful Jira publish checkpoints and only repair missing story coverage.
+
+Suggested Fix:
+
+1. Add a final STC delta coverage reconciliation step before completion:
+   - compare selected delta stories against generated/published story IDs,
+   - identify zero-coverage and partial-coverage stories,
+   - build a targeted repair batch for only missing stories/categories.
+2. Reuse existing Jira publish checkpoints so repair does not recreate or relink already successful test cases.
+3. Fail fast with a structured coverage error if repair still cannot satisfy required story coverage.
+4. Keep create-mode behavior separate unless the same reconciliation helper can be safely shared without changing create semantics.
+
+Retest:
+
+- Re-run STC update or update-retry from `STC-260606-PUPHPE`.
+- Confirm `KAN-1301` and `KAN-1302` receive generated and linked test cases.
+- Confirm `KAN-1300` is repaired from partial to covered, or clearly marked needs-review with precise missing categories.
+- Confirm the final coverage count matches the selected delta story count.
+
+Fix Implemented:
+
+- 2026-06-08: Patched active STC generator workflow `SG7khcKlhHst48WH`.
+- Final STC update output now persists `repairTargets` for every missing or partial story.
+- Failed update output retains enough structured coverage detail for update-retry to target missing/partial stories instead of hiding the gap behind a completed job.
+- Existing Jira publish checkpoint/reuse behavior remains unchanged, so retry should continue reusing already created/linked test cases and focus on the missing story coverage.
+- Create-mode generation logic was left unchanged.
+
+## BUG-E2E-130: Story Test Cases Update Summary Does Not Explain Generated/Published Cases Versus Missing Story Coverage
+
+Status: fixed - workflow/UI/build validated; pending next live STC Update Summary retest
+
+Severity: medium
+
+Area:
+
+- Story Test Cases Update Summary modal
+- Coverage Review modal
+- User-facing update auditability
+
+Observed During:
+
+- Live Story Test Cases update job `STC-260606-PUPHPE`.
+
+What Happened:
+
+- The job produced a large successful-looking publish summary:
+  - `138` test cases,
+  - `138` mappings,
+  - Jira summary: `90` created, `48` updated, `0` reused.
+- The same job coverage summary reported:
+  - `2` missing stories,
+  - `1` partial story,
+  - failed coverage gate.
+- The current summary does not make the distinction clear enough between:
+  - generated/published test case count,
+  - story coverage completeness,
+  - missing stories/categories requiring repair.
+
+Expected:
+
+- For STC updates, users should be able to tell whether the update is complete at the story-coverage level, not only that many Jira test cases were created or updated.
+- Update Summary should clearly separate:
+  - stories covered,
+  - stories partial,
+  - stories missing,
+  - test cases created,
+  - test cases updated,
+  - test cases reused,
+  - missing categories per affected story.
+
+Suggested Fix:
+
+1. Add an STC-specific summary section for `Story coverage impact`.
+2. Show compact story chips or rows for missing/partial stories, with hover details for missing categories.
+3. Keep Jira publish totals in a separate `Jira publish impact` section.
+4. Ensure Coverage Review and Update Summary use the same source counts and labels.
+
+Retest:
+
+- Open Update Summary for an STC update with partial/missing coverage.
+- Confirm users can immediately identify which stories require repair and which Jira test cases were created/updated successfully.
+
+Fix Implemented:
+
+- 2026-06-08: STC final output now persists an STC-specific `updateSummary` with:
+  - story scope,
+  - covered/partial/missing story counts,
+  - created/updated/reused test case counts,
+  - story coverage rows,
+  - missing/partial repair targets,
+  - canonical token usage.
+- `src/pages/DashboardPage.tsx` now labels incomplete STC updates as `Update needs coverage repair` and separates Jira publish totals from story coverage status.
+- Existing STC Update Summary sections continue to show story coverage details and Jira test case ID buckets.
+- Build validation passed with `npm run build`.
+
+## BUG-E2E-131: Story Test Cases Update Usage Metadata Is Not Persisted In The Standard Token Usage Shape
+
+Status: fixed - workflow patched; pending next live STC usage retest
+
+Severity: medium
+
+Area:
+
+- Story Test Cases usage metadata
+- Usage Details modal
+- Dashboard and Analytics usage aggregation
+- `qa_jobs.output.tokenUsage`
+
+Observed During:
+
+- Live Story Test Cases update job `STC-260606-PUPHPE`.
+
+What Happened:
+
+- Token and cost values were present at top-level output/metric locations:
+  - `tokensInput = 43,773`,
+  - `tokensOutput = 65,394`,
+  - `tokensTotal = 109,167`,
+  - `estimatedCostUsd = 0.122137`.
+- However, `qa_jobs.output.tokenUsage` was `null`.
+- `qa_job_metrics` also contained duplicate terminal rows for the same token/cost values, tracked separately under `BUG-E2E-121`.
+
+Expected:
+
+- STC update and update-retry jobs should persist usage in the same canonical shape used by other document types.
+- Usage Details, Dashboard, and Analytics should not need STC-specific fallback logic to find token/cost values.
+- Final success should reconcile any attempt usage checkpoint into one canonical final usage payload.
+
+Suggested Fix:
+
+1. Normalize STC final output so `output.tokenUsage` is populated consistently:
+   - input tokens,
+   - output tokens,
+   - total tokens,
+   - estimated cost,
+   - model/provider when available,
+   - usage source label such as `final` or `attempt-reconciled`.
+2. Keep top-level legacy fields only as compatibility aliases if needed.
+3. Dedupe terminal metrics in the same patch path or keep that tracked under `BUG-E2E-121`.
+
+Retest:
+
+- Run or replay an STC update completion.
+- Confirm `qa_jobs.output.tokenUsage` is present.
+- Confirm Usage Details, Dashboard, and Analytics report the same single token/cost values.
+
+Fix Implemented:
+
+- 2026-06-08: Patched active STC generator workflow `SG7khcKlhHst48WH`.
+- `Build Direct Story Test Case Completion Output` now writes canonical `output.tokenUsage` with input, output, total tokens, estimated cost, source, and model when available.
+- The same canonical usage payload is mirrored into STC `updateSummary.tokenUsage`.
+- Top-level `tokensInput`, `tokensOutput`, `tokensTotal`, and `estimatedCostUsd` remain as compatibility aliases.
+
+## BUG-E2E-132: Newly Created Project Can Remain Local-Only And Not Appear In User Assignment Lists
+
+Status: fixed - UI/build validated; pending current E2E project assignment retest
+
+Severity: high
+
+Area:
+
+- New Project wizard
+- Project repository persistence
+- Invite User / User Project Assignment lists
+- `qops_projects`
+
+Observed During:
+
+- Full E2E cycle preparation on 2026-06-08.
+- Admin created a new project named `AstraCart Ecommerce`.
+- The project did not appear when assigning projects to a new invited user.
+- The project also did not appear when assigning projects to an already registered user.
+
+What Happened:
+
+- Supabase `qops_projects` did not contain `AstraCart Ecommerce`.
+- The frontend created the project optimistically in local state/localStorage.
+- Persistence depended only on `/webhook/projects`.
+- If the n8n project webhook failed, timed out, or returned a non-standard body, the project stayed local-only and assignment flows could not use it reliably.
+
+Expected:
+
+- Creating a project from the UI should persist a durable `qops_projects` row.
+- Invite and assignment screens should list the same durable project repository as the rest of the app.
+- A backend webhook issue should not silently leave the user with a local-only project.
+
+Fix Implemented:
+
+- 2026-06-08: Patched `src/lib/api.ts`.
+- `fetchProjects()` now falls back to direct Supabase REST reads from `qops_projects` when `/webhook/projects` is unavailable.
+- `createProjectRecord()` now:
+  - unwraps both direct project responses and `{ project }` responses,
+  - checks for an existing project by exact name before inserting,
+  - falls back to direct Supabase REST insert into `qops_projects` if the webhook path fails.
+- Added project row normalization for both camelCase and snake_case backend fields.
+- Build validation passed with `npm run build`.
+
+Retest:
+
+- Create a fresh project.
+- Confirm it appears in `qops_projects`.
+- Open Invite User and existing-user assignment flows.
+- Confirm the new project appears in the project assignment list.
+- Assign it to a registered user and confirm `qops_project_members` receives the expected row.
+
+## BUG-E2E-133: Registered User Default Routing Saves Without User-Level Operational Test Audit
+
+Status: fixed - frontend build passed
+
+Severity: medium
+
+Area:
+
+- Registered-user Settings
+- My default routing
+- Integration status / connection-test evidence
+- `qops_user_integration_settings`
+- `qops_connection_test_results`
+
+Observed During:
+
+- Full E2E cycle on 2026-06-08 after successful invite/login for `anujalhans1@gmail.com`.
+- User configured Settings -> My default routing for all assigned projects.
+- User intentionally left This Project Only settings unconfigured.
+
+What Happened:
+
+- Supabase correctly persisted 4 user-default routing rows in `qops_user_integration_settings` for:
+  - `jira`
+  - `confluence`
+  - `chroma`
+  - `microservices`
+- No project-level override rows existed in `qops_project_integration_overrides`, which matches the expected scope.
+- However, those user-level settings were saved with `status = backend_managed`.
+- No matching per-user connection-test rows were found in `qops_connection_test_results` for `anujalhans1@gmail.com`.
+- No recent effective-config audit rows were found for this user yet in `qops_effective_config_audit`.
+
+Expected:
+
+- If the Settings UI indicates that registered-user default routing has been tested or is operational, Supabase should persist user-scoped connection-test evidence.
+- The UI should be able to distinguish:
+  - saved but not tested,
+  - backend-managed/inherited,
+  - tested operational,
+  - tested failed/degraded.
+- Registered-user default routing should have a clear audit trail showing who tested it, when, and what integration scope was validated.
+
+Impact:
+
+- The settings are saved, so generation may still work.
+- But Dashboard/Settings/Admin support cannot prove whether the registered user's default routing was actually validated.
+- Users may see a stronger operational implication than the database can support.
+
+Suggested Fix:
+
+1. Decide the intended contract for user-level default routing status:
+   - keep `backend_managed` until tested, or
+   - set `operational/degraded/not_configured` after test.
+2. When a registered user tests an integration from My default routing, insert a `qops_connection_test_results` row with:
+   - `checked_by`,
+   - `environment_key`,
+   - `integration_key`,
+   - `service_name`,
+   - status,
+   - latency/message/technical detail.
+3. Update the Settings UI copy so saved-but-untested user defaults are not presented as operational.
+4. After a generation/ingestion job resolves effective config, confirm `qops_effective_config_audit` captures that the user-default scope was used.
+
+Retest:
+
+- Login as a registered user.
+- Configure My default routing.
+- Run Test for each configured integration.
+- Confirm `qops_user_integration_settings` reflects the expected status contract.
+- Confirm `qops_connection_test_results` has user-scoped rows for each test.
+- Run a small ingestion/generation job and confirm `qops_effective_config_audit` records the effective config source priority.
+
+## BUG-E2E-134: Dashboard Shows KB Ready While Same Project Ingestion Jobs Are Still Processing
+
+Status: fixed - partially validated; pending active-ingestion Dashboard retest
+
+Severity: high
+
+Area:
+
+- Dashboard readiness cards
+- Project readiness table
+- Ingestion lifecycle
+- Generate Documents readiness gating
+- `doc_ingestion_jobs`
+- `qops_projects`
+
+Observed During:
+
+- Full E2E registered-user ingestion cycle on 2026-06-08.
+- User triggered ingestion for project `Astra Ecommerce`.
+- Some ingestion jobs were completed while other ingestion jobs for the same project were still processing.
+
+What Happened:
+
+- Dashboard showed `KB Ready = 1`.
+- Project readiness table showed `KB = Ready`.
+- Action Required recommended `Generate or update QA deliverables` as next best action.
+- At the same time, Dashboard also showed active pipeline work, for example `4 jobs currently running`.
+- This creates a contradictory user signal: the knowledge base appears ready for generation while the current ingestion batch is still incomplete.
+
+Expected:
+
+- A project should not be considered KB ready while any current ingestion job for that project is `pending`, `queued`, or `processing`.
+- During active ingestion, Dashboard should show a transitional state such as `Ingesting` or `KB building`.
+- Generate/update document recommendations should remain blocked or lower priority until the latest ingestion batch reaches a terminal state.
+
+Impact:
+
+- Users can start document generation before all source artifacts are embedded.
+- Generated outputs may be incomplete or misleading because the KB was only partially built.
+- Dashboard readiness, Action Required recommendations, and Project Readiness can disagree with live pipeline state.
+
+Suggested Fix:
+
+1. Compute KB readiness from project status plus live ingestion state.
+2. If any ingestion job for the selected/assigned project is active:
+   - show `KB = Ingesting`,
+   - show active/completed counts, for example `4 active, 3 completed`,
+   - suppress `Generate or update QA deliverables` as the next-best recommendation.
+3. Only show `KB Ready` when:
+   - no active ingestion jobs remain for the project,
+   - at least one ingestion job completed successfully,
+   - no actionable failed ingestion jobs remain unrecovered.
+4. Ensure Dashboard, Project Readiness table, and Generate Documents gating use the same readiness helper.
+
+Fix Implemented:
+
+- 2026-06-08: Patched the Dashboard presentation layer in `src/pages/DashboardPage.tsx`.
+- KB readiness now evaluates live artifact/job state, not only stored `qops_projects.status`.
+- A project with active ingestion now shows `KB = Ingesting` in Project Readiness.
+- The Dashboard KPI changes from `KB ready` to `KB building` while assigned projects are still ingesting.
+- `readyKnowledgeBases` excludes projects with active ingestion work.
+- Dashboard next-best action now guides users to monitor ingestion instead of starting generation when no project is currently retrieval-ready.
+- Dashboard and Artifact Repository now reconcile backend state when the user lands on those screens and conditionally poll while visible ingestion work is active.
+
+Verification:
+
+- `npm.cmd run build` passed on 2026-06-08.
+- 2026-06-08: Follow-up ingestion batch for project `Astra Ecommerce` completed successfully.
+- Confirmed final Dashboard state after the batch was coherent:
+  - `0 active jobs`
+  - `24 artifacts`
+  - `KB ready = 1`
+  - project `Astra Ecommerce` status returned to `ready`
+- Active in-progress state was not observed before the four latest ingestion jobs completed, so the specific `KB building` / `Ingesting` transition still needs one live mid-batch retest before closure.
+
+Retest:
+
+- Trigger a multi-file ingestion batch.
+- While some jobs are processing and some are completed, confirm Dashboard shows `KB building` / `Ingesting`, not `KB Ready`.
+- Confirm generation recommendation is not shown as the top next action until ingestion is terminal.
+- After all jobs complete successfully, confirm Dashboard changes to `KB Ready`.
+
+## BUG-E2E-135: Artifact Repository Requires Browser Refresh To Reconcile Multi-File Ingestion Batch
+
+Status: closed
+
+Severity: medium
+
+Area:
+
+- Artifact Repository
+- Multi-file ingestion live state
+- Artifact counts and filters
+- In-progress artifact visibility
+- `doc_ingestion_jobs`
+- Supabase Storage uploaded artifacts
+
+Observed During:
+
+- Full E2E registered-user ingestion cycle on 2026-06-08.
+- User triggered a multi-file ingestion batch for project `Astra Ecommerce`.
+- Backend eventually completed 7 ingestion jobs and stored 7 uploaded artifacts.
+
+What Happened:
+
+- While the ingestion batch was still settling, Artifact Repository showed only 4 total artifacts / 4 processed rows.
+- After a browser/screen refresh, the same screen showed the expected 7 artifacts.
+- This indicates the backend state was correct, but the Artifact Repository screen did not automatically reconcile live ingestion changes when the user landed on or viewed the screen.
+
+Expected:
+
+- Artifact Repository should not require a browser refresh to show the latest ingestion state.
+- When a user opens or lands on Artifact Repository, the screen should immediately fetch the latest artifact/job state from the backend.
+- While any artifact/job for the visible scope is `queued`, `pending`, or `processing`, the screen should use production-safe conditional polling.
+- Polling should stop once all visible artifacts are terminal: `processed`, `failed`, or `recovered`.
+- A manual Refresh button/icon should also be available for user confidence and immediate reconciliation.
+
+Production-Safe Polling Constraints:
+
+- Do not poll continuously for every user or every project.
+- Fetch once when the user lands on Artifact Repository.
+- Start polling only if the visible user/project scope contains active ingestion work.
+- Poll at a modest interval, for example every 5-10 seconds, not every second.
+- Stop polling immediately when all visible ingestion rows are terminal.
+- Pause polling when the browser tab is hidden or the user navigates away from Artifact Repository.
+- Scope backend requests to the current user's visible/assigned projects only.
+- Keep manual Refresh available when no live jobs exist.
+- Longer term, consider Supabase Realtime or server-sent events for job status changes to reduce polling overhead further.
+
+Ideal UX:
+
+- Show live counts that distinguish:
+  - total submitted,
+  - processing,
+  - processed,
+  - needs retry,
+  - recovered.
+- Include processing rows for queued/in-progress artifacts instead of only completed rows.
+- Show a lightweight timestamp such as `Last refreshed: 12:52 PM`.
+- During a live batch, counts should reconcile like:
+  - `Total 7`
+  - `Processing 3`
+  - `Processed 4`
+  - `Needs retry 0`
+  - `Recovered 0`
+
+Impact:
+
+- Users may think documents were not uploaded or were skipped.
+- Users may manually refresh the browser to force correctness.
+- Artifact Repository can temporarily disagree with Dashboard/Analytics and backend state.
+
+Suggested Fix:
+
+1. Trigger a fresh artifact/job fetch whenever the user opens Artifact Repository.
+2. Add conditional, scoped short-interval polling only while visible project-scope ingestion artifacts have active statuses.
+3. Add a manual Refresh control near the Artifact Repository filters/header.
+4. Render active queued/processing rows from `doc_ingestion_jobs` even before completion metadata is available.
+5. Pause polling when the tab is hidden or the user leaves Artifact Repository.
+6. Stop polling once all rows are terminal.
+
+Fix Implemented:
+
+- 2026-06-08: Patched `src/pages/DashboardPage.tsx`.
+- Artifact Repository now fetches the latest backend repository state when the user lands on the screen.
+- While visible ingestion work is active, the screen uses conditional polling at a modest interval.
+- Polling pauses when the browser tab is hidden and stops when no active ingestion remains.
+- Added a manual `Refresh` button to Artifact Repository for explicit user reconciliation.
+- The Refresh button uses the same backend refresh path as Dashboard and Analytics reconciliation.
+
+Verification:
+
+- `npm.cmd run build` passed on 2026-06-08.
+- 2026-06-08: Live registered-user retest passed during the four-document supporting-doc ingestion batch for project `Astra Ecommerce`.
+- Artifact Repository refreshed without a browser reload and showed:
+  - `24` total artifacts
+  - `24` processed artifacts
+  - the four newest supporting documents at the top:
+    - `ING-260608-HR19DO`
+    - `ING-260608-T6D3HO`
+    - `ING-260608-LVNWN8`
+    - `ING-260608-5USOM5`
+- Manual `Refresh` control was visible.
+
+Retest:
+
+- Trigger a multi-file ingestion batch.
+- Navigate to Artifact Repository before all files complete.
+- Confirm the screen shows total submitted files and processing rows without browser refresh.
+- Confirm counts update automatically as each file completes.
+- Confirm manual Refresh also reconciles the latest backend state.
+
+## BUG-E2E-136: Registered User Analytics Emits Direct qa_job_metrics 403 Despite Successful Analytics Load
+
+Status: closed
+
+Severity: low
+
+Area:
+
+- Analytics page
+- Registered-user authorization
+- Browser console/API hygiene
+- `qa_job_metrics`
+
+Observed During:
+
+- Full E2E registered-user ingestion cycle on 2026-06-08.
+- User logged in as `anujalhans1@gmail.com`.
+- Project scope selected: `Astra Ecommerce`.
+- Analytics page visibly loaded correct live totals from the analytics summary path.
+
+What Happened:
+
+- Browser console recorded direct Supabase REST failures against `qa_job_metrics` with HTTP `403`.
+- The failing request attempted to read generation metrics directly:
+  - `pipeline=eq.generation`
+  - selected `job_id`, `project_id`, `project_name`, `document_type`, `pipeline`, `event`, `status`, usage fields, metadata, and created time.
+- The visible Analytics page still showed correct ingestion totals:
+  - 16 completed jobs
+  - 16 files
+  - 31 chunks
+  - 11.9K tokens
+  - `$0.0031` estimated spend
+  - 0 failed
+
+Expected:
+
+- Registered-user Analytics should not emit avoidable 403s in the browser console.
+- If direct `qa_job_metrics` reads are not allowed for registered users, the frontend should avoid that direct query and rely on the authorized analytics endpoint.
+- If direct reads are intended, RLS/API policies should allow only project-scoped rows for assigned projects.
+
+Impact:
+
+- Visible Analytics data is correct, so this is not currently blocking the E2E ingestion path.
+- Console noise can confuse validation and production support.
+- Future code paths might accidentally depend on the blocked direct query and show incomplete generation metadata for registered users.
+
+Suggested Fix:
+
+1. Decide whether registered users should ever query `qa_job_metrics` directly from the browser.
+2. Preferred production posture: keep `qa_job_metrics` behind the authorized analytics summary endpoint and disable/suppress the direct browser fallback for registered users.
+3. If direct reads are required, add a narrow RLS policy for assigned-project rows only.
+4. Ensure Analytics still shows generation usage/details through one canonical authorized path.
+
+Fix Implemented:
+
+- 2026-06-08: Patched `src/lib/api.ts`.
+- Removed the direct frontend Supabase REST fallback that queried `qa_job_metrics`.
+- `fetchGenerationJobMetrics()` now relies on the authorized Analytics Summary endpoint instead of browser-side direct table reads.
+- This avoids registered-user `403` console noise without changing backend analytics or RLS policies.
+
+Verification:
+
+- `npm.cmd run build` passed on 2026-06-08.
+- 2026-06-08: Registered-user browser retest passed after fresh navigation.
+- Confirmed live network calls used authorized n8n webhook paths:
+  - `/webhook/analytics-summary?pipeline=all&days=30`
+  - `/webhook/analytics-summary?pipeline=generation&days=90`
+  - `/webhook/generated-documents`
+  - `/webhook/artifacts`
+  - `/webhook/projects`
+- Confirmed no live direct browser request to Supabase `rest/v1/qa_job_metrics`.
+- Browser console showed no new `qa_job_metrics` 403 after fresh navigation; only React Router future warnings remained.
+
+Retest:
+
+- Log in as a registered user with assigned project access.
+- Open Analytics.
+- Confirm visible Analytics totals remain correct.
+- Confirm the browser console does not show `qa_job_metrics` 403 errors.
+
+## BUG-E2E-137: Dashboard Does Not Reconcile Completed Ingestion Totals Without Full Page Reload
+
+Status: closed
+
+Severity: medium
+
+Area:
+
+- Dashboard
+- Ingestion metrics freshness
+- Registered-user project scope
+- Artifact and spend KPI cards
+- `doc_ingestion_jobs`
+- `qa_job_metrics`
+
+Observed During:
+
+- Full E2E registered-user ingestion cycle on 2026-06-08.
+- User ingested additional BRD/FRD documents for project `Astra Ecommerce`.
+- Backend completed the new ingestion jobs successfully.
+
+What Happened:
+
+- Supabase showed the registered user's project scope had advanced from 16 to 18 completed ingestion jobs.
+- Backend metrics showed:
+  - 18 completed ingestion jobs
+  - 58 chunks
+  - 20.078K tokens
+  - `$0.004590` estimated cost
+  - 0 failed
+- Dashboard still displayed the previous state:
+  - 16 artifacts
+  - 11.9K tokens
+  - `$0.003` spend
+- After a full browser/route reload, Dashboard corrected to:
+  - 18 artifacts
+  - 20.1K tokens
+  - `$0.005` rounded spend
+
+Expected:
+
+- Dashboard should reconcile ingestion totals when the user navigates back to Dashboard or when a visible ingestion batch reaches terminal state.
+- Users should not need a full page reload to see completed ingestion counts, token usage, or spend.
+- Dashboard, Artifacts, and Analytics should use the same freshness/reconciliation strategy for ingestion changes.
+
+Impact:
+
+- Users can see stale artifact and spend totals after ingestion completes.
+- This can reduce confidence during E2E validation and production use.
+- Dashboard may disagree with Supabase, Artifacts, or Analytics until a full reload.
+
+Suggested Fix:
+
+1. Refresh Dashboard analytics/artifact summary when the Dashboard view becomes active.
+2. Add conditional polling only while assigned-project ingestion jobs are active.
+3. Stop polling after all visible ingestion jobs are terminal.
+4. Reuse the production-safe polling constraints from `BUG-E2E-135`.
+5. Ensure the Dashboard KPI cards, greeting summary, project readiness table, and action recommendations read from the refreshed summary.
+
+Fix Implemented:
+
+- 2026-06-08: Patched `src/pages/DashboardPage.tsx`.
+- Dashboard now refreshes backend repository data and Analytics when the user lands on the Dashboard.
+- Dashboard conditionally polls while visible ingestion work is active.
+- Polling pauses when the browser tab is hidden and stops once no visible ingestion remains active.
+- The same refresh path updates projects, artifacts, generated outputs, knowledge jobs, audit events, and Analytics state.
+
+Verification:
+
+- `npm.cmd run build` passed on 2026-06-08.
+- 2026-06-08: Live registered-user retest passed after the four-document supporting-doc ingestion batch completed.
+- Dashboard refreshed to the current backend state without requiring a browser reload:
+  - greeting summary showed `0 active jobs`
+  - artifact count showed `24 artifacts`
+  - KB card showed `KB ready = 1`
+- Supabase confirmed the same final state:
+  - `doc_ingestion_jobs` for project `Astra Ecommerce`: `24 completed`
+  - latest four ingestion jobs had matching `JOB_QUEUED` and `JOB_COMPLETED` metrics
+  - `qops_projects.status = ready`
+
+Retest:
+
+- Trigger a new ingestion batch for an assigned project.
+- Stay on or return to Dashboard while jobs complete.
+- Confirm artifact count, token usage, and spend update without full page reload.
+- Confirm polling stops once all ingestion jobs are terminal.
+
+## BUG-E2E-138: Extractor Response Details Are Not Fully Persisted For Later-Phase Extraction Transparency
+
+Status: fixed - workflow patched and existing STC metrics repaired; pending next live STC run validation
+
+Severity: low
+
+Phase:
+
+- Later phase
+
+Area:
+
+- FastAPI extractor response contract
+- n8n ingestion final output
+- Extraction Details modal
+- Artifact Repository
+- Ingestion observability
+
+Observed During:
+
+- Full E2E registered-user ingestion cycle on 2026-06-08.
+- Extraction Details UI review for `Astra Ecommerce` artifacts.
+- Extractor code review after improving the Extraction Details modal.
+
+What Happened:
+
+- The FastAPI extractor returns richer extraction metadata than the final n8n ingestion output currently persists.
+- The UI intentionally shows only fields that are persisted in the final ingestion output and does not fake unavailable details.
+- Missing persisted details include page/content-mode metadata, richer image/visual-candidate details, rendered page details, and detailed table/annotation/link rows.
+- Current final ingestion output mainly stores compact counts such as chunks, extracted words, tokens, cost, duration, file size, response size, tables count, annotations count, links count, warnings count, and visual candidate count.
+
+Expected:
+
+- In a later phase, the ingestion pipeline should persist the useful extractor response details in a stable, UI-friendly shape.
+- Extraction Details should then show document-type-aware details using actual persisted data, not inferred or hardcoded values.
+- The UI should remain concise by default, with deeper extracted evidence available through expandable sections.
+
+Known Extractor Fields Not Fully Persisted Today:
+
+- Top-level fields such as `metadataConfidence`, `metadataSource`, `pageCount`, `contentMode`, `containsText`, `containsImages`, `imageCount`, `documentCategory`, `artifactType`, `visionConfigApplied`, and `extractionConfigApplied`.
+- Detailed arrays such as `images[]`, `visualCandidates[]`, `renderedPages[]`, `tables[]`, `annotations[]`, and `links[]`.
+- Detailed extraction stats such as `pagesProcessed`, `slidesProcessed`, `paragraphsExtracted`, `embeddedImagesExtracted`, `standaloneImagesDetected`, `renderedPagesGenerated`, `visualCandidatesReturned`, `tablesExtracted`, `annotationsExtracted`, `speakerNotesExtracted`, and `linksExtracted`.
+
+Impact:
+
+- Current Extraction Details is accurate for the persisted telemetry, but it cannot yet expose the full extractor evidence trail.
+- Users cannot inspect detailed extracted table rows, annotation/link targets, page-level visual candidates, or confidence/source metadata from the UI.
+- This is not blocking the current E2E cycle because the visible UI does not claim to show unavailable details.
+
+Suggested Fix:
+
+1. Extend the n8n ingestion final output contract to persist a stable `extractionDetails` / `extractionObservability` shape for useful extractor fields.
+2. Keep large raw payloads, binary data, and full `rawText` out of the UI-facing summary unless explicitly needed.
+3. Persist compact, bounded evidence details for tables, annotations, links, visual candidates, rendered pages, and document-level metadata.
+4. Update the Extraction Details modal to render the richer fields by document type.
+5. Add fallback handling for older ingestion rows that only contain compact counts.
+
+Retest:
+
+- Ingest representative PDF, DOCX, PPTX, image, transcript, API spec, and supporting-document artifacts.
+- Confirm the final ingestion output persists richer extractor metadata.
+- Confirm Extraction Details shows common fields consistently and document-specific fields only when relevant.
+- Confirm older artifacts with compact-only telemetry still render cleanly.
+
+## BUG-E2E-139: Clean Create Document Check Is Downgraded By Internal Validator Repairs
+
+Status: fixed - workflow patched and historical Backlog outputs repaired; pending next live Backlog create/update validation
+
+Severity: medium
+
+Area:
+
+- Generate Documents
+- Document Check modal
+- Final validation diagnostics
+- Registered-user E2E document generation
+
+Observed During:
+
+- Full E2E registered-user Test Strategy create run on 2026-06-08.
+- Project: `Astra Ecommerce`
+- Job: `PRO-260608-PB0K3R`
+- Document type: `test_strategy`
+- Also reproduced on Test Plan create-retry run after Confluence Fabric fix:
+  - Job: `PRO-260608-O5WAN6`
+  - Document type: `test_plan`
+  - Job completed, coverage passed, and Confluence publish succeeded.
+  - Final validation still stored `warning` / `repaired` because internal required sections were repaired before publish.
+
+What Happened:
+
+- Test Strategy generation completed successfully and the final validation payload was persisted.
+- Final validation status was `warning` / `repaired` because the validator repaired required sections:
+  - `Compliance, Security & Regulatory Considerations`
+  - `Tooling & Integration Landscape`
+  - `Communication & Governance Model`
+- The Document Check icon correctly showed an admin/support review state.
+- However, inside the Document Check modal, the issue detail rows displayed `[object Object]` instead of readable section names or descriptions.
+- The same modal also labeled the document state as `Not publish-safe`, even though the workflow had already repaired the sections and published the document to Confluence.
+- This was a first-time clean `Create` workflow, not an update, retry, or repair operation. Coverage passed and no user-facing document issue remained after generation.
+
+Expected:
+
+- For a first-time `Create` run where the job completed, coverage passed, Confluence publish succeeded, and no user-facing validation issue remains, the Document Check state should be green.
+- The modal should show `Validation passed`, `Publish-ready`, `Operation: Create`, and `Support review: Not required`.
+- Internal validator normalization/repair steps should stay in stored diagnostics for support, but should not downgrade the user-facing state when the final published output is valid.
+- Document Check modal should render validation issue objects into user-readable text.
+- If repair details are genuinely user-facing, for example an update-repair or unrepaired warning, the modal should show readable section names and clear sentences such as `Required section was repaired before publishing`.
+- The modal should never display raw JavaScript object stringification like `[object Object]`.
+- Repaired-and-published outputs should use wording such as `Published with support review` or `Published after repair` only when support review is truly required, not for clean Create runs.
+
+Impact:
+
+- The generated document and backend validation data are intact.
+- The UI makes the support review details look broken and unprofessional.
+- Users/admins cannot understand what support should review from the modal alone.
+- The `Not publish-safe` label can wrongly imply that the document was not published or should not have been published.
+- Clean successful Create runs appear amber/red to the user even when the user should see a green validation result.
+
+Suggested Fix:
+
+1. Update the user-facing Document Check status mapper to distinguish internal validator normalization from unresolved validation issues.
+2. For first-time Create runs with completed status, passed coverage, successful publish URL, and no blocking validation issue, show green `Validation passed`.
+3. Keep internal `required_section_repaired` diagnostics available to admins/support without showing them as user-facing repair/admin-review when final output is valid.
+4. Update the issue renderer to normalize object-shaped validation issues for cases where details are shown.
+5. Prefer fields such as `section`, `code`, `message`, `description`, and `details` when present.
+6. Add a safe fallback that JSON-stringifies unknown issue objects in a compact readable form, instead of using implicit object stringification.
+7. Split final validation states clearly:
+   - `passed` = publish-safe
+   - internal repaired clean create = publish-safe / validation passed
+   - `warning` / `repaired` with user-facing issue = published with support review
+   - `failed` = not publish-safe / blocked
+8. Retain the existing icon/status behavior.
+
+Retest:
+
+- Generate a first-time Test Strategy Create document where coverage passes and Confluence publish succeeds.
+- Confirm Document Check icon/modal show a green `Validation passed` state.
+- Confirm internal repaired-section diagnostics are not shown as a user-facing admin review for the clean Create case.
+- Generate or fixture a document with genuine user-facing final validation warnings.
+- Open Document Check from the output card and My Document Jobs card.
+- Confirm repaired section names are readable and no row shows `[object Object]`.
+
+Fix Applied:
+
+- 2026-06-08: Updated the Document Check UI mapper so published outputs with only internal `required_section_repaired` validation records display as green `Validation passed` / publish-ready instead of support-review/not-publish-safe.
+- 2026-06-08: Updated the issue renderer to display readable validation issue titles and messages, including repaired section names, instead of implicit `[object Object]` stringification.
+- 2026-06-08: Successful checks now show `Support details: Not required` even when backend diagnostics are retained for admin audit.
+- Verification: `npm.cmd run build` passed.
+
+## BUG-E2E-140: Test Plan Create Fails After Generation Checkpoint With Generic Failure And Lost Usage
+
+Status: fixed - live retry validation passed
+
+Severity: high
+
+Area:
+
+- Test Plan create workflow
+- Shared document generator failure handling
+- Failed job diagnostics
+- Token/cost usage persistence
+- Coverage warning handling
+
+Observed During:
+
+- Full E2E registered-user document generation cycle on 2026-06-08.
+- Project: `Astra Ecommerce`
+- Job: `PRO-260608-03F8F7`
+- Document type: `test_plan`
+- Operation: first-time `Create`
+
+What Happened:
+
+- The Test Plan job was queued and started normally.
+- The shared generator logged `GENERATOR_STARTED`.
+- The workflow then logged `QUALITY_GATE_PASSED` with generated usage:
+  - `word_count`: `2495`
+  - `tokens_input`: `3573`
+  - `tokens_output`: `5432`
+  - `tokens_total`: `9005`
+  - `estimated_cost_usd`: `$0.010120`
+- The same checkpoint metadata showed coverage was not fully green:
+  - `coverage_gate_status`: `warning`
+  - `coverage_ledger_count`: `11`
+  - `covered_ledger_count`: `9`
+  - `partial_ledger_count`: `2`
+  - `uncovered_ledger_count`: `2`
+- The final job then failed with a generic `SHARED_GENERATOR_FAILED` output:
+  - `message`: `Generation workflow failed before producing an output.`
+  - `failedAt`: `Shared generator subworkflow`
+  - `error`: `null`
+- The final `JOB_FAILED` metric did not persist the tokens/cost from the prior generation checkpoint.
+
+Expected:
+
+- A first-time Test Plan Create should either complete with a clear coverage review state or fail with actionable diagnostics.
+- If model generation already consumed tokens, failed job usage should be persisted in the standard usage shape and visible from the failed job card.
+- The final failed job output should preserve the real downstream failure reason, not only a generic shared subworkflow message.
+- If partial coverage is acceptable as amber, the workflow should publish/complete with coverage review.
+- If partial coverage is blocking for Create, the job should fail explicitly as a coverage/quality gate failure with the exact partial items.
+
+Impact:
+
+- User waited for the generation and incurred token/cost usage, but the job produced no document.
+- Retry/regenerate may repeat the same failure without a clear corrective signal.
+- Dashboard/Analytics can under-report failed generation cost because the final failed event lacks token/cost fields.
+- Support cannot diagnose the actual failure from `qa_jobs.error` or the generic failed output alone.
+
+Suggested Fix:
+
+1. Preserve the real subworkflow error in the parent worker failure output.
+2. Carry the latest known checkpoint token/cost usage into the final `JOB_FAILED` metric and `qa_jobs.output.tokenUsage`.
+3. Persist coverage summary/ledger details even when the job fails after generation.
+4. Clarify Test Plan Create coverage policy:
+   - amber partial coverage completes with coverage review, or
+   - blocking partial coverage fails with explicit `QUALITY_GATE_FAILED`.
+5. Ensure failed Test Plan Create cards show usage and actionable diagnostics.
+
+Fix Implemented:
+
+- 2026-06-08: Patched `fullRetrievalD01` with backup:
+  - `docs/test_data/n8n_workflow_backups/workflow_fullRetrievalD01_before_confluence_fabric_resilience_v1_20260608102831.json`
+- Root cause from n8n error export:
+  - Confluence returned HTTP `400`.
+  - Error: `Content contains unsupported extensions and cannot be edited in Fabric editor`.
+  - The failure was caused by Fabric-incompatible Confluence storage HTML, not auth, permissions, size, or rate limit.
+- Shared Confluence HTML hardening:
+  - Added final Fabric-safe sanitizer in `Convert MD -> Confluence Formatted HTML`.
+  - Converted amber coverage create/retry note from styled custom `div data-qops-coverage-review` to plain storage-safe HTML.
+  - Sanitizer removes or converts unsupported wrappers/attributes such as `data-qops-*`, inline `style`, `class`, `id`, custom `div`/`span`, font/script/embed/object/iframe, and extension-like Confluence tags before publish.
+- Shared Confluence update hardening:
+  - Added the same final storage sanitizer to `Update existing Document on Confluence` body construction.
+  - Routed failed update publishes from `Version Number > 1?` false branch into the existing Confluence failure handler.
+- Failure diagnostics and usage persistence:
+  - `Upload Document on Confluence` and `Update existing Document on Confluence` now use retry/backoff and `continueRegularOutput`, allowing real publish failures to be logged instead of being masked as a parent `SHARED_GENERATOR_FAILED`.
+  - `LOG: Confluence Job Failed` now records `CONFLUENCE_PUBLISH_FAILED`, HTTP code/raw error, final validation diagnostics, word count, token usage, and estimated cost.
+  - `Update Job Status as Failed` now persists standard `output.tokenUsage`, top-level token/cost aliases, coverage summary/ledger, batch summary, and actionable Confluence diagnostics.
+
+Out of Scope:
+
+- Full generation checkpoint/cache resume was not implemented in this fix. A retry can still regenerate AI content until the cross-document checkpoint cache is added.
+
+Verification:
+
+- Active workflow timestamp updated to `2026-06-08T10:28:31.036Z`.
+- Converter JavaScript syntax check passed.
+- Verified active workflow contains `sanitizeConfluenceStorageHtml`.
+- Verified styled `data-qops-coverage-review` create block is removed.
+- Verified Confluence POST/PUT nodes have retry and `continueRegularOutput`.
+- Verified update publish failure route is connected to `Merge6`.
+- Verified failed job status body contains `tokenUsage` and `httpCode`.
+
+Live Retest:
+
+- 2026-06-08: Clicked Regenerate/Retry for failed Test Plan job `PRO-260608-03F8F7`.
+- New retry job: `PRO-260608-O5WAN6`.
+- Supabase final status: `completed`.
+- n8n metric sequence:
+  - `JOB_RETRIED`
+  - `JOB_STARTED`
+  - `GENERATOR_STARTED`
+  - `QUALITY_GATE_PASSED`
+  - `JOB_COMPLETED`
+- Confluence publish succeeded:
+  - Page ID: `27754517`
+  - URL: `https://anujalhans1.atlassian.net/wiki/spaces/QD/pages/27754517/Test+Plan+-+Astra+Ecommerce`
+- Previous Confluence Fabric error did not recur.
+- Usage persisted in standard shape:
+  - input tokens: `3,573`
+  - output tokens: `6,132`
+  - total tokens: `9,705`
+  - estimated cost: `$0.011240`
+- Coverage passed:
+  - `coverageLedgerCount = 10`
+  - `coveredCount = 10`
+  - `missingCount = 0`
+  - `partialCount = 0`
+  - `gateStatus = passed`
+- Remaining non-blocking UI/document-check gap:
+  - final validation stored `warning` / `repaired` due to internal required-section repair.
+  - This is tracked separately under `BUG-E2E-139`.
+
+Retest:
+
+- Trigger Test Plan Create for `Astra Ecommerce`.
+- If the document is valid/amber, confirm Confluence publish succeeds and Coverage Review shows the partial items.
+- If it fails, confirm failed job output includes exact failure cause, coverage details, and usage/cost.
+- Confirm Analytics includes failed generation spend and does not treat the failed run as a successful output.
+
+## BUG-E2E-141: Epics & User Stories Output Uses Legacy Top-Level Usage Fields Instead Of Standard tokenUsage Shape
+
+Status: fixed - workflow patched and historical Backlog outputs repaired; pending next live Backlog create/update validation
+
+Severity: low
+
+Area:
+
+- Epics & User Stories generation
+- Backlog workflow output shape
+- Usage Details modal consistency
+- Dashboard and Analytics data normalization
+
+Observed During:
+
+- Full E2E registered-user Epics & User Stories create run on 2026-06-08.
+- Project: `Astra Ecommerce`
+- Job: `PRO-260608-RE95WM`
+- Document type: `user_stories`
+
+What Happened:
+
+- The job completed successfully.
+- Jira publishing succeeded:
+  - `6` epics created
+  - `18` user stories created
+- Coverage gate passed:
+  - `coverageLedgerCount = 6`
+  - `coveredCount = 6`
+  - `missingCount = 0`
+  - `partialCount = 0`
+- Usage was recorded in metrics and top-level output aliases:
+  - `tokensInput = 21993`
+  - `tokensOutput = 19222`
+  - `tokensTotal = 41215`
+  - `estimatedCostUsd = 0.039552`
+- However, `qa_jobs.output.tokenUsage` was `null`.
+- Newer shared document/STC output paths use the standard nested shape:
+  - `output.tokenUsage.input`
+  - `output.tokenUsage.output`
+  - `output.tokenUsage.total`
+  - `output.tokenUsage.estimatedCostUsd`
+
+Expected:
+
+- All document-generation workflows should persist usage in the same standard shape.
+- Epics & User Stories should keep backward-compatible top-level aliases if needed, but should also persist:
+  - `output.tokenUsage.input`
+  - `output.tokenUsage.output`
+  - `output.tokenUsage.total`
+  - `output.tokenUsage.estimatedCostUsd`
+  - `output.tokenUsage.source`
+- Usage Details, Dashboard, Analytics, and failed/recovered job cards should not need document-type-specific fallbacks for core token/cost display.
+
+Impact:
+
+- Analytics currently works because `qa_job_metrics` contains the usage values.
+- Some UI paths may still need fallback logic for Epics & User Stories usage display.
+- Inconsistent output shapes increase regression risk when usage, savings, recovery, or admin diagnostics are extended.
+- Support/debugging is less predictable because the same usage concept is stored differently across document types.
+
+Suggested Fix:
+
+1. Patch only the Epics & User Stories/backlog completion output path.
+2. Add `output.tokenUsage` using the standard shape while preserving existing top-level aliases for backward compatibility.
+3. Ensure retry/update paths also write the same shape.
+4. Smoke test with existing output shape and one live or pinned backlog run.
+5. Confirm Usage Details, Dashboard, and Analytics still read the same totals without duplicate counting.
+
+Fix Implemented:
+
+- 2026-06-09: Patched active Epics & User Stories n8n workflow `Vwc6c8ehsRTF8svG`.
+- Backup created before patching:
+  - `docs/test_data/n8n_workflow_backups/workflow_Vwc6c8ehsRTF8svG_before_backlog_standard_token_usage_v1_20260609053244.json`
+- Scope was limited to `Return Team Managed Professional Result`.
+- The final Backlog output now writes canonical `output.tokenUsage` with:
+  - `input`,
+  - `output`,
+  - `total`,
+  - `tokensInput`,
+  - `tokensOutput`,
+  - `tokensTotal`,
+  - `estimatedCostUsd`,
+  - `source`.
+- Existing top-level compatibility aliases remain unchanged:
+  - `tokensInput`,
+  - `tokensOutput`,
+  - `tokensTotal`,
+  - `estimatedCostUsd`.
+- No Jira create/reuse/link, Confluence publish, validation, coverage, prompt, or create-path business logic was changed.
+
+Data Repair:
+
+- Historical completed Backlog rows with existing legacy token/cost aliases and missing `output.tokenUsage` were backfilled.
+- Exact E2E job `PRO-260608-RE95WM` now has:
+  - `output.tokenUsage.input = 21993`,
+  - `output.tokenUsage.output = 19222`,
+  - `output.tokenUsage.total = 41215`,
+  - `output.tokenUsage.estimatedCostUsd = 0.039552`.
+
+Verification:
+
+- Active workflow readback confirms:
+  - `updatedAt = 2026-06-09T05:32:44.105Z`,
+  - `Return Team Managed Professional Result` contains the canonical `tokenUsage` block,
+  - the final returned JSON includes `tokenUsage`.
+- Supabase repair returned `PRO-260608-RE95WM` with populated `output.tokenUsage`.
+
+Retest:
+
+- Trigger or retry an Epics & User Stories job.
+- Confirm `qa_jobs.output.tokenUsage.total` equals the recorded `tokensTotal`.
+- Confirm `qa_jobs.output.tokenUsage.estimatedCostUsd` equals `estimatedCostUsd`.
+- Confirm `qa_job_metrics` still records token/cost values once per terminal completion event.
+- Confirm Usage Details modal displays tokens/cost without relying only on legacy aliases.
+
+## BUG-E2E-142: RTM Create Can Fail Contract Validation By Inventing Risk IDs Outside RTM Context
+
+Status: closed - live RTM retry validation passed
+
+Severity: high
+
+Area:
+
+- Requirement Traceability Matrix create workflow
+- Shared document generator quality contract
+- RTM prompt/validator alignment
+- Failed RTM retry resilience
+
+Observed During:
+
+- Full E2E registered-user RTM create run on 2026-06-08.
+- Project: `Astra Ecommerce`
+- Job: `PRO-260608-7SK6HV`
+- Document type: `traceability_matrix`
+- Operation: first-time `Create`
+
+What Happened:
+
+- RTM prerequisite context was available and healthy:
+  - `6` epics
+  - `18` stories
+  - `279` story-testcase links
+  - `0` stories without test cases
+- Coverage gate passed:
+  - `coverageLedgerCount = 7`
+  - `coveredCount = 7`
+  - `missingCount = 0`
+  - `partialCount = 0`
+  - `gateStatus = passed`
+- Token/cost usage was persisted in the standard shape:
+  - input tokens: `41,807`
+  - output tokens: `4,111`
+  - total tokens: `45,918`
+  - estimated cost: `$0.0233`
+- The job still failed before Confluence publish with:
+  - `error = Quality Gate Failed`
+  - `QUALITY_GATE_FAILED.error_message = RTM Contract Failed - Risk IDs are not available in the RTM context and must not be invented. [line 599]`
+- No Confluence URL was produced.
+
+Expected:
+
+- RTM Create should generate a valid two-layer RTM using only available context:
+  - Requirements to Epics/User Stories
+  - User Stories to Generated Test Cases
+- If Risk IDs are not present in RTM context, the generated RTM must not include a Risk ID column or fabricated risk references.
+- The quality contract should continue blocking invalid fabricated IDs, but the prompt/output shaping should prevent the model from producing them in the first place.
+- Retry should have a high probability of success without requiring unrelated changes to backlog or STC outputs.
+
+Impact:
+
+- User can have complete upstream backlog and STC data, but RTM Create can still fail after consuming tokens.
+- The job does not publish to Confluence even though coverage itself passed.
+- Retrying may repeat the same generation instability unless the RTM prompt/post-processing path removes or forbids unsupported risk fields more deterministically.
+- E2E readiness is blocked for the RTM create path.
+
+Suggested Fix:
+
+1. Patch the RTM generation path only.
+2. Strengthen prompt and/or post-generation sanitizer so RTM output cannot include `Risk ID` columns when no real risk IDs exist in `traceabilityContext`.
+3. If risk traceability is desired later, require explicit real risk IDs from a Risk Matrix context source before enabling any risk column.
+4. Keep the validator strict so fabricated Risk IDs remain blocked.
+5. Preserve current two-layer RTM behavior and do not alter working backlog/STC prerequisite retrieval.
+
+Fix Implemented:
+
+- 2026-06-08: Patched active workflow `fullRetrievalD01` with backup:
+  - `docs/test_data/n8n_workflow_backups/workflow_fullRetrievalD01_before_rtm_no_risk_ids_v1_20260608132202.json`
+- Scope was limited to RTM generation/quality gate handling.
+- `Prompt Library` now explicitly instructs RTM generation not to write the phrase `Risk ID` or include any risk identifier column when risk IDs are not present in the RTM context.
+- `Quality Gate` now applies an RTM-only sanitizer before contract validation:
+  - removes unsupported `Risk ID` / `Risk IDs` / risk identifier table columns,
+  - removes invented `RSK-*` tokens from narrative text,
+  - preserves the rest of the RTM table structure.
+- RTM contract validation remains strict for actual risk identifier columns or invented `RSK-*` values after sanitization.
+
+Verification:
+
+- Active `fullRetrievalD01` readback shows `updatedAt = 2026-06-08T13:22:02.895Z`.
+- JavaScript syntax check passed for patched nodes:
+  - `Prompt Library`
+  - `Quality Gate`
+  - `Validate AI Agent Output`
+- Focused sanitizer smoke test passed:
+  - sample `Risk ID` table column was removed,
+  - invented `RSK-*` narrative token was removed,
+  - remaining RTM columns were preserved.
+
+Live Retest:
+
+- 2026-06-08: Triggered RTM retry after the fix.
+- New job: `PRO-260608-4BR67Z`.
+- Retry of failed job: `PRO-260608-7SK6HV`.
+- Supabase final status: `completed`.
+- n8n metric sequence:
+  - `JOB_RETRIED`
+  - `JOB_STARTED`
+  - `GENERATOR_STARTED`
+  - `QUALITY_GATE_PASSED`
+  - `JOB_COMPLETED`
+- Previous RTM Risk ID contract failure did not recur.
+- Confluence publish succeeded:
+  - URL: `https://anujalhans1.atlassian.net/wiki/spaces/QD/pages/27983907/Traceability+Matrix+-+Astra+Ecommerce`
+- Coverage passed:
+  - `coverageLedgerCount = 7`
+  - `coveredCount = 7`
+  - `missingCount = 0`
+  - `partialCount = 0`
+  - `gateStatus = passed`
+- Final validation passed:
+  - `status = passed`
+  - `structuralStatus = passed`
+  - `issues = []`
+- Usage persisted in standard shape:
+  - input tokens: `41,879`
+  - output tokens: `3,551`
+  - total tokens: `45,430`
+  - estimated cost: `$0.022433`
+- Stored output text check passed:
+  - no `Risk ID` phrase,
+  - no `RSK-*` invented risk token.
+
+Residual Observation:
+
+- The RTM published URL is stored under `output.url`, while `output.confluenceUrl` and `output.documentUrl` are null for this job.
+- This did not block publish or Usage/Coverage validation, but output URL field normalization may be worth a separate cleanup if the UI depends on one canonical URL property.
+
+Retest:
+
+- Trigger RTM Create for `Astra Ecommerce` after the fix.
+- Confirm the job completes and publishes to Confluence.
+- Confirm `coverageSummary.gateStatus = passed`.
+- Confirm the RTM document does not contain fabricated Risk ID values or a Risk ID column unless real risk IDs are present in the supplied context.
+- Confirm Usage Details, Coverage Review, Document Check, Dashboard, and Analytics reflect the successful RTM run.
+
+## BUG-E2E-143: RTM Coverage Review Can Display Story Jira Keys As Epics
+
+Status: closed - UI mapping fix build validated
+
+Severity: medium
+
+Area:
+
+- Dashboard Coverage Review modal
+- RTM traceability layer presentation
+- Requirement-to-Epic/Story mapping
+
+Observed During:
+
+- Full E2E registered-user RTM retry validation on 2026-06-08.
+- Project: `Astra Ecommerce`
+- Job: `PRO-260608-4BR67Z`
+- Document type: `traceability_matrix`
+
+What Happened:
+
+- The RTM job completed successfully with coverage passed.
+- Coverage Review displayed `KAN-1400` under the `EPIC` column for requirement `BR-AUTH-07`.
+- `KAN-1400` is a User Story, not an Epic.
+- The correct parent Epic for `KAN-1400` is `KAN-1397`.
+- Some requirement rows also showed all stories under an epic even when the RTM coverage note referenced one specific story.
+- Follow-up observation after the first fix:
+  - the Layer 1 header did not show the expected `6` Epic count,
+  - row-level story counts became too narrow because they displayed only explicitly mentioned Story keys instead of the full Story coverage under the mapped Epic.
+
+Expected:
+
+- RTM Coverage Review Layer 1 should never classify a Story Jira key as an Epic.
+- If the coverage note references a Story key, the UI should resolve that Story through the latest completed Epics & User Stories output and display its parent Epic.
+- If specific Story keys are referenced, the row should show those mapped Stories rather than every Story under the parent Epic.
+- If no specific Story key is available, falling back to all Stories under the matched Epic is acceptable.
+
+Root Cause:
+
+- `buildRtmTraceabilityLayers` extracted Jira keys from RTM coverage notes, but when it could not match an Epic key directly, it fell back to `explicitKeys[0]` as the Epic key.
+- For rows where the note only contained a Story key, that Story key was displayed in the Epic column.
+- Once an Epic was found, the UI always displayed all Stories under that Epic instead of preferring explicitly referenced Story keys.
+
+Fix Implemented:
+
+- 2026-06-08: Patched `src/pages/DashboardPage.tsx`.
+- Added explicit Epic and Story key maps from the latest completed backlog output.
+- Requirement rows now:
+  - separate explicit Epic keys from explicit Story keys,
+  - resolve explicit Story keys to their parent Epic,
+  - display full Story coverage under the mapped Epic,
+  - retain a small direct Story hint when the RTM row explicitly referenced a specific Story key.
+- Layer 1 header now displays separate aggregate counts:
+  - requirements,
+  - Epics,
+  - Stories.
+
+Verification:
+
+- `npm.cmd run build` passed.
+- Verified `KAN-1400` maps to parent Epic `KAN-1397` in the latest completed backlog output.
+- Verified second build after aggregate-count correction passed.
+
+## BUG-E2E-144: Story Test Cases Analytics Row Misses Cost Tokens Duration Because Completion Metric Is Not Analytics-Ready
+
+Status: closed
+
+Severity: medium
+
+Area:
+
+- Analytics page
+- Document Type Analytics
+- Story Test Cases completion metrics
+- `qa_job_metrics`
+- `qa_jobs.output.tokenUsage`
+
+Observed During:
+
+- Full E2E registered-user document generation cycle on 2026-06-08.
+- Project: `Astra Ecommerce`
+- Job: `STC-260608-JXHMX3`
+- Document type: `story_test_cases`
+
+What Happened:
+
+- Story Test Cases completed successfully after a long-running generation and Jira publishing flow.
+- Analytics `Output performance by deliverable` displayed the Story Test Cases row with:
+  - `Deliverables = 1`
+  - `Success = 100%`
+  - `Coverage = Coverage Needs Review`
+  - `Reliability = -`
+  - `Avg Cost = US$0`
+  - `Avg Duration = -`
+  - `Tokens = 0`
+- Supabase verification showed the STC job itself has valid usage in `qa_jobs.output.tokenUsage`:
+  - input tokens: `88,340`
+  - output tokens: `127,145`
+  - total tokens: `215,485`
+  - estimated cost: `$0.238772`
+- Supabase verification also showed `qa_job_metrics` has a `JOB_COMPLETED` row for the same STC job with the correct token/cost values, but the row is not analytics-ready:
+  - `requested_by = null`
+  - `duration_ms = 0`
+
+Expected:
+
+- Story Test Cases should appear in Analytics with the same complete KPI treatment as other generated deliverables.
+- STC terminal `JOB_COMPLETED` metrics should persist:
+  - `requested_by`
+  - `project_id`
+  - `document_type`
+  - positive `duration_ms`
+  - `tokens_input`
+  - `tokens_output`
+  - `tokens_total`
+  - `estimated_cost_usd`
+- Analytics should display the actual STC cost, token total, and duration instead of zero/blank values.
+
+Impact:
+
+- Analytics under-reports STC generation spend and token usage even though the job consumed significant tokens and cost.
+- Registered-user Analytics cannot reliably calculate STC reliability and average duration.
+- E2E validation of Dashboard/Analytics is misleading because the most expensive document type appears as `US$0` and `0` tokens.
+- This can hide real production cost and performance characteristics for long-running Story Test Cases jobs.
+
+Suggested Fix:
+
+1. Patch the STC completion metric writer so terminal `JOB_COMPLETED` rows include `requested_by` and a real positive `duration_ms`.
+2. Keep `qa_jobs.output.tokenUsage` as the canonical output usage payload.
+3. Ensure `qa_job_metrics` mirrors the same token/cost values once per terminal completion event.
+4. Add a defensive Analytics fallback from `qa_jobs.output.tokenUsage` only when metric rows are incomplete, without double-counting.
+5. Re-run Analytics smoke using `STC-260608-JXHMX3` or the next STC job.
+
+Fix Implemented:
+
+- 2026-06-09: Patched active Story Test Cases generator workflow `SG7khcKlhHst48WH`.
+- Backup created before patching:
+  - `docs/test_data/n8n_workflow_backups/workflow_SG7khcKlhHst48WH_before_stc_completion_metric_attribution_v1_20260609045530.json`
+  - `docs/test_data/n8n_workflow_backups/workflow_SG7khcKlhHst48WH_before_stc_completion_metric_attribution_v1_20260609045852.json`
+- Scope was limited to STC terminal analytics metrics.
+- Updated `LOG: Direct Story Test Case Job Completed` so future direct STC completion metrics include:
+  - `requested_by`,
+  - `project_id`,
+  - positive elapsed `duration_ms`,
+  - standard token/cost fields,
+  - existing STC metadata such as story count, test case count, mapping count, coverage status, and repair targets.
+- Added `Repair Direct Story Test Case Completion Metric Attribution` after `Mark Direct Story Test Case Job Completed`.
+- This repair node only patches missing attribution on the just-completed STC terminal metric and then returns the existing STC result.
+- No STC planning, Jira create/update/link, coverage, or output-generation nodes were changed.
+
+Data Repair:
+
+- Repaired existing STC `JOB_COMPLETED` metric rows that already had token/cost usage but had missing `requested_by` or non-positive `duration_ms`.
+- Duration was calculated from each job's `JOB_STARTED` metric timestamp to the `JOB_COMPLETED` metric timestamp, avoiding unreliable historical `qa_jobs.updated_at` values.
+- Last validated STC job `STC-260608-JXHMX3` now has:
+  - `requested_by = 3ce66bbc-2959-43fb-8bb0-4456180f37f6`,
+  - `project_id = 8ba24d46-c5e9-4286-9826-4c1b530c8b1f`,
+  - `duration_ms = 4,198,257`,
+  - `tokens_total = 215,485`,
+  - `estimated_cost_usd = 0.238772`.
+
+Verification:
+
+- n8n MCP confirms `SG7khcKlhHst48WH` is active and updated at `2026-06-09T04:58:52.640Z`.
+- Active workflow now routes:
+  - `Mark Direct Story Test Case Job Completed`
+  - `Repair Direct Story Test Case Completion Metric Attribution`
+  - `Return Direct Story Test Case Result`.
+- Registered-user/project-scoped metric verification now includes Story Test Cases:
+  - STC completed rows: `1`,
+  - STC tokens: `215,485`,
+  - STC cost: `0.238772`,
+  - STC average duration: `4,198,257 ms`.
+- Pipeline-level scoped generation totals now include STC:
+  - completed generation rows: `6`,
+  - generation tokens: `328,445`,
+  - generation cost: `0.330770`,
+  - average generation duration: `795,847 ms`.
+
+Out of Scope:
+
+- The broader Analytics fallback from `qa_jobs.output.tokenUsage` was not added because the terminal metric is now analytics-ready. This keeps the fix smaller and avoids double-counting risk.
+
+Retest:
+
+- Trigger or inspect a completed Story Test Cases job.
+- Confirm `qa_job_metrics.JOB_COMPLETED.requested_by` is populated.
+- Confirm `qa_job_metrics.JOB_COMPLETED.duration_ms > 0`.
+- Confirm Analytics shows non-zero STC tokens and cost.
+- Confirm Analytics average duration is displayed for Story Test Cases.
+- Confirm totals are not double-counted if both `qa_job_metrics` and `qa_jobs.output.tokenUsage` contain usage.
+
+## BUG-E2E-145: Shared Document Update Stores Conflicting Delta/Repair And Coverage Metadata
+
+Status: closed - live shared-doc update validation passed
+
+Severity: medium
+
+Area:
+
+- Test Strategy update workflow
+- Test Plan update workflow
+- Risk Matrix update workflow
+- Shared document delta update metadata
+- Update Summary modal
+- Coverage Review modal
+- `qa_jobs.output`
+- `qa_job_metrics.metadata`
+
+Observed During:
+
+- Full E2E registered-user document update cycle on 2026-06-09.
+- Project: `Astra Ecommerce`
+- Previous create job: `PRO-260608-PB0K3R`
+- Update job: `PRO-260609-7VNPGF`
+- Document type: `test_strategy`
+- Confirmed again during Test Plan update:
+  - Previous create/retry job: `PRO-260608-O5WAN6`
+  - Update job: `PRO-260609-XUW454`
+  - Document type: `test_plan`
+- Confirmed again during Risk Matrix update:
+  - Previous create job: `PRO-260608-7RZQCU`
+  - Update job: `PRO-260609-IQP140`
+  - Document type: `risk_matrix`
+
+What Happened:
+
+- The previous Test Strategy coverage was fully passed with 7 of 7 coverage ledger rows covered.
+- The update job completed successfully and top-level final output showed:
+  - `coverageSummary.gateStatus = passed`
+  - `batchSummary.total = 7`
+  - `batchSummary.covered = 7`
+  - `finalValidation.status = passed`
+  - `finalValidation.mergeGuard = passed`
+- However, nested/intermediate metadata still contained stale pre-merge values:
+  - `output.qualityGate.coverageGate = warning`
+  - `output.qualityGate.batchSummary.total = 0`
+  - `output.qualityGate.batchSummary.progressPercent = 0`
+- The update summary and completion metrics also disagreed on operation mode:
+  - `output.updateSummary.operationMode = update_repair`
+  - completion diagnostics reported `operationMode = update_delta`
+  - UI displayed `Repair update completed` even though the previous coverage was green and the update should be communicated as a delta update.
+- The same pattern was confirmed for Test Plan update `PRO-260609-XUW454`:
+  - top-level final coverage was `passed` with 10 of 10 coverage rows covered,
+  - nested `output.qualityGate.coverageGate = warning`,
+  - nested `output.qualityGate.batchSummary.total = 0`,
+  - UI displayed `Repair update completed`,
+  - final diagnostics reported `operationMode = update_delta`.
+- Risk Matrix update `PRO-260609-IQP140` did not have stale nested coverage, but still had the same operation-mode contradiction:
+  - `output.updateSummary.operationMode = update_repair`,
+  - completion metric `operation_mode = update_repair`,
+  - final validation diagnostics `operationMode = update_delta`.
+
+Expected:
+
+- A clean previous Test Strategy with passed coverage should display and persist a consistent `update_delta` operation unless a real repair condition exists.
+- Final top-level coverage state and nested `qualityGate`/`updateSummary` state should not contradict each other after merge.
+- Coverage Review, Update Summary, Document Check, admin diagnostics, and Analytics should all read consistent terminal metadata.
+
+Impact:
+
+- Users may see a misleading `Repair update completed` label for a normal delta update.
+- Admin diagnostics can falsely imply coverage was warning or unparsed even when the final merged document passed 7/7 coverage.
+- Future UI components that read nested `qualityGate` before top-level final fields may show incorrect coverage state.
+
+Suggested Fix:
+
+1. After shared delta merge, normalize terminal metadata so `qualityGate`, `coverageSummary`, `batchSummary`, `updateSummary`, and completion metric metadata reflect the same final merged result.
+2. Only set `operationMode = update_repair` when the previous output actually had missing/partial/warning coverage or a structural repair condition.
+3. For green previous coverage and successful selective patch, persist and display `update_delta`.
+4. Add a smoke assertion that top-level and nested coverage states match for shared document update jobs.
+
+Retest:
+
+- Trigger Test Strategy, Test Plan, and Risk Matrix Update Document after green previous outputs.
+- Confirm Update Summary says `Delta update completed`.
+- Confirm `output.qualityGate.coverageGate`, `output.coverageSummary.gateStatus`, `output.batchSummary.gateStatus`, and completion metric `coverage_gate_status` are all `passed`.
+- Confirm Coverage Review shows 7/7 covered and no stale zero-ledger warning.
+
+Fix Applied:
+
+- 2026-06-09: Patched active `fullRetrievalD01` shared update workflow with `scripts/patch_shared_doc_update_integrity_v1.cjs`.
+- Removed token-usage based `update_repair` heuristic so high update token usage no longer changes a clean delta update into repair.
+- Future shared update job outputs suppress stale nested `qualityGate` metadata after final merge and use final published-body coverage for completion metadata.
+- 2026-06-09: Follow-up patch `scripts/patch_shared_doc_update_integrity_v2.cjs` normalizes carried-forward final coverage into `updateSummary.coverageSummary` for no-change shared updates.
+
+Closure Evidence:
+
+- 2026-06-09: Live shared-doc update validation passed for:
+  - Test Strategy `PRO-260609-YFR73Y`: completed, `operationMode = update_delta`, coverage passed `7/7`, final validation passed.
+  - Test Plan `PRO-260609-G617ZD`: completed, `operationMode = update_delta`, coverage passed `10/10`, final validation passed.
+  - Risk Matrix `PRO-260609-EN58QS`: completed, `operationMode = update_delta`, coverage passed `10/10`, final validation passed.
+
+## BUG-E2E-146: Shared Document Delta Update Rewrites Sections Marked Preserved
+
+Status: fixed_pending_validation
+
+Severity: high
+
+Area:
+
+- Test Strategy update workflow
+- Test Plan update workflow
+- Shared document merge logic
+- Delta update contract
+- Confluence page update
+- Update Summary modal
+
+Observed During:
+
+- Full E2E registered-user document update cycle on 2026-06-09.
+- Project: `Astra Ecommerce`
+- Previous create export: `Test+Strategy+-+Astra+Ecommerce.doc`
+- Delta update export: `Test+Strategy+-+Astra+Ecommerce_Delta_Update.doc`
+- Update job: `PRO-260609-7VNPGF`
+- Confirmed again during Test Plan update comparison:
+  - Previous create export: `Test+Plan+-+Astra+Ecommerce.doc`
+  - Delta update export: `Test+Plan+-+Astra+Ecommerce_delta_update.doc`
+  - Update job: `PRO-260609-XUW454`
+
+What Happened:
+
+- Update Summary reported:
+  - 4 updated sections
+  - 9 preserved sections
+  - 0 removed sections
+- Reported updated sections were:
+  - `Testing Scope`
+  - `Strategic Testing Approach`
+  - `Risk-Based Testing & Mitigation Strategy`
+  - `Appendix / Coverage Ledger`
+- Export comparison showed additional sections marked as preserved were still changed in wording/content:
+  - `Introduction & Context`
+  - `Automation Strategy & Roadmap`
+  - `Test Environment & Infrastructure Strategy`
+  - `Test Data Management Strategy`
+  - `Quality Metrics & Reporting Framework`
+- Some claimed updated sections did not materially change in the export comparison, while some claimed preserved sections did.
+- Test Plan comparison showed the same issue:
+  - Update Summary reported 5 updated sections and 13 preserved sections.
+  - Sections marked preserved but materially changed included:
+    - `Test Strategy`
+    - `Entry and Exit Criteria`
+    - `Test Schedule and Milestones`
+    - `Test Environment`
+    - `Roles and Responsibilities`
+    - `Suspension & Resumption Criteria`
+  - `Test Data and Configurations` was listed as updated, but the exported text was unchanged from the previous document.
+  - Some placeholder repaired sections in the previous document were expanded or renumbered during the update while still counted as preserved.
+- Risk Matrix comparison showed the same issue:
+  - Update Summary reported 3 updated sections and 5 preserved sections.
+  - Preserved sections changed structurally and/or textually:
+    - `Executive Summary` expanded from 755 words to 1441 words.
+    - `Top Critical Risks Analysis` was renamed/expanded to `Top 5 Critical Risks Analysis`.
+    - `Linkage to Test Strategy Alignment` changed heading level from `h2` to `h1`.
+  - `Coverage Ledger` was listed as updated but changed heading level from `h2` to `h3` and lost prior coverage rows.
+  - The exported document added `Delta Update Summary` as a visible document section, increasing end-user noise.
+
+Expected:
+
+- Sections listed as preserved should remain textually and structurally unchanged after a delta update, except for harmless Confluence export formatting noise.
+- If a section is rewritten, reworded, has a table added/removed, or has material language changes, it should be listed under updated/added rather than preserved.
+- Update Summary should reflect the actual merged document diff, not only the AI patch intent.
+
+Impact:
+
+- Users cannot trust the Update Summary to understand what changed.
+- Delta update may unintentionally rewrite stable document content and create review burden.
+- Token/cost savings become less meaningful if preserved sections are regenerated or altered.
+- Auditability is weakened because the declared change impact does not match the exported document.
+
+Suggested Fix:
+
+1. Add a post-merge diff guard for shared document updates that compares canonical sections before and after merge.
+2. Reclassify changed preserved sections as updated before saving `updateSummary`.
+3. Prevent untouched sections from being overwritten by AI patch content during merge.
+4. Treat table count changes in preserved sections as material changes.
+5. Keep the fix shared across Test Strategy, Test Plan, and Risk Matrix update paths.
+
+Retest:
+
+- Run Test Strategy, Test Plan, and Risk Matrix updates against previously green documents.
+- Export before and after documents.
+- Confirm only sections listed as updated/added have material text or table changes.
+- Confirm preserved sections remain stable.
+
+Fix Applied:
+
+- 2026-06-09: Patched active `fullRetrievalD01` shared update merge logic to apply only sections explicitly listed as updated/added/needs-review, plus Coverage Ledger.
+- Disabled full-patch replacement when existing Confluence content is available, so preserved sections are not overwritten by generated patch content.
+
+## BUG-E2E-147: Shared Document Table Rendering Differs Between Confluence Page And Word Export
+
+Status: fixed_pending_validation
+
+Severity: medium
+
+Area:
+
+- Test Strategy Confluence publishing
+- Test Plan Confluence publishing
+- Shared document HTML conversion
+- Confluence Word export fidelity
+- Table rendering
+
+Observed During:
+
+- Full E2E registered-user document update cycle on 2026-06-09.
+- Project: `Astra Ecommerce`
+- Previous create export: `Test+Strategy+-+Astra+Ecommerce.doc`
+- Delta update export: `Test+Strategy+-+Astra+Ecommerce_Delta_Update.doc`
+- User observed Confluence page view did not visibly show tables that appeared in the Word export, especially around Testing Scope.
+- Test Plan delta export comparison also showed table/structure movement in sections marked preserved:
+  - previous placeholder `Test Schedule and Milestones` had no table,
+  - updated numbered `6. Test Schedule and Milestones` had a table,
+  - this section was still counted as preserved in Update Summary.
+- Risk Matrix delta export comparison also showed table/structure drift:
+  - previous export had 4 tables and 39 table rows,
+  - delta update export had 3 tables and 27 table rows,
+  - table/row reduction was not surfaced as removed or structurally changed content in Update Summary.
+
+What Happened:
+
+- The Confluence Word export contains table markup such as `confluenceTable`, `confluenceTh`, and `confluenceTd`.
+- The create export contained a `Testing Scope` table.
+- The delta update export no longer contained a table inside `Testing Scope`, even though other tables still existed in later sections.
+- User reported a mismatch where exported Word output showed more tables than the live Confluence page appeared to show.
+
+Expected:
+
+- Tables visible in Confluence page view should match tables present in Word export.
+- If delta update removes or converts a table, that table change should be intentional and reflected in Update Summary.
+- Shared document sanitizer/converter should not create hidden, export-only, or visually collapsed table structures.
+
+Impact:
+
+- Users may see different document structure depending on whether they view Confluence or export to Word.
+- Professional document review becomes unreliable because tables may appear missing in one representation.
+- Delta update can silently degrade table-based sections such as Testing Scope or Quality Metrics.
+
+Suggested Fix:
+
+1. Compare Confluence storage HTML, Confluence rendered view, and exported Word HTML for the same page version.
+2. Ensure shared document table conversion uses Confluence-supported table markup that renders visibly in page view and export.
+3. Add table-preservation checks for shared document delta updates.
+4. If a section table is removed during update, classify the section as updated and show that in Update Summary.
+
+Retest:
+
+- Generate or update Test Strategy.
+- Confirm table count by canonical section is consistent between Confluence page view and Word export.
+- Confirm Testing Scope table behavior is intentional and visible.
+
+Fix Applied:
+
+- 2026-06-09: Patched shared update merge path to preserve existing sections and table structures unless the section is explicitly part of the delta patch.
+- Existing Confluence-safe sanitizer remains in place for publish/update paths.
+
+## BUG-E2E-148: Update Summary Stores Cost Saved But Does Not Display It
+
+Status: closed - live update savings display metadata validated
+
+Severity: low
+
+Area:
+
+- Update Summary modal
+- Shared document update UX
+- Usage and estimated savings panel
+- Test Strategy update
+- Test Plan update
+
+Observed During:
+
+- Full E2E registered-user document update cycle on 2026-06-09.
+- Project: `Astra Ecommerce`
+- Test Strategy update job: `PRO-260609-7VNPGF`
+- Test Plan update job: `PRO-260609-XUW454`
+- Risk Matrix update job: `PRO-260609-IQP140`
+
+What Happened:
+
+- `qa_jobs.output.updateSummary.tokenSavings` persisted both token and cost savings.
+- Test Strategy stored:
+  - `estimatedTokensSaved = 820`
+  - `estimatedSavingsPercent = 8`
+  - `estimatedCostSavedUsd = 0.003484`
+- Test Plan stored:
+  - `estimatedTokensSaved = 497`
+  - `estimatedSavingsPercent = 5`
+  - `estimatedCostSavedUsd = 0.002951`
+- The Update Summary UI displayed only:
+  - Tokens used
+  - Update cost
+  - Tokens saved
+- It did not display the persisted cost saved amount.
+
+Expected:
+
+- If cost saved is persisted, the Update Summary modal should display it clearly.
+- Suggested labels:
+  - `Tokens saved`
+  - `Cost saved`
+- If savings are estimated, both values should be visually grouped under `Usage and estimated savings`.
+
+Impact:
+
+- Users can see token savings but cannot see the corresponding dollar savings.
+- The UI under-communicates the business value of delta updates.
+- This is especially confusing because the data already exists in Supabase.
+
+Suggested Fix:
+
+1. Extend the Update Summary usage panel to display `estimatedCostSavedUsd` when available.
+2. Keep `Tokens saved` and `Cost saved` separate to avoid mixing units.
+3. Use the same behavior for Test Strategy, Test Plan, Risk Matrix, Backlog, STC, and RTM update summaries wherever `tokenSavings.estimatedCostSavedUsd` exists.
+
+Retest:
+
+- Open Test Strategy update summary for `PRO-260609-7VNPGF`.
+- Confirm cost saved displays around `US$0.0035`.
+- Open Test Plan update summary for `PRO-260609-XUW454`.
+- Confirm cost saved displays around `US$0.0030`.
+
+Fix Applied:
+
+- 2026-06-09: Updated Update Summary UI to display `Cost saved` from `tokenSavings.estimatedCostSavedUsd` when savings metadata exists.
+
+Closure Evidence:
+
+- 2026-06-09: Live shared-doc update jobs persisted cost-savings metadata that the updated UI reads:
+  - Test Strategy `PRO-260609-YFR73Y`: `estimatedCostSavedUsd = 0.000183`.
+  - Test Plan `PRO-260609-G617ZD`: `estimatedCostSavedUsd = 0`.
+  - Risk Matrix `PRO-260609-EN58QS`: `estimatedCostSavedUsd = 0.001286`.
+- Frontend build passed after the Update Summary UI change.
+
+## BUG-E2E-149: Shared Document Delta Update Publishes Stale Coverage Review Note Despite Final Passed Coverage
+
+Status: fixed_pending_validation
+
+Severity: medium
+
+Area:
+
+- Shared document delta update publishing
+- Test Strategy document content
+- Test Plan document content
+- Coverage Review Note generation
+- Confluence export content
+
+Observed During:
+
+- Full E2E registered-user document update cycle on 2026-06-09.
+- Project: `Astra Ecommerce`
+- Test Strategy update job: `PRO-260609-7VNPGF`
+- Test Plan update job: `PRO-260609-XUW454`
+
+What Happened:
+
+- Final stored coverage for Test Strategy was passed:
+  - 7 of 7 coverage rows covered.
+- Final stored coverage for Test Plan was passed:
+  - 10 of 10 coverage rows covered.
+- However, the exported delta-update documents included a `Coverage Review Note` indicating coverage metadata was not fully parsed or required review.
+- Test Plan delta export included text stating the update completed with coverage items requiring review even though final output coverage was passed with zero review items.
+- Risk Matrix delta export included stale `Evidence review required` text in `Executive Summary` even though final output coverage was passed and final validation succeeded.
+
+Expected:
+
+- Published document content should reflect terminal merged coverage state.
+- If final coverage is passed with no missing/partial/unknown rows, the document should not include a warning-style Coverage Review Note.
+- If a pre-merge warning exists but final merge resolves coverage, the warning note should be removed or rewritten as a successful coverage confirmation.
+
+Impact:
+
+- Users reviewing the exported document may believe support review is required even though the UI and final job metadata show passed coverage.
+- Document credibility is reduced because the generated artifact contradicts the platform status.
+- This can lead to unnecessary admin/support review.
+
+Suggested Fix:
+
+1. Generate or suppress Coverage Review Note after final merge, not from stale pre-merge patch metadata.
+2. For final passed coverage, either omit the note or render a positive coverage confirmation.
+3. Add a shared validation assertion that exported document coverage note matches final `coverageSummary.gateStatus`.
+
+Retest:
+
+- Run Test Strategy, Test Plan, and Risk Matrix delta updates with passed final coverage.
+- Export each Confluence page to Word.
+- Confirm no stale warning/review note appears when coverage is fully passed.
+
+Fix Applied:
+
+- 2026-06-09: Patched shared update publish path so Coverage Review Note uses final `updateSummary.coverageSummary` before stale pre-merge `q.coverageSummary`.
+- Future passed shared updates should suppress warning notes when there are no final warning items.
+- 2026-06-09: Follow-up patch `scripts/patch_shared_doc_update_integrity_v2.cjs` suppresses stale warning notes when prior coverage was passed and the new update has no warning items.
+
+## BUG-E2E-150: Risk Matrix Delta Update Shrinks Coverage Ledger From 10 Rows To 4 Rows But Still Passes
+
+Status: closed - live Risk Matrix coverage preservation validation passed
+
+Severity: high
+
+Area:
+
+- Risk Matrix update workflow
+- Shared document delta update merge guard
+- Coverage Ledger preservation
+- Coverage Review modal
+- Update Summary modal
+- `qa_jobs.output.coverageLedger`
+
+Observed During:
+
+- Full E2E registered-user document update cycle on 2026-06-09.
+- Project: `Astra Ecommerce`
+- Previous Risk Matrix create job: `PRO-260608-7RZQCU`
+- Risk Matrix update job: `PRO-260609-IQP140`
+
+What Happened:
+
+- Previous create Risk Matrix had passed coverage with 10 of 10 coverage ledger rows.
+- Update job completed successfully and showed:
+  - `coverageSummary.gateStatus = passed`
+  - `coverageLedgerCount = 4`
+  - `coveredCount = 4`
+  - `missingCount = 0`
+  - `partialCount = 0`
+  - `finalValidation.mergeGuard = passed`
+- The update replaced the prior 10 coverage rows with only 4 new rows:
+  - `COV-001` Multi-seller Cart Integration
+  - `COV-002` Fraud Risk Step-Up Verification
+  - `COV-003` Session Expiry Mid-Checkout
+  - `COV-004` Duplicate Payment & Refund Handling
+- Original covered rows such as registration, webhook security, checkout price lock, inventory availability, mobile filter UI, password reset security, and order tracking timeline were no longer present in the final update coverage ledger.
+- Update Summary did not report any removed coverage rows or coverage scope reduction.
+- Exported document comparison confirmed the same loss at document level:
+  - create export had 4 tables and 39 table rows,
+  - delta update export had 3 tables and 27 table rows,
+  - create export had 10 risk IDs and broader coverage identifiers,
+  - delta update export retained risk IDs but reduced coverage identifiers and coverage rows.
+
+Expected:
+
+- Risk Matrix delta update should preserve previous coverage ledger rows unless a row is explicitly removed with a documented reason.
+- Coverage should not pass simply because the reduced ledger has all remaining rows covered.
+- If coverage rows are removed, Update Summary and Coverage Review should make that visible.
+- Merge guard should fail or mark review-needed when coverage ledger count shrinks unexpectedly from a previous green baseline.
+
+Impact:
+
+- Users may believe the Risk Matrix update is fully covered while six previously covered risk/requirement rows silently disappeared.
+- Dashboard/Analytics coverage health can remain green despite actual coverage loss.
+- Delta update auditability is compromised because the baseline coverage is not preserved.
+- This is especially risky for production updates where missing risks may no longer be reviewed or tested.
+
+Suggested Fix:
+
+1. Add shared update coverage-ledger preservation guard for Risk Matrix and other shared docs.
+2. Compare previous and final coverage IDs during update.
+3. If previous coverage rows are missing in final output, classify them as removed/needs review and do not mark coverage as fully passed unless removal is intentional and source-backed.
+4. Persist `previousCoverageRows`, `currentCoverageRows`, `removedCoverageRows`, and removed row details in `updateSummary`.
+5. Update Coverage Review to show removed/missing baseline rows for update jobs.
+
+Retest:
+
+- Run Risk Matrix update from a previous green baseline.
+- Confirm final coverage ledger keeps all previous rows plus any new rows, or explicitly reports removed rows.
+- Confirm coverage does not pass silently when previous rows disappear.
+- Confirm Update Summary lists coverage row additions, updates, preserved rows, and removals.
+
+Fix Applied:
+
+- 2026-06-09: Patched shared update merge path to merge previous coverage ledger rows with current rows when a delta patch would shrink the ledger.
+- Future Risk Matrix updates should preserve the prior green coverage baseline instead of passing against a reduced ledger.
+- 2026-06-09: Follow-up retest with `PRO-260609-8HPEPZ` showed the n8n merge guard cannot recover the original 10-row create ledger if the frontend sends a damaged immediate previous job (`PRO-260609-IQP140`, 4 rows) as the only previous baseline.
+- 2026-06-09: Patched the frontend update-context builder to resolve the best available shared-doc coverage baseline from the job lineage for Test Strategy, Test Plan, and Risk Matrix updates. Future Regenerate Anyway / update retry requests should send `previousCoverageBaselineJobId` and the richer `previousCoverageLedger` when the latest baseline appears to have shrunk without explicit removals.
+- 2026-06-09: Retest jobs `PRO-260609-XOHFO6` and `PRO-260609-N752VP` confirmed the frontend handoff is fixed (`previousCoverageBaselineJobId = PRO-260608-7RZQCU`, 10 baseline rows), but the shared-doc n8n no-change publish branch still used the existing damaged Confluence body and bypassed the repaired coverage section map.
+- 2026-06-09: Patched active n8n workflow `fullRetrievalD01` with `scripts/patch_shared_doc_update_integrity_v3.cjs`. The update publish node now applies `mergedCoverageLedgerHtml()` to `baseSections` before body selection and routes no-change updates with a repaired coverage ledger through the section rebuild path instead of publishing `cleanedExisting` directly.
+- Backup before v3 patch:
+  - `docs/test_data/n8n_workflow_backups/workflow_fullRetrievalD01_before_shared_doc_update_integrity_v3_20260609105710.json`
+- 2026-06-09: Retest job `PRO-260609-ZIQNVW` still failed the preservation requirement: the request carried the 10-row baseline, but final output stored only 4 rows (`COV-001` through `COV-004`) and still passed validation.
+- 2026-06-09: Root cause narrowed further: the `Quality Gate` effective coverage merge was RTM-only (`traceability_matrix`) and did not apply to shared Confluence document types (`test_strategy`, `test_plan`, `risk_matrix`). This allowed reduced Risk Matrix update coverage metadata to propagate into completion/output even when the request carried a richer baseline.
+- 2026-06-09: Patched active n8n workflow `fullRetrievalD01` with `scripts/patch_shared_doc_update_integrity_v4.cjs`. The `Quality Gate` now applies baseline coverage preservation for shared document updates when the previous ledger is richer, no explicit coverage removals are present, and there are no update reasons requiring a new coverage slice.
+- Backup before v4 patch:
+  - `docs/test_data/n8n_workflow_backups/workflow_fullRetrievalD01_before_shared_doc_update_integrity_v4_20260609110737.json`
+- 2026-06-09: Live validation passed with Risk Matrix Regenerate Anyway job `PRO-260609-EN58QS`.
+  - Request carried `previousCoverageBaselineJobId = PRO-260608-7RZQCU`.
+  - Request carried 10 previous coverage ledger rows.
+  - Final `qa_jobs.output.coverageLedger` stored 10 rows.
+  - Final output coverage IDs exactly matched the 10 previous baseline IDs.
+  - `coverageSummary.gateStatus = passed`, `coveredCount = 10`, `coverageLedgerCount = 10`.
+  - `updateSummary.coverageLedgerCount = 10`, `batchSummary.total = 10`, `batchSummary.covered = 10`.
+  - `finalValidation.status = passed`, `mergeGuard = passed`.
+  - Terminal `JOB_COMPLETED` metric recorded `operation_mode = update_delta`, `coverage_gate_status = passed`, `tokens_total = 9093`, `estimated_cost_usd = 0.007793`.
+
+## BUG-E2E-151: Update Summary Shows Blank Tokens Saved When Delta Update Has No Savings Or Higher Cost
+
+Status: closed - live zero and positive savings metadata validation passed
+
+Severity: low
+
+Area:
+
+- Update Summary modal
+- Usage and estimated savings panel
+- Risk Matrix update
+- Shared document update UX
+
+Observed During:
+
+- Full E2E registered-user document update cycle on 2026-06-09.
+- Project: `Astra Ecommerce`
+- Risk Matrix update job: `PRO-260609-IQP140`
+
+What Happened:
+
+- Risk Matrix update persisted token savings metadata:
+  - `estimatedBaselineTokens = 6592`
+  - `tokens used = 8043`
+  - `estimatedTokensSaved = 0`
+  - `estimatedSavingsPercent = 0`
+  - `estimatedCostSavedUsd = 0`
+- Since the update used more tokens than the previous baseline, there was no actual token or cost saving.
+- The Update Summary UI displayed:
+  - `Tokens saved -`
+- This looks like missing data rather than a deliberate no-savings/over-baseline result.
+- Cost saved is also not displayed, which is separately tracked under `BUG-E2E-148`.
+
+Expected:
+
+- If savings are zero, the UI should display a clear value such as:
+  - `Tokens saved 0 (0%)`
+  - `Cost saved US$0`
+- If update usage exceeds the baseline, the UI should ideally show an honest over-baseline indicator:
+  - `No savings`
+  - `+1.5k tokens vs baseline`
+  - or `Higher than baseline`
+- Blank/dash should be reserved for truly unavailable or not-estimated savings metadata.
+
+Impact:
+
+- Users may think token-savings data is missing.
+- The UI hides the fact that this Risk Matrix update consumed more tokens than the baseline create job.
+- This weakens the cost-transparency goal of delta updates.
+
+Suggested Fix:
+
+1. Distinguish unavailable savings from zero savings.
+2. Show `0 (0%)` when savings metadata exists but no saving was achieved.
+3. Consider showing an over-baseline warning when `tokensUsed > estimatedBaselineTokens`.
+4. Add `Cost saved` display from `estimatedCostSavedUsd` as tracked in `BUG-E2E-148`.
+
+Retest:
+
+- Open Risk Matrix update summary for `PRO-260609-IQP140`.
+- Confirm Tokens saved no longer displays as `-`.
+- Confirm Cost saved is displayed.
+- Confirm over-baseline update cost is communicated clearly when no savings are achieved.
+
+Fix Applied:
+
+- 2026-06-09: Updated Update Summary UI to distinguish zero savings from unavailable savings.
+- Savings now displays `0 (0%)` and `US$0.0000` when savings metadata exists but no savings were achieved.
+
+Closure Evidence:
+
+- 2026-06-09: Live shared-doc update jobs validated both zero and positive savings metadata:
+  - Test Plan `PRO-260609-G617ZD`: `estimatedTokensSaved = 0`, `estimatedSavingsPercent = 0`, `estimatedCostSavedUsd = 0`.
+  - Test Strategy `PRO-260609-YFR73Y`: positive savings metadata persisted.
+  - Risk Matrix `PRO-260609-EN58QS`: positive savings metadata persisted.
+- Frontend build passed after the Update Summary zero-savings display change.
+
+## BUG-E2E-152: Backlog Create Output Did Not Persist Coverage Ledger For Later Delta Updates
+
+Status: open - investigation
+
+Severity: medium
+
+Area:
+
+- Epics & User Stories create workflow
+- Backlog coverage ledger persistence
+- Backlog update baseline handoff
+- Coverage Review modal
+
+Observed During:
+
+- Full E2E registered-user update cycle on 2026-06-09.
+- Project: `Astra Ecommerce`
+- Backlog create baseline job: `PRO-260608-RE95WM`
+- Backlog update failed job: `PRO-260609-F9P7XX`
+- Backlog update retry job: `PRO-260609-BA12T3`
+
+What Happened:
+
+- The original Backlog create job completed successfully with:
+  - 6 epics
+  - 18 user stories
+  - standard `tokenUsage`
+- However, the create output did not persist a top-level `coverageLedger` or `coverageSummary`.
+- Later Backlog update job `PRO-260609-F9P7XX` failed at the quality gate with:
+  - `Backlog Coverage Gate failed: document.coverageLedger is required before Jira issues can be created.`
+- A targeted update-mode fallback was added to synthesize a coverage ledger during update, but the root cause remains open: the original create output should have persisted coverage metadata when the create run passed.
+
+Expected:
+
+- Backlog create jobs should persist a coverage ledger and coverage summary in the standard output shape.
+- Later update jobs should not be forced to synthesize baseline coverage if the create job already passed coverage.
+- Coverage Review should be available for Backlog create output from the stored job metadata.
+
+Impact:
+
+- Backlog update can fail or require fallback recovery when the baseline create output has no coverage ledger.
+- Update auditability is weakened because the first successful baseline lacks explicit coverage rows.
+- Coverage Review for Backlog create may be incomplete or misleading.
+
+Suggested Investigation:
+
+1. Inspect the create path around `Validate Team Managed Backlog`, `Build Backlog Completion Output`, and final Supabase completion patch.
+2. Confirm whether create-time `qualityGate.coverageLedger` exists inside n8n but is dropped before writing `qa_jobs.output`.
+3. Standardize Backlog create output to persist:
+   - `coverageLedger`
+   - `coverageSummary`
+   - `batchSummary`
+   - `qualityGate.coverageLedger`
+   - `qualityGate.coverageSummary`
+4. Retest with a fresh Backlog create job and confirm stored coverage rows are non-zero.
+
+## BUG-E2E-153: Backlog Update Summary Contradicts Actual Jira Create Counts
+
+Status: open
+
+Severity: high
+
+Area:
+
+- Epics & User Stories update workflow
+- Update Summary modal
+- Jira change accounting
+- Backlog update auditability
+
+Observed During:
+
+- Backlog update retry job: `PRO-260609-BA12T3`
+- Retry of failed update job: `PRO-260609-F9P7XX`
+- Baseline create job: `PRO-260608-RE95WM`
+
+What Happened:
+
+- Retry job completed successfully and published the Backlog update.
+- Actual stored Jira output and terminal `JOB_COMPLETED` metric show:
+  - `epics_created = 4`
+  - `stories_created = 9`
+  - `epics_reused = 0`
+  - `stories_reused = 0`
+- But persisted `output.updateSummary` says:
+  - `createdEpicCount = 0`
+  - `createdStoryCount = 0`
+  - `reusedEpicCount = 6`
+  - `reusedStoryCount = 18`
+  - note: `Previous backlog snapshot merged for update-mode validation and Jira reuse.`
+- This means the Update Summary modal can tell users nothing was created even though Jira actually received new epics and stories.
+
+Expected:
+
+- Update Summary should reflect the actual Jira actions from the completed update run.
+- For this run, it should show 4 added epics and 9 added stories, while separately preserving the previous baseline count if needed.
+- Preserved/reused baseline items should not overwrite newly created delta items.
+
+Impact:
+
+- Users cannot trust the Update Summary for Backlog updates.
+- Audit trail is materially wrong for added Jira items.
+- Downstream STC and RTM planning may be confusing because newly added Backlog scope is hidden by a reused-only summary.
+
+Suggested Fix:
+
+1. Build `updateSummary` after Jira publish using actual `result.epics` and `result.stories` action counts.
+2. Keep previous baseline counts in a separate field such as `previousBacklogBaselineCounts`.
+3. Ensure UI buckets use mutually exclusive Added, Updated, Preserved, Removed counts.
+4. Retest with `PRO-260609-BA12T3`-like update and confirm summary matches terminal metrics.
+
+## BUG-E2E-154: Backlog Update Completion Output Does Not Persist Standard tokenUsage And Top-Level coverageSummary
+
+Status: open
+
+Severity: medium
+
+Area:
+
+- Epics & User Stories update workflow
+- Token/cost usage shape
+- Coverage Review modal
+- Analytics
+
+Observed During:
+
+- Backlog update retry job: `PRO-260609-BA12T3`
+
+What Happened:
+
+- Terminal `JOB_COMPLETED` metric correctly recorded:
+  - `tokens_input = 18878`
+  - `tokens_output = 12365`
+  - `tokens_total = 31243`
+  - `estimated_cost_usd = 0.027335`
+  - `duration_ms = 243109`
+- But `qa_jobs.output.tokenUsage` is missing.
+- `qa_jobs.output.coverageSummary` is missing at the top level.
+- Coverage metadata exists only nested under `output.qualityGate.coverageSummary`.
+- Coverage ledger exists top-level with 7 rows.
+
+Expected:
+
+- Completed Backlog update jobs should persist usage and coverage in the standard shape:
+  - `output.tokenUsage`
+  - `output.coverageSummary`
+  - `output.coverageLedger`
+  - `output.qualityGate.coverageSummary`
+  - `output.qualityGate.coverageLedger`
+- Analytics, Usage modal, and Coverage Review should not need to rely only on metric rows or nested quality-gate fallbacks.
+
+Impact:
+
+- Usage modal may show blank/missing values for completed Backlog updates.
+- Dashboard/Analytics may depend on metrics rather than the job output for Backlog update usage.
+- Coverage Review can be less consistent with other document types.
+
+Suggested Fix:
+
+1. Patch `Build Backlog Completion Output` to write standard `tokenUsage`.
+2. Copy `result.coverageSummary || result.qualityGate.coverageSummary` to top-level `coverageSummary`.
+3. Preserve top-level `coverageLedger`.
+4. Verify Analytics and Usage modal after a Backlog update retry.
+
+## BUG-E2E-155: Backlog Coverage Ledger Can Reference Non-Published Story Correlation IDs As Covered
+
+Status: open
+
+Severity: medium
+
+Area:
+
+- Epics & User Stories coverage gate
+- Backlog coverage ledger mapping
+- Coverage Review modal
+
+Observed During:
+
+- Backlog update retry job: `PRO-260609-BA12T3`
+
+What Happened:
+
+- Coverage ledger row `FRD-PRIV-012` is marked covered.
+- It contains `mappedStoryIds = ["KAN-STORY-SUPPORT-EVENT-PRIVACY"]`.
+- But `mappedStoryMatches` is empty and the published Jira story list for this update does not include a corresponding Jira story key for that correlation ID.
+- Other rows map to actual created story correlation IDs with matches.
+
+Expected:
+
+- A coverage row should not be marked covered only because a correlation ID appears in the model output.
+- Covered rows should map to either:
+  - a newly created/updated Jira story,
+  - a preserved existing Jira story,
+  - or an explicitly documented epic-only coverage decision.
+- If a mapped story correlation ID is not published or preserved, the row should be `partial` / `needs review`.
+
+Impact:
+
+- Coverage Review can show green while one mapped story does not correspond to a real Jira item.
+- Users may assume privacy/support coverage has a concrete Jira story when it does not.
+
+Suggested Fix:
+
+1. After Jira publish, reconcile `coverageLedger.mappedStoryIds` against actual created/updated/reused story correlation IDs and Jira keys.
+2. Downgrade rows with unmapped story IDs to `partial` unless covered by an epic-only rationale.
+3. Display missing/unmatched mappings in Coverage Review.
+
+## BUG-E2E-156: Backlog Update Summary Preserved Counts Show Zero Instead Of Full Backlog Baseline Preserved Counts
+
+Status: open
+
+Severity: medium
+
+Area:
+
+- Epics & User Stories Update Summary modal
+- Backlog change impact display
+- Jira Change Details preserved bucket
+
+Observed During:
+
+- Backlog update retry job: `PRO-260609-BA12T3`
+- Project: `Astra Ecommerce`
+
+What Happened:
+
+- The Backlog update added:
+  - 4 epics
+  - 9 user stories
+- Previous Backlog baseline had:
+  - 6 epics
+  - 18 user stories
+- The modal correctly shows current backlog totals:
+  - 10 total epics
+  - 27 total stories
+- But Change Impact and Jira Change Details show:
+  - `Epics preserved = 0`
+  - `Stories preserved = 0`
+  - Preserved bucket is empty.
+
+Expected:
+
+- Preserved counts should represent the full backlog state preserved through the update:
+  - `Epics preserved = 6`
+  - `Stories preserved = 18`
+- Added counts should remain:
+  - `Epics added = 4`
+  - `Stories added = 9`
+- Current backlog should remain:
+  - `Total epics = 10`
+  - `Total stories = 27`
+
+Impact:
+
+- Users may believe the previous Backlog items were not retained.
+- The Update Summary under-communicates that this was a true delta update on top of the existing baseline.
+- Auditability is reduced because preserved baseline scope is hidden.
+
+Suggested Fix:
+
+1. Populate preserved counts from previous Backlog baseline when update mode is used.
+2. Keep Added / Updated / Removed buckets based on touched Jira items.
+3. Show Preserved bucket as the retained baseline items, preferably with Jira IDs if available.
+4. Ensure totals equal Added + Preserved - Removed for epics and stories.
+
+## BUG-E2E-157: Backlog Update Summary Sentence Omits Added Epic Count
+
+Status: open
+
+Severity: low
+
+Area:
+
+- Epics & User Stories Update Summary modal
+- User-facing update summary copy
+
+Observed During:
+
+- Backlog update retry job: `PRO-260609-BA12T3`
+- Project: `Astra Ecommerce`
+
+What Happened:
+
+- The modal summary says:
+  - `Q-Ops applied this backlog repair: 9 stories added. Overall delta coverage: 7 of 7 coverage items are covered.`
+- The same modal shows 4 epics added and 9 stories added.
+- The sentence omits the 4 added epics.
+
+Expected:
+
+- The summary sentence should include both added epics and added stories:
+  - `Q-Ops applied this backlog update: 4 epics and 9 stories added. Overall delta coverage: 7 of 7 coverage items are covered.`
+- For retry/repair paths, wording can still say repair/update, but counts must be complete.
+
+Impact:
+
+- Users receive an incomplete high-level summary.
+- The summary sentence contradicts the Change Impact cards.
+
+Suggested Fix:
+
+1. Build the summary sentence from the same normalized Backlog impact counts used by the cards.
+2. Include epics and stories independently when non-zero.
+3. Add fallback copy for no-change, updated-only, removed-only, and mixed added/updated/removed scenarios.
+
+## BUG-E2E-158: Backlog Update Summary Shows Savings As Not Estimated Despite Available Baseline And Update Usage
+
+Status: open
+
+Severity: low
+
+Area:
+
+- Epics & User Stories Update Summary modal
+- Usage and estimated savings panel
+- Backlog delta update cost transparency
+
+Observed During:
+
+- Backlog update retry job: `PRO-260609-BA12T3`
+- Previous Backlog create baseline job: `PRO-260608-RE95WM`
+
+What Happened:
+
+- Baseline create job had usage:
+  - `tokensTotal = 41215`
+  - `estimatedCostUsd = 0.039552`
+- Backlog update retry had usage:
+  - `tokens_total = 31243`
+  - `estimated_cost_usd = 0.027335`
+- Therefore estimated savings can be calculated:
+  - tokens saved: about `9972` tokens
+  - savings percent: about `24%`
+  - cost saved: about `US$0.0122`
+- But the Update Summary modal displays:
+  - `Savings estimate: Not estimated`
+  - `Cost savings estimate: Not estimated`
+
+Expected:
+
+- When both baseline usage and update usage are available, the modal should show calculated savings.
+- For this run, expected display should be approximately:
+  - `Tokens saved 10k (24%)`
+  - `Cost saved US$0.0122`
+- If the update costs more than baseline, show `0 (0%)` or an honest over-baseline indicator, not `Not estimated`.
+
+Impact:
+
+- Users cannot see the token/cost benefit of delta update even when enough data exists.
+- Cost transparency is weakened for Backlog delta updates.
+- The behavior is inconsistent with shared document update summaries where savings metadata is shown.
+
+Suggested Fix:
+
+1. Backlog update workflow should persist `estimatedBaselineTokens`, `estimatedBaselineCostUsd`, `estimatedTokensSaved`, `estimatedSavingsPercent`, and `estimatedCostSavedUsd` in `updateSummary`.
+2. Frontend should fall back to calculating savings from `previousTokenUsage` and current `tokenUsage` / metric usage when explicit savings fields are missing.
+3. Display zero savings distinctly from unavailable savings.
+
+## BUG-E2E-181: STC Update-Retry Can Ignore Durable Jira Link Coverage And Re-Select Already Published Stories
+
+Status: fixed - durable mapping no-model guard applied and active n8n history synced; pending next live STC update-retry validation
+
+Severity: high
+
+Area:
+
+- STC update-retry delta scope
+- STC persisted Jira story-testcase link reuse
+- Token/cost containment for retry and Regenerate Anyway
+- n8n active version/history consistency
+
+Observed During:
+
+- Follow-up analysis after `STC-260611-M9CCNT`
+- Failed retry `STC-260611-Z9K8CQ`
+- Project `Astra Ecommerce`
+
+What Happened:
+
+- The latest completed STC output baseline was older than the latest Jira publish/link state.
+- Durable `qa_story_testcase_links` already had persisted mappings for all current Astra Ecommerce stories.
+- The STC retry scope logic could still honor stale explicit repair targets from prior failed attempts and select stories for model work even though persisted Jira links already covered those stories.
+- After a manual n8n publish, `workflow_entity.activeVersionId` pointed at `840db34c`, but the active `workflow_history` snapshot for `840db34c` still contained the older 72-node graph without the persisted-link fetch/no-model guard.
+- Retry `STC-260611-Z9K8CQ` therefore failed with the older baseline-unavailable error before the durable mapping guard could run.
+
+Expected:
+
+- For STC update-retry / Regenerate Anyway, if durable story-testcase mappings cover every current Jira story, the retry should preserve existing coverage and take the no-model path.
+- Stale repair targets from a prior failed attempt should be treated as satisfied when durable mappings prove those stories are already published/linked.
+- The active n8n version/history snapshot should match the current patched workflow graph.
+- Create and create-retry must remain unchanged and continue full generation.
+
+Root Cause:
+
+- The retry no-model guard previously required `persistedMappingsCoverAllStories` and no explicit repair keys.
+- False/stale retries can carry explicit repair keys even when the durable mapping table now proves all current stories are covered.
+- The current workflow entity had the patch, but the active n8n history snapshot for the published version did not.
+
+Fix Applied - 2026-06-11:
+
+- Patched `PRO QA Jira Story Test Case Generator` to fetch `qa_story_testcase_links` after live story source loading and before delta target selection.
+- Patched retry/update target selection so `persistedMappingsCoverAllStories` can take the no-model preservation path even when stale explicit repair targets are present.
+- Synced the active n8n history snapshot for version `840db34c-3739-4987-9fc5-255be1e30c40` from the patched workflow entity.
+- Backed up the pre-sync active history row to `docs/test_data/n8n_workflow_backups/workflow_SG7khcKlhHst48WH_active_history_840db34c-3739-4987-9fc5-255be1e30c40_before_sync_20260611062237.json`.
+
+Validation Evidence:
+
+- Active history snapshot for version `840db34c` now has 73 nodes.
+- Active history includes `Fetch Published Story Test Case Links` between `Build Story Source Items` and `Build Story Test Case Delta Targets`.
+- Active history includes `stc-delta-scope-v3`.
+- Active history includes the “including retry repair targets” guard.
+- Supabase durable mapping check for `Astra Ecommerce` returned 27 story keys, 501 distinct test cases, and 704 total persisted links.
+- No active unstopped STC generator/worker executions were found after the sync.
+- Worker schedule executions after sync completed successfully.
+
+Validation Needed:
+
+- Re-run STC Retry from the latest failed update attempt.
+- Confirm it does not call the model when durable mappings cover all current stories.
+- Confirm output becomes terminal completed with 100% coverage, standard usage shape, and no additional Jira duplicate creation.
+
+## BUG-E2E-182: RTM Update Fails Contract When Deterministic Layer 2 Is Appended Instead Of Replacing Model Layer 2
+
+Status: closed - fixed and validated in live RTM retry
+
+Severity: high
+
+Area:
+
+- RTM update workflow
+- RTM Quality Gate contract validation
+- Deterministic Layer 2 Story -> Test Case rendering
+- n8n `fullRetrievalD01` Quality Gate node
+
+Observed During:
+
+- RTM Update Document job: `PRO-260611-AXUNQY`
+- n8n generator execution: `1078671`
+- Project: `Astra Ecommerce`
+
+What Happened:
+
+- The RTM update generated valid traceability context:
+  - 10 epics
+  - 27 stories
+  - 611 story-testcase links
+  - 0 stories without test cases
+  - Coverage ledger passed with `7 / 7` covered rows
+- The job still failed with:
+  - `RTM Contract Failed - Expected exactly one Layer 2 heading, found 2. [line 678]`
+- Supabase correctly marked the job failed and persisted usage:
+  - `tokensTotal = 91445`
+  - `estimatedCostUsd = 0.040036`
+
+Expected:
+
+- RTM update should publish exactly one `Layer 2 - User Stories to Generated Test Cases` section.
+- The deterministic Layer 2 table built from persisted Jira story-testcase links should replace the model-produced Layer 2 section, not be appended beside it.
+- The job should proceed to Confluence publish when coverage and RTM contract are otherwise valid.
+
+Root Cause:
+
+- `replaceRtmLayer2WithContext()` only replaced Layer 2 when it found the exact next heading:
+  - `Layer 2 Gaps - Stories Without Test Case Coverage`
+- The model can vary or omit that exact heading.
+- When the exact next heading was not found, the workflow appended deterministic Layer 2 to the existing model Layer 2.
+- The RTM contract validator then correctly found two Layer 2 headings and failed the job.
+
+Fix Applied - 2026-06-11:
+
+- Patched `fullRetrievalD01` `Quality Gate` node.
+- Replaced the fragile Layer 2 replacement regex with heading-index based replacement.
+- The new replacement stops at the next known RTM section heading:
+  - Layer 2 Gaps
+  - Coverage by Test Category
+  - Coverage Ledger
+  - Governance & Audit Readiness Commentary
+  - any numbered markdown heading
+- Added `dedupeRtmLayer2Sections()` before RTM freshness/risk cleanup and again after coverage-ledger replacement.
+- Synced active n8n workflow history from the patched workflow entity.
+
+Validation Evidence:
+
+- Patch backup:
+  - `docs/test_data/n8n_workflow_backups/workflow_fullRetrievalD01_before_rtm_layer2_dedupe_v1_20260611080338.json`
+- Active history sync backup:
+  - `docs/test_data/n8n_workflow_backups/workflow_fullRetrievalD01_active_history_4b63abdf-f3a8-42a4-b199-7ee8610a5d62_before_sync_20260611080418.json`
+- Offline smoke test against failed execution `1078671`:
+  - Raw model output Layer 2 heading count: `1`
+  - Old workflow post-processing Layer 2 heading count: `2`
+  - Patched post-processing Layer 2 heading count: `1`
+  - Patched output keeps the required Layer 2 table schema.
+
+Live Validation - 2026-06-11:
+
+- Retried failed RTM update job `PRO-260611-AXUNQY`.
+- Retry job `PRO-260611-BRCB9S` completed successfully.
+- Original failed job `PRO-260611-AXUNQY` is marked recovered via `retried_by_job_id = PRO-260611-BRCB9S`.
+- n8n generator execution `1078838` completed successfully.
+- n8n queue worker execution `1078835` completed successfully.
+- Quality Gate passed with a single deterministic Layer 2 section.
+- Coverage summary passed with `7 / 7` covered rows, `0` missing, and `0` partial.
+- Update Summary and standard token usage were persisted on the completed retry job.

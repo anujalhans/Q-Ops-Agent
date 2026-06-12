@@ -50,6 +50,34 @@ async function withFreshAuth(init: RequestInit = {}): Promise<RequestInit> {
   return { ...init, headers }
 }
 
+type ApiJsonResult = {
+  data: any
+  rawText: string
+}
+
+async function readApiJson(res: Response): Promise<ApiJsonResult> {
+  const rawText = await res.text().catch(() => '')
+  if (!rawText) return { data: null, rawText: '' }
+  try {
+    return { data: JSON.parse(rawText), rawText }
+  } catch {
+    return { data: null, rawText }
+  }
+}
+
+function apiErrorMessage(data: any, res: Response, fallback: string) {
+  const error = data?.error
+  const candidates = [
+    typeof error === 'string' ? error : error?.message,
+    data?.message,
+    data?.error_description,
+    data?.msg,
+  ]
+  const message = candidates.map((value) => String(value || '').trim()).find(Boolean)
+  if (message) return message
+  return `${fallback} Backend returned HTTP ${res.status}.`
+}
+
 export type JobStatus = 'idle' | 'queued' | 'pending' | 'processing' | 'completed' | 'failed' | 'not_found'
 
 export type UploadResponse = {
@@ -311,6 +339,21 @@ export type ApiProject = {
   updatedAt?: string
 }
 
+function normalizeApiProject(row: Record<string, any>): ApiProject {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description ?? undefined,
+    owner: row.owner ?? undefined,
+    module: row.module ?? undefined,
+    release: row.release ?? undefined,
+    tags: Array.isArray(row.tags) ? row.tags : [],
+    status: row.status,
+    createdAt: row.createdAt ?? row.created_at,
+    updatedAt: row.updatedAt ?? row.updated_at,
+  }
+}
+
 export type ApiArtifact = {
   id?: string
   projectName: string
@@ -337,6 +380,7 @@ export type ApiGeneratedDocument = {
   updatedAt?: string
   status?: 'queued' | 'pending' | 'processing' | 'completed' | 'failed'
   url?: string
+  input?: any
   output?: any
   error?: string | null
   requestedBy?: string | null
@@ -439,6 +483,7 @@ export type AnalyticsRecentJob = {
   errorMessage?: string | null
   retryOfJobId?: string | null
   retryAttempt?: number
+  metadata?: Record<string, any> | null
   createdAt?: string
 }
 
@@ -487,13 +532,19 @@ export type AnalyticsSummary = {
     totalDocumentsGenerated: number
     totalIngestionJobsCompleted: number
     totalJobsFailed: number
+    totalJobsFailedHistorical?: number
+    totalJobsFailedActive?: number
+    totalJobsRecovered?: number
     successRate: number
+    successRateCurrent?: number
+    successRateHistorical?: number
     totalCostUsd: number
     avgCostPerDocument: number
     totalTokensConsumed: number
     totalChunksIngested: number
     totalWordsProcessed?: number
     avgDurationMs: number
+    avgGenerationDurationMs?: number
     avgIngestionDurationMs?: number
     totalFilesProcessed?: number
   }
@@ -796,8 +847,9 @@ export async function generateDocument(payload: GenerateDocPayload): Promise<Upl
       retryContext: payload.retryContext,
     }),
   }))
-  const data = await res.json()
-  if (!data?.jobId) throw new Error('Invalid response from backend')
+  const { data } = await readApiJson(res)
+  if (!res.ok) throw new Error(apiErrorMessage(data, res, 'Document generation could not be queued.'))
+  if (!data?.jobId) throw new Error(apiErrorMessage(data, res, 'Document generation API did not return a job id.'))
   return data
 }
 
@@ -818,8 +870,9 @@ export async function generateStoryTestCases(payload: GenerateDocPayload): Promi
       retryContext: payload.retryContext,
     }),
   }))
-  const data = await res.json()
-  if (!data?.jobId) throw new Error(data?.error?.message || data?.message || 'Invalid response from backend')
+  const { data } = await readApiJson(res)
+  if (!res.ok) throw new Error(apiErrorMessage(data, res, 'Story Test Cases generation could not be queued.'))
+  if (!data?.jobId) throw new Error(apiErrorMessage(data, res, 'Story Test Cases generation API did not return a job id.'))
   return data
 }
 
@@ -1585,17 +1638,63 @@ export async function auditPasswordReset(): Promise<boolean> {
 
 export async function fetchProjects(): Promise<ApiProject[] | null> {
   const data = await fetchOptional<ApiProject[] | { projects?: ApiProject[] }>('/webhook/projects', undefined, 10000, true)
-  if (!data) return null
-  const projects = Array.isArray(data) ? data : data.projects
-  return Array.isArray(projects) ? projects : null
+  if (data) {
+    const projects = Array.isArray(data) ? data : data.projects
+    if (Array.isArray(projects)) return projects.map((project) => normalizeApiProject(project as Record<string, any>))
+  }
+
+  const warnings: string[] = []
+  const projects = await fetchSupabaseRows(
+    'qops_projects?select=id,name,description,owner,module,release,status,tags,created_at,updated_at&order=updated_at.desc&limit=500',
+    warnings,
+  )
+  return projects.length ? projects.map(normalizeApiProject) : null
 }
 
 export async function createProjectRecord(project: ApiProject): Promise<ApiProject | null> {
-  return fetchOptional<ApiProject>('/webhook/projects', {
+  const data = await fetchOptional<ApiProject | { project?: ApiProject }>('/webhook/projects', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(project),
   }, 10000, true)
+  if (data) {
+    const saved = 'project' in data && data.project ? data.project : data as ApiProject
+    if (saved?.name) return normalizeApiProject(saved as Record<string, any>)
+  }
+
+  const headers = supabaseRestHeaders()
+  if (!headers || !project.name?.trim()) return null
+  const warnings: string[] = []
+  const existing = await fetchSupabaseRows(
+    `qops_projects?select=id,name,description,owner,module,release,status,tags,created_at,updated_at&name=eq.${encodeURIComponent(project.name.trim())}&order=created_at.desc&limit=1`,
+    warnings,
+  )
+  if (existing[0]) return normalizeApiProject(existing[0])
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/qops_projects`, {
+      method: 'POST',
+      headers: {
+        ...headers,
+        Prefer: 'return=representation',
+      },
+      body: JSON.stringify({
+        id: project.id,
+        name: project.name.trim(),
+        description: project.description || null,
+        owner: project.owner || null,
+        module: project.module || null,
+        release: project.release || null,
+        tags: Array.isArray(project.tags) ? project.tags : [],
+        status: project.status || 'draft',
+      }),
+    })
+    if (!res.ok) return null
+    const rows = await res.json().catch(() => [])
+    return Array.isArray(rows) && rows[0] ? normalizeApiProject(rows[0]) : null
+  } catch {
+    return null
+  }
 }
 
 export async function fetchArtifacts(): Promise<ApiArtifact[] | null> {
@@ -1606,7 +1705,7 @@ export async function fetchArtifacts(): Promise<ApiArtifact[] | null> {
 }
 
 export async function fetchGeneratedDocuments(): Promise<ApiGeneratedDocument[] | null> {
-  const data = await fetchOptional<ApiGeneratedDocument[] | { documents?: ApiGeneratedDocument[] }>('/webhook/generated-documents')
+  const data = await fetchOptional<ApiGeneratedDocument[] | { documents?: ApiGeneratedDocument[] }>('/webhook/generated-documents', undefined, 10000, true)
   if (!data) return null
   const documents = Array.isArray(data) ? data : data.documents
   return Array.isArray(documents) ? documents : null
@@ -1614,10 +1713,9 @@ export async function fetchGeneratedDocuments(): Promise<ApiGeneratedDocument[] 
 
 export async function fetchGenerationJobMetrics(): Promise<ApiJobMetric[] | null> {
   const summary = await fetchAnalyticsSummary({ pipeline: 'generation', days: 90 })
-  if (!summary?.recentJobs?.length) return null
-  return summary.recentJobs
+  const summaryMetrics = (summary?.recentJobs ?? [])
     .filter((job) => String(job.pipeline || 'generation') !== 'ingestion')
-    .map((job) => ({
+    .map((job): ApiJobMetric => ({
       jobId: job.jobId,
       projectName: job.projectName || null,
       documentType: job.documentType || null,
@@ -1628,8 +1726,10 @@ export async function fetchGenerationJobMetrics(): Promise<ApiJobMetric[] | null
       tokensTotal: job.tokensTotal ?? null,
       estimatedCostUsd: job.estimatedCostUsd ?? null,
       durationMs: job.durationMs ?? null,
+      metadata: job.metadata ?? null,
       createdAt: job.createdAt || null,
     }))
+  return summaryMetrics.length ? summaryMetrics : null
 }
 
 export async function fetchAuditEvents(): Promise<ApiAuditEvent[] | null> {

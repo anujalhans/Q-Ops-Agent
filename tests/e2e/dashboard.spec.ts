@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { adminUser, mockQopsBackend, registeredUser, seedSession } from './fixtures/qops-fixtures'
+import { adminUser, mockQopsBackend, nowIso, registeredUser, seedSession } from './fixtures/qops-fixtures'
 
 test.describe('authenticated dashboard', () => {
   test.beforeEach(async ({ page }) => {
@@ -98,5 +98,84 @@ test.describe('registered-user authorization surface', () => {
     await expect(page.getByRole('heading', { name: 'Settings Control Center' })).toBeVisible()
     await expect(page.getByText('Registered User Profile')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Invite User' })).not.toBeVisible()
+  })
+
+  test('registered user audit log and notifications exclude previous project activity', async ({ page }) => {
+    const quickCommerceUser = {
+      ...registeredUser,
+      email: 'anujalhans1@gmail.com',
+      name: 'Anuj Alhans',
+      projects: ['project-astracart-quick-commerce'],
+      projectRoles: [{ projectId: 'project-astracart-quick-commerce', projectName: 'AstraCart Quick Commerce Application', role: 'editor' }],
+    }
+    const scopedProjects = [
+      {
+        id: 'project-astracart-quick-commerce',
+        name: 'AstraCart Quick Commerce Application',
+        description: 'Quick commerce validation project.',
+        owner: 'Product Owner',
+        module: 'Commerce',
+        release: 'Release 1.0',
+        tags: ['quick-commerce'],
+        status: 'ready',
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      },
+      {
+        id: 'project-previous',
+        name: 'AstraCart Previous Assignment',
+        description: 'A project that is no longer assigned.',
+        owner: 'Product Owner',
+        module: 'Legacy',
+        release: 'Release 0.9',
+        tags: ['legacy'],
+        status: 'ready',
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      },
+    ]
+    const scopedAuditEvents = [
+      {
+        id: 'audit-current-assignment',
+        actor: 'Admin User',
+        action: 'USER_PROJECT_ASSIGNMENTS_UPDATED',
+        project: 'Backend',
+        entity: 'anujalhans1@gmail.com',
+        status: 'success',
+        timestamp: nowIso,
+        details: 'Anuj Alhans can now access AstraCart Quick Commerce Application as Editor.',
+      },
+      {
+        id: 'audit-old-project',
+        actor: 'anujalhans1@gmail.com',
+        action: 'GENERATION_COMPLETED',
+        project: 'AstraCart Previous Assignment',
+        entity: 'Test Strategy',
+        status: 'success',
+        timestamp: nowIso,
+        details: 'AstraCart Previous Assignment document generation completed.',
+      },
+    ]
+
+    await page.unroute('https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/**')
+    await page.unroute('http://localhost:5678/webhook/**')
+    await seedSession(page, quickCommerceUser)
+    await mockQopsBackend(page, quickCommerceUser, {
+      projectsResponse: { projects: scopedProjects },
+      auditEventsResponse: { events: scopedAuditEvents },
+    })
+
+    await page.goto('/dashboard')
+
+    await page.getByRole('button', { name: 'View Audit Log' }).click()
+    await expect(page.getByRole('heading', { name: 'Audit Log' })).toBeVisible()
+    await expect(page.getByText('AstraCart Quick Commerce Application').first()).toBeVisible()
+    await expect(page.getByText('AstraCart Previous Assignment')).not.toBeVisible()
+    await page.getByRole('button', { name: 'Close' }).click()
+
+    await page.getByRole('button', { name: 'Notifications' }).click()
+    await expect(page.getByText('Project access updated').first()).toBeVisible()
+    await expect(page.getByText('AstraCart Quick Commerce Application').first()).toBeVisible()
+    await expect(page.getByText('AstraCart Previous Assignment')).not.toBeVisible()
   })
 })

@@ -5,7 +5,7 @@ import DashboardPage from './pages/DashboardPage'
 import ExploreMorePage from './pages/ExploreMorePage'
 import AuthCallbackPage from './pages/AuthCallbackPage'
 import ToastList from './components/common/ToastList'
-import { clearSession, getAuthCallbackType, getUsableSession, signInWithPassword, signOut } from './lib/auth'
+import { TransientAuthError, clearSession, getAuthCallbackType, getUsableSession, signInWithPassword, signOut } from './lib/auth'
 import { fetchCurrentUser } from './lib/api'
 import type { CurrentUser } from './lib/api'
 
@@ -30,27 +30,45 @@ function App() {
   useEffect(() => {
     let cancelled = false
     async function restoreSession() {
-      const session = await getUsableSession()
-      if (!session) {
-        if (!cancelled) {
-          setIsAuthenticated(false)
-          setCurrentUser(null)
-          setAuthReady(true)
-        }
+      if (hasAuthCallbackHash) {
+        if (!cancelled) setAuthReady(true)
         return
       }
 
-      const user = await fetchCurrentUser()
-      if (cancelled) return
-      if (user?.status === 'active') {
-        setCurrentUser(user)
-        setIsAuthenticated(true)
-      } else {
-        clearSession()
-        setCurrentUser(null)
-        setIsAuthenticated(false)
+      try {
+        const session = await getUsableSession()
+        if (!session) {
+          if (!cancelled) {
+            setIsAuthenticated(false)
+            setCurrentUser(null)
+            setAuthReady(true)
+          }
+          return
+        }
+
+        const user = await fetchCurrentUser()
+        if (cancelled) return
+        if (user?.status === 'active') {
+          setCurrentUser(user)
+          setIsAuthenticated(true)
+        } else {
+          clearSession()
+          setCurrentUser(null)
+          setIsAuthenticated(false)
+        }
+        setAuthReady(true)
+      } catch (error) {
+        if (cancelled) return
+        if (error instanceof TransientAuthError) {
+          setIsAuthenticated(Boolean(localStorage.getItem('qops-agent-supabase-session')))
+          addToast({ title: 'Session check delayed', message: error.message, type: 'info' })
+        } else {
+          clearSession()
+          setCurrentUser(null)
+          setIsAuthenticated(false)
+        }
+        setAuthReady(true)
       }
-      setAuthReady(true)
     }
     restoreSession()
     return () => {

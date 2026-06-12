@@ -1,6 +1,7 @@
 import type { Page, Route } from '@playwright/test'
 
 export const nowIso = '2026-05-09T10:00:00.000Z'
+export const testAccessToken = 'test.header.payload'
 
 export const adminUser = {
   id: 'user-admin-1',
@@ -216,18 +217,21 @@ const infrastructureLoad = {
 }
 
 export async function seedSession(page: Page, user = adminUser) {
-  await page.addInitScript(({ sessionUser }) => {
+  const seed = ({ sessionUser, accessToken }) => {
     window.localStorage.setItem(
       'qops-agent-supabase-session',
       JSON.stringify({
-        accessToken: 'test-access-token',
+        accessToken,
         refreshToken: 'test-refresh-token',
         expiresAt: Math.floor(Date.now() / 1000) + 3600,
         user: { id: sessionUser.authUserId, email: sessionUser.email },
       }),
     )
     window.localStorage.setItem('qops-agent-api-base-url', 'http://localhost:5678')
-  }, { sessionUser: user })
+  }
+  await page.addInitScript(seed, { sessionUser: user, accessToken: testAccessToken })
+  await page.goto('/')
+  await page.evaluate(seed, { sessionUser: user, accessToken: testAccessToken })
 }
 
 async function fulfill(route: Route, body: unknown, status = 200) {
@@ -244,6 +248,8 @@ type MockOptions = {
   generationResponse?: unknown
   kbStatusResponse?: unknown
   docStatusResponse?: unknown
+  projectsResponse?: unknown
+  auditEventsResponse?: unknown
 }
 
 export async function mockQopsBackend(page: Page, user = adminUser, options: MockOptions = {}) {
@@ -257,7 +263,7 @@ export async function mockQopsBackend(page: Page, user = adminUser, options: Moc
         }, 400)
       }
       return fulfill(route, {
-        access_token: 'test-access-token',
+        access_token: testAccessToken,
         refresh_token: 'test-refresh-token',
         expires_in: 3600,
         user: { id: user.authUserId, email: user.email },
@@ -277,11 +283,11 @@ export async function mockQopsBackend(page: Page, user = adminUser, options: Moc
     if (path === '/webhook/me') return fulfill(route, user)
     if (path === '/webhook/health') return fulfill(route, healthStatus)
     if (path === '/webhook/infrastructure-load') return fulfill(route, infrastructureLoad)
-    if (path === '/webhook/projects' && method === 'GET') return fulfill(route, { projects })
+    if (path === '/webhook/projects' && method === 'GET') return fulfill(route, options.projectsResponse ?? { projects })
     if (path === '/webhook/projects' && method === 'POST') return fulfill(route, projects[0])
     if (path === '/webhook/artifacts') return fulfill(route, { artifacts })
     if (path === '/webhook/generated-documents') return fulfill(route, { documents: generatedDocuments })
-    if (path === '/webhook/audit-events') return fulfill(route, { events: auditEvents })
+    if (path === '/webhook/audit-events') return fulfill(route, options.auditEventsResponse ?? { events: auditEvents })
     if (path === '/webhook/analytics-summary') return fulfill(route, analyticsSummary)
     if (path === '/webhook/settings' && method === 'GET') return fulfill(route, settingsResponse)
     if (path === '/webhook/settings' && method === 'PATCH') return fulfill(route, { ok: true, settingsVersion: 4 })

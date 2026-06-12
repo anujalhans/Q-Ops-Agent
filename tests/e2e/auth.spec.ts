@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { adminUser, disabledUser, mockQopsBackend, seedSession } from './fixtures/qops-fixtures'
+import { adminUser, disabledUser, mockQopsBackend, seedSession, testAccessToken } from './fixtures/qops-fixtures'
 
 test.describe('authentication, authorization, and session lifecycle', () => {
   test('valid Supabase login resolves Q-Ops profile and opens dashboard', async ({ page }) => {
@@ -13,7 +13,7 @@ test.describe('authentication, authorization, and session lifecycle', () => {
 
     await expect(page).toHaveURL(/\/dashboard$/)
     await expect(page.getByRole('heading', { name: /Good .* Admin/i })).toBeVisible()
-    await expect(page.evaluate(() => window.localStorage.getItem('qops-agent-supabase-session'))).resolves.toContain('test-access-token')
+    await expect(page.evaluate(() => window.localStorage.getItem('qops-agent-supabase-session'))).resolves.toContain(testAccessToken)
   })
 
   test('invalid Supabase login keeps user on landing page and shows error', async ({ page }) => {

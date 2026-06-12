@@ -1,0 +1,33 @@
+{
+  "ids": [
+    1076949,
+    1076954,
+    1076957
+  ],
+  "rows": [
+    {
+      "id": 1076949,
+      "workflowId": "ivz13uFyjfCT8149",
+      "mode": "trigger",
+      "status": "running",
+      "startedAt": "2026-06-11 05:34:00.043",
+      "stoppedAt": null
+    },
+    {
+      "id": 1076954,
+      "workflowId": "SG7khcKlhHst48WH",
+      "mode": "integrated",
+      "status": "running",
+      "startedAt": "2026-06-11 05:34:03.901",
+      "stoppedAt": null
+    },
+    {
+      "id": 1076957,
+      "workflowId": "ivz13uFyjfCT8149",
+      "mode": "trigger",
+      "status": "running",
+      "startedAt": "2026-06-11 05:34:20.024",
+      "stoppedAt": null
+    }
+  ]
+}

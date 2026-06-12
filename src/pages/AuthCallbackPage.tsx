@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { CheckCircle2, KeyRound, Loader2, ShieldAlert } from 'lucide-react'
 import { acceptUserInvite, auditPasswordReset, fetchCurrentUser } from '../lib/api'
 import type { CurrentUser } from '../lib/api'
-import { clearSession, getAuthCallbackType, storeSessionFromAuthCallback, updateCurrentUserPassword } from '../lib/auth'
+import { clearSession, getAuthCallbackType, signInWithPassword, storeSessionFromAuthCallback, updateCurrentUserPassword } from '../lib/auth'
 
 type ToastType = 'success' | 'error' | 'info'
 
@@ -37,13 +37,8 @@ export default function AuthCallbackPage({ onAuthenticated, addToast }: Props) {
         }
         const nextMode = callbackType as CallbackMode
         setMode(nextMode)
+        clearSession()
         const session = await storeSessionFromAuthCallback(window.location.hash)
-        if (nextMode === 'invite') {
-          const accepted = await acceptUserInvite()
-          if (!accepted?.id || accepted.status !== 'active') {
-            throw new Error('The invite was verified, but the Q-Ops user profile was not activated.')
-          }
-        }
         window.history.replaceState(null, document.title, window.location.pathname)
         setEmail(session.user.email || '')
         setState('ready')
@@ -70,8 +65,26 @@ export default function AuthCallbackPage({ onAuthenticated, addToast }: Props) {
     setState('submitting')
     setMessage('')
     try {
+      const setupEmail = email.trim()
+      if (!setupEmail) {
+        throw new Error('This authentication link is missing an email address. Please request a fresh link.')
+      }
+
       await updateCurrentUserPassword(password)
-      const user = await fetchCurrentUser()
+
+      await signInWithPassword(setupEmail, password)
+
+      let user: CurrentUser | null = null
+      if (mode === 'invite') {
+        const accepted = await acceptUserInvite()
+        if (!accepted?.id || accepted.status !== 'active') {
+          throw new Error('Your password was set, but the Q-Ops user profile was not activated.')
+        }
+        user = accepted
+      } else {
+        user = await fetchCurrentUser()
+      }
+
       if (!user?.id || user.status !== 'active') {
         throw new Error('Your password was set, but the Q-Ops user profile could not be loaded.')
       }

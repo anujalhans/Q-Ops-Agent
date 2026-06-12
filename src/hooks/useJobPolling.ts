@@ -55,6 +55,11 @@ function getFailureMessage(kind: Kind, data: StatusResponse) {
   return kind === 'kb' ? 'Job failed. Please try again.' : 'Document generation failed. Please try again.'
 }
 
+function normalizePolledStatus(status: string): JobStatus {
+  if (status === 'preparing' || status === 'hydrating') return 'pending'
+  return status as JobStatus
+}
+
 export type JobState = {
   status: JobStatus
   jobId: string | null
@@ -99,20 +104,15 @@ export function useJobPolling(kind: Kind, addToast: AddToast) {
       } catch {
         retriesRef.current += 1
         if (retriesRef.current >= 3) {
-          if (isKnowledgeJob) {
-            setState((current) => ({
-              ...current,
-              status: current.status === 'queued' || current.status === 'idle' ? 'pending' : current.status,
-              error: 'Status check is temporarily unavailable. The backend job may still be running.',
-            }))
-            return
-          }
           setState((current) => ({
             ...current,
-            status: 'failed',
-            error: 'Failed to check document generation status.',
+            status: current.status === 'queued' || current.status === 'idle' || current.status === 'not_found'
+              ? 'pending'
+              : current.status,
+            error: isKnowledgeJob
+              ? 'Status check is temporarily unavailable. The backend job may still be running.'
+              : 'Status refresh is temporarily unavailable. The document job may still be running.',
           }))
-          stop()
         }
         return
       }
@@ -130,7 +130,7 @@ export function useJobPolling(kind: Kind, addToast: AddToast) {
         return
       }
 
-      const status = data.status as JobStatus
+      const status = normalizePolledStatus(String(data.status || 'not_found'))
       if (status === 'completed') {
         setState((current) => ({ ...current, status: 'completed', output: data.output ?? data }))
         addToast({ title: labels.completedTitle, message: labels.completedMessage, type: 'success' })
@@ -145,9 +145,9 @@ export function useJobPolling(kind: Kind, addToast: AddToast) {
         addToast({ title: labels.failedTitle, message: labels.failedMessage, type: 'error' })
         stop()
       } else if (status === 'pending') {
-        setState((current) => ({ ...current, status: 'pending' }))
+        setState((current) => ({ ...current, status: 'pending', output: data.output ?? data }))
       } else if (status === 'processing') {
-        setState((current) => ({ ...current, status: 'processing' }))
+        setState((current) => ({ ...current, status: 'processing', output: data.output ?? data }))
         clearInitialDelay()
         if (!seenProcessingToastRef.current) {
           seenProcessingToastRef.current = true
@@ -156,25 +156,19 @@ export function useJobPolling(kind: Kind, addToast: AddToast) {
         if (intervalRef.current) clearInterval(intervalRef.current)
         intervalRef.current = window.setInterval(() => {
           void poll(jobId)
-        }, 45000)
+        }, kind === 'doc' ? 10000 : 45000)
       } else if (status === 'not_found') {
         retriesRef.current += 1
         if (retriesRef.current >= 3) {
-          if (isKnowledgeJob) {
-            setState((current) => ({
-              ...current,
-              status: current.status === 'queued' || current.status === 'not_found' ? 'pending' : current.status,
-              error: 'Job status is not visible yet. Continuing to poll.',
-            }))
-            return
-          }
           setState((current) => ({
             ...current,
-            status: 'failed',
-            error: 'Document job not found after retries.',
+            status: current.status === 'queued' || current.status === 'not_found' || current.status === 'idle'
+              ? 'pending'
+              : current.status,
+            error: isKnowledgeJob
+              ? 'Job status is not visible yet. Continuing to poll.'
+              : 'Document job status is not visible yet. Continuing to poll.',
           }))
-          addToast({ title: labels.notFoundTitle, message: labels.notFoundMessage, type: 'error' })
-          stop()
         } else {
           setState((current) => ({ ...current, status: 'not_found' }))
         }
@@ -190,12 +184,12 @@ export function useJobPolling(kind: Kind, addToast: AddToast) {
       stop()
       retriesRef.current = 0
       seenProcessingToastRef.current = false
-      setState({ status: (response.status as JobStatus) ?? 'queued', jobId: response.jobId, output: null, error: '' })
-      const delay = kind === 'kb' ? 5000 : 30000
+      setState({ status: response.status ? normalizePolledStatus(response.status) : 'queued', jobId: response.jobId, output: null, error: '' })
+      const delay = kind === 'kb' ? 5000 : 5000
       initialDelayRef.current = window.setTimeout(() => {
         intervalRef.current = window.setInterval(() => {
           void poll(response.jobId)
-        }, 30000)
+        }, kind === 'doc' ? 10000 : 30000)
       }, delay)
       void poll(response.jobId)
     },

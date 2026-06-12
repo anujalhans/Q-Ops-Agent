@@ -35,6 +35,13 @@ type SupabaseUserResponse = {
   msg?: string
 }
 
+export class TransientAuthError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'TransientAuthError'
+  }
+}
+
 function authHeaders(accessToken?: string) {
   return {
     apikey: SUPABASE_PUBLISHABLE_KEY,
@@ -45,6 +52,20 @@ function authHeaders(accessToken?: string) {
 
 function getAuthError(data: { error?: string; error_description?: string; msg?: string }, fallback: string) {
   return data.error_description || data.msg || data.error || fallback
+}
+
+function isInvalidRefreshTokenError(data: { error?: string; error_description?: string; msg?: string }) {
+  const message = getAuthError(data, '').toLowerCase()
+  return (
+    message.includes('invalid refresh token') ||
+    message.includes('refresh token not found') ||
+    message.includes('refresh token already used') ||
+    message.includes('invalid_grant')
+  )
+}
+
+async function readAuthJson<T>(res: Response): Promise<T> {
+  return (await res.json().catch(() => ({}))) as T
 }
 
 function toSession(data: SupabaseTokenResponse): AuthSession {
@@ -171,15 +192,24 @@ export async function refreshStoredSession(): Promise<AuthSession | null> {
   const current = getStoredSession()
   if (!current?.refreshToken) return null
 
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
-    method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({ refresh_token: current.refreshToken }),
-  })
-  const data = (await res.json()) as SupabaseTokenResponse
+  let res: Response
+  try {
+    res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ refresh_token: current.refreshToken }),
+    })
+  } catch {
+    throw new TransientAuthError('Unable to refresh your login session because the auth service is temporarily unreachable. Please retry in a moment.')
+  }
+
+  const data = await readAuthJson<SupabaseTokenResponse>(res)
   if (!res.ok) {
-    clearSession()
-    return null
+    if ((res.status === 400 || res.status === 401 || res.status === 403) && isInvalidRefreshTokenError(data)) {
+      clearSession()
+      return null
+    }
+    throw new TransientAuthError(`Unable to refresh your login session right now (${res.status}). Please retry in a moment.`)
   }
 
   const session = toSession(data)
