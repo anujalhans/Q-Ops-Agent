@@ -133,6 +133,8 @@ const architectureLayers = [
 ] as const
 
 const SESSION_KEY = 'qops-agent-supabase-session'
+const sectionShell = 'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'
+const elevatedPanel = 'rounded-lg border border-outline-variant bg-surface-container-lowest shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10'
 
 export default function ExploreMorePage() {
   const navigate = useNavigate()
@@ -154,26 +156,26 @@ export default function ExploreMorePage() {
 
   return (
     <div className="min-h-screen bg-background text-on-surface">
-      <nav className="sticky top-0 z-40 border-b border-outline-variant bg-surface-container-lowest/95 px-4 text-sm font-medium shadow-sm backdrop-blur sm:px-6">
+      <nav className="sticky top-0 z-40 border-b border-outline-variant bg-surface-container-lowest/90 px-4 text-sm font-medium shadow-sm backdrop-blur-xl sm:px-6">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between">
           <div className="flex items-center gap-4 sm:gap-8">
             <button onClick={() => navigate('/')} className="flex items-center gap-2 text-left sm:gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-base font-bold text-on-primary">Q</div>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-base font-black text-on-primary shadow-sm shadow-primary/25">Q</div>
               <span className="font-display text-base font-black tracking-tight text-on-surface sm:text-lg">Q-Ops Agent</span>
             </button>
-            <div className="hidden items-center gap-6 md:flex">
-              <a href="#lifecycle" className="text-on-surface-variant transition-colors hover:text-primary">Lifecycle</a>
-              <a href="#x-factor" className="text-on-surface-variant transition-colors hover:text-primary">X-Factor</a>
-              <a href="#comparison" className="text-on-surface-variant transition-colors hover:text-primary">Comparison</a>
-              <a href="#outputs" className="text-on-surface-variant transition-colors hover:text-primary">Outputs</a>
-              <a href="#architecture" className="text-on-surface-variant transition-colors hover:text-primary">Architecture</a>
+            <div className="hidden items-center gap-1 rounded-lg border border-outline-variant bg-surface-container-low p-1 md:flex">
+              <a href="#lifecycle" className="rounded-md px-3 py-1.5 text-on-surface-variant transition hover:bg-surface-container-lowest hover:text-primary">Lifecycle</a>
+              <a href="#x-factor" className="rounded-md px-3 py-1.5 text-on-surface-variant transition hover:bg-surface-container-lowest hover:text-primary">X-Factor</a>
+              <a href="#comparison" className="rounded-md px-3 py-1.5 text-on-surface-variant transition hover:bg-surface-container-lowest hover:text-primary">Comparison</a>
+              <a href="#outputs" className="rounded-md px-3 py-1.5 text-on-surface-variant transition hover:bg-surface-container-lowest hover:text-primary">Outputs</a>
+              <a href="#architecture" className="rounded-md px-3 py-1.5 text-on-surface-variant transition hover:bg-surface-container-lowest hover:text-primary">Architecture</a>
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            <button type="button" onClick={toggle} className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="Toggle theme">
+            <button type="button" onClick={toggle} className="rounded-lg border border-outline-variant bg-surface-container-low p-2 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="Toggle theme">
               {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
             </button>
-            <button onClick={() => navigate(ctaTarget)} className="rounded-lg border border-outline-variant px-4 py-1.5 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high">
+            <button onClick={() => navigate(ctaTarget)} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary shadow-sm shadow-primary/20 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/25">
               {ctaLabel}
             </button>
           </div>
@@ -181,10 +183,11 @@ export default function ExploreMorePage() {
       </nav>
 
       <main>
-        <section className="bg-surface px-4 py-12 sm:px-6 sm:py-16">
-          <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[minmax(0,0.56fr)_minmax(22rem,0.44fr)] lg:gap-12">
+        <section className="relative overflow-hidden border-b border-outline-variant bg-surface-container-lowest px-4 py-12 sm:px-6 sm:py-16">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_12%,color-mix(in_srgb,var(--primary)_16%,transparent),transparent_34%),linear-gradient(180deg,color-mix(in_srgb,var(--surface-container-low)_82%,transparent),var(--surface))]" />
+          <div className="relative mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[minmax(0,0.56fr)_minmax(22rem,0.44fr)] lg:gap-12">
             <div>
-              <span className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Advanced QA operations intelligence</span>
+              <span className="inline-flex rounded-lg border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-primary">Advanced QA operations intelligence</span>
               <h1 className="mt-4 font-display text-4xl font-black leading-tight tracking-tight text-on-surface sm:text-5xl">
                 From Project Evidence to Governed QA Delivery
               </h1>
@@ -192,16 +195,16 @@ export default function ExploreMorePage() {
                 Q-Ops Agent turns BRD, FRD, designs, transcripts, and supporting documents into traceable QA deliverables, Jira backlog, Story Test Cases, and RTM with coverage review, update awareness, retry recovery, and cost visibility.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
-                <a href="#lifecycle" className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-bold text-on-primary transition-opacity hover:opacity-90">
+                <a href="#lifecycle" className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-bold text-on-primary shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/25">
                   Explore lifecycle <ArrowRight className="h-4 w-4" />
                 </a>
-                <button onClick={() => navigate(ctaTarget)} className="rounded-lg border border-outline-variant px-6 py-3 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high">
+                <button onClick={() => navigate(ctaTarget)} className="rounded-lg border border-outline-variant bg-surface-container-lowest px-6 py-3 text-sm font-bold text-on-surface shadow-sm transition hover:-translate-y-0.5 hover:border-primary/45 hover:bg-surface-container-low">
                   {ctaLabel}
                 </button>
               </div>
             </div>
 
-            <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-5 shadow-sm">
+            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5 shadow-2xl shadow-primary/10">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">What normal AI agents miss</p>
               <div className="mt-4 space-y-3">
                 {[
@@ -209,7 +212,7 @@ export default function ExploreMorePage() {
                   ['Evidence', 'Outputs are grounded in project-scoped chunks and coverage ledgers.'],
                   ['Delivery', 'The system publishes into Jira and Confluence with audit and usage telemetry.'],
                 ].map(([title, text]) => (
-                  <div key={title} className="rounded-lg border border-outline-variant bg-surface-container-low p-4">
+                  <div key={title} className="rounded-lg border border-outline-variant bg-surface-container-low p-4 transition hover:border-primary/35 hover:bg-surface-container-lowest">
                     <p className="font-bold text-on-surface">{title}</p>
                     <p className="mt-1 text-sm leading-6 text-on-surface-variant">{text}</p>
                   </div>
@@ -219,8 +222,8 @@ export default function ExploreMorePage() {
           </div>
         </section>
 
-        <section id="lifecycle" className="bg-surface-container-lowest py-12 sm:py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <section id="lifecycle" className="bg-surface-container-low py-12 sm:py-16">
+          <div className={sectionShell}>
             <SectionIntro
               eyebrow="Governed output lifecycle"
               title="A stateful workflow from source artifacts to trusted QA outputs"
@@ -228,9 +231,9 @@ export default function ExploreMorePage() {
             />
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {lifecycleSteps.map(([Icon, title, text], index) => (
-                <article key={title} className="rounded-lg border border-outline-variant bg-surface-container-lowest p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10">
+                <article key={title} className={`${elevatedPanel} p-5`}>
                   <div className="flex items-start gap-4">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary">{index + 1}</span>
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-on-primary shadow-sm shadow-primary/20">{index + 1}</span>
                     <div>
                       <Icon className="mb-3 h-5 w-5 text-primary" />
                       <h3 className="text-lg font-bold text-on-surface">{title}</h3>
@@ -244,7 +247,7 @@ export default function ExploreMorePage() {
         </section>
 
         <section id="x-factor" className="bg-surface py-12 sm:py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className={sectionShell}>
             <SectionIntro
               eyebrow="The Q-Ops X-factor"
               title="Built around quality operations, not one-off generation"
@@ -252,8 +255,8 @@ export default function ExploreMorePage() {
             />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {xFactors.map(([title, text]) => (
-                <article key={title} className="rounded-lg border border-outline-variant bg-surface-container-lowest p-5 transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:bg-primary/5 hover:shadow-lg hover:shadow-primary/10">
-                  <CheckCircle2 className="h-6 w-6 text-success" />
+                <article key={title} className={`${elevatedPanel} p-5`}>
+                  <CheckCircle2 className="h-8 w-8 rounded-lg bg-success/10 p-1.5 text-success" />
                   <h3 className="mt-4 text-base font-bold text-on-surface">{title}</h3>
                   <p className="mt-2 text-sm leading-6 text-on-surface-variant">{text}</p>
                 </article>
@@ -263,17 +266,17 @@ export default function ExploreMorePage() {
         </section>
 
         <section id="comparison" className="bg-surface-container py-12 sm:py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className={sectionShell}>
             <SectionIntro
               eyebrow="Standard AI agents vs Q-Ops Agent"
               title="The difference is workflow control, evidence, and operational memory"
             />
             <ComparisonTable rows={expanded ? comparisonRows : condensedRows} />
             <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <button onClick={() => setExpanded((current) => !current)} className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-bold text-on-primary">
+              <button onClick={() => setExpanded((current) => !current)} className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-bold text-on-primary shadow-sm shadow-primary/20 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/25">
                 {expanded ? 'Show Less' : 'See Full Comparison'} {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </button>
-              <button onClick={() => setModalOpen(true)} className="rounded-lg border border-outline-variant px-5 py-3 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high">
+              <button onClick={() => setModalOpen(true)} className="rounded-lg border border-outline-variant bg-surface-container-lowest px-5 py-3 text-sm font-bold text-on-surface shadow-sm transition hover:-translate-y-0.5 hover:border-primary/45 hover:bg-surface-container-high">
                 Open Full View
               </button>
             </div>
@@ -287,7 +290,7 @@ export default function ExploreMorePage() {
               title="Q-Ops publishes where delivery teams already work"
               intro="The system is designed for operational adoption: Confluence for shared QA documents, Jira for backlog/test work, and Q-Ops for status, readiness, coverage, and cost visibility."
             />
-            <div className="overflow-hidden rounded-lg border border-outline-variant bg-surface-container-lowest shadow-sm">
+            <div className="overflow-hidden rounded-lg border border-outline-variant bg-surface-container-lowest shadow-lg shadow-primary/5">
               {outputMap.map(([output, destination, value]) => (
                 <div key={output} className="grid gap-2 border-b border-outline-variant px-4 py-4 last:border-b-0 hover:bg-primary/5 sm:grid-cols-[13rem_13rem_minmax(0,1fr)]">
                   <p className="font-bold text-on-surface">{output}</p>
@@ -300,15 +303,15 @@ export default function ExploreMorePage() {
         </section>
 
         <section className="bg-surface-container-lowest py-12 sm:py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className={sectionShell}>
             <SectionIntro
               eyebrow="Role-based value"
               title="Different users get different decisions from the same operating view"
             />
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {roles.map(([Icon, role, text]) => (
-                <article key={role} className="rounded-lg border border-outline-variant bg-surface-container-lowest p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-success/40 hover:shadow-lg hover:shadow-success/10">
-                  <Icon className="h-7 w-7 text-success" />
+                <article key={role} className={`${elevatedPanel} p-5 hover:border-success/40 hover:shadow-success/10`}>
+                  <Icon className="h-9 w-9 rounded-lg bg-success/10 p-2 text-success" />
                   <h3 className="mt-4 text-lg font-bold text-on-surface">{role}</h3>
                   <p className="mt-2 text-sm leading-6 text-on-surface-variant">{text}</p>
                 </article>
@@ -318,7 +321,7 @@ export default function ExploreMorePage() {
         </section>
 
         <section id="architecture" className="bg-surface-container py-12 sm:py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className={sectionShell}>
             <SectionIntro
               eyebrow="How the system earns trust"
               title="Architecture explained as product behavior"
@@ -326,7 +329,7 @@ export default function ExploreMorePage() {
             />
             <div className="grid gap-4 lg:grid-cols-5">
               {architectureLayers.map(([title, text], index) => (
-                <article key={title} className="rounded-lg border border-outline-variant bg-surface-container-lowest p-5 shadow-sm">
+                <article key={title} className={`${elevatedPanel} p-5`}>
                   <span className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Layer {index + 1}</span>
                   <h3 className="mt-3 text-base font-bold text-on-surface">{title}</h3>
                   <p className="mt-2 text-sm leading-6 text-on-surface-variant">{text}</p>
@@ -337,26 +340,29 @@ export default function ExploreMorePage() {
         </section>
 
         <section className="px-4 py-12 sm:px-6 sm:py-16">
-          <div className="relative mx-auto max-w-7xl overflow-hidden rounded-lg bg-[#1b1b24] p-8 text-center text-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/20 sm:p-12 md:p-16">
+          <div className="relative mx-auto max-w-7xl overflow-hidden rounded-xl border border-outline-variant bg-[#1b1b24] p-8 text-center text-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/20 sm:p-12 md:p-16">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(173,198,255,0.24),transparent_34%)]" />
+            <div className="relative z-10">
             <p className="text-xs font-bold uppercase tracking-widest text-white/70">Move beyond prompt-based QA generation</p>
             <h2 className="mt-3 font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">Explore the system, then run it against a real project.</h2>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-white/70">
               Q-Ops is built for teams that need reliable generation, traceable coverage, controlled updates, and operational visibility across the QA delivery lifecycle.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <button onClick={() => navigate(ctaTarget)} className="rounded-lg bg-primary px-8 py-3 text-sm font-bold text-on-primary transition-opacity hover:opacity-90 sm:px-10">
+              <button onClick={() => navigate(ctaTarget)} className="rounded-lg bg-primary px-8 py-3 text-sm font-bold text-on-primary shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/25 sm:px-10">
                 {isAuthenticated ? 'Open Dashboard' : 'Login'}
               </button>
               <button onClick={() => navigate('/')} className="rounded-lg border border-white/20 bg-white/10 px-8 py-3 text-sm font-bold text-white transition-all hover:bg-white/20 sm:px-10">
                 Back to landing
               </button>
             </div>
+            </div>
           </div>
         </section>
       </main>
 
       {modalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/50 p-4 backdrop-blur-sm sm:p-6" onClick={() => setModalOpen(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/55 p-4 backdrop-blur-md sm:p-6" onClick={() => setModalOpen(false)}>
           <div className="max-h-dvh w-full max-w-6xl overflow-auto rounded-lg border border-outline-variant bg-surface-container-lowest p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-xl font-bold text-on-surface">Full Q-Ops Comparison</h2>
@@ -375,7 +381,7 @@ export default function ExploreMorePage() {
 function SectionIntro({ eyebrow, title, intro }: { eyebrow: string; title: string; intro?: string }) {
   return (
     <div className="mb-8 text-center sm:mb-10">
-      <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">{eyebrow}</p>
+      <p className="inline-flex rounded-lg border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-primary">{eyebrow}</p>
       <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-on-surface sm:text-3xl">{title}</h2>
       {intro ? <p className="mx-auto mt-3 max-w-3xl text-sm leading-6 text-on-surface-variant sm:text-base">{intro}</p> : null}
     </div>
@@ -384,10 +390,10 @@ function SectionIntro({ eyebrow, title, intro }: { eyebrow: string; title: strin
 
 function ComparisonTable({ rows }: { rows: ComparisonRow[] }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-outline-variant bg-surface-container-lowest shadow-sm">
+    <div className="overflow-x-auto rounded-lg border border-outline-variant bg-surface-container-lowest shadow-lg shadow-primary/5">
       <table className="w-full min-w-[54rem] border-collapse text-left text-sm">
         <thead>
-          <tr className="border-b border-outline-variant bg-surface-container-low">
+          <tr className="border-b border-outline-variant bg-surface-container-high">
             <th className="p-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">Capability</th>
             <th className="p-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">Standard AI Agent</th>
             <th className="p-4 text-xs font-bold uppercase tracking-wider text-primary">Q-Ops Agent</th>

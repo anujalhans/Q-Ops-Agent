@@ -190,6 +190,11 @@ type NotificationEvent = {
   actionView?: View
 }
 
+type NotificationTrayItem = NotificationEvent & { count?: number }
+
+const NOTIFICATION_TRAY_WINDOW_DAYS = 7
+const NOTIFICATION_TRAY_WINDOW_MS = NOTIFICATION_TRAY_WINDOW_DAYS * 24 * 60 * 60 * 1000
+
 type AuditEvent = {
   id: string
   actor: string
@@ -3186,6 +3191,28 @@ function retryStateTone(state: ArtifactRetryState): StatusTone {
   return 'warning'
 }
 
+function artifactDisplayTone(status: ArtifactDisplayStatus): StatusTone {
+  if (status === 'processed' || status === 'recovered') return 'success'
+  if (status === 'needs_retry') return 'error'
+  return 'info'
+}
+
+function artifactStatusLabel(status: ArtifactDisplayStatus) {
+  if (status === 'processed') return 'Processed'
+  if (status === 'needs_retry') return 'Needs retry'
+  if (status === 'recovered') return 'Recovered'
+  if (status === 'retrying') return 'Retry in progress'
+  return 'Processing'
+}
+
+function artifactAccentClasses(status: ArtifactDisplayStatus) {
+  if (status === 'processed') return 'border-l-success/70'
+  if (status === 'recovered') return 'border-l-success/70'
+  if (status === 'needs_retry') return 'border-l-error/70'
+  if (status === 'retrying') return 'border-l-warning/70'
+  return 'border-l-primary/70'
+}
+
 function matchKnowledgeJobArtifacts(job: KnowledgeJobRecord, records: ArtifactRecord[]) {
   const exact = job.jobId ? records.filter((record) => record.jobId === job.jobId) : []
   if (exact.length) return exact
@@ -3761,16 +3788,39 @@ function isDeliveryIntelligenceView(view: View): view is DeliveryIntelligenceVie
   return view.startsWith('di-')
 }
 
-function NavItem({ active, icon: Icon, label, onClick }: { active?: boolean; icon: typeof LayoutDashboard; label: string; onClick: () => void }) {
+function NavItem({
+  active,
+  disabled,
+  icon: Icon,
+  label,
+  onClick,
+  badge,
+}: {
+  active?: boolean
+  disabled?: boolean
+  icon: typeof LayoutDashboard
+  label: string
+  onClick: () => void
+  badge?: string
+}) {
   return (
     <button
       onClick={onClick}
-      className={`flex w-full items-center gap-4 rounded-lg px-6 py-3 text-left transition-transform duration-150 active:scale-[0.98] ${
-        active ? 'bg-primary/10 font-semibold text-primary' : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+      disabled={disabled}
+      aria-disabled={disabled}
+      className={`group flex w-full items-center gap-3 rounded-lg border px-4 py-2.5 text-left transition-all duration-150 active:scale-[0.99] ${
+        disabled
+          ? 'cursor-not-allowed border border-transparent text-on-surface-variant/45 opacity-70 grayscale'
+          : active
+            ? 'border-primary/25 bg-primary/10 font-semibold text-primary shadow-sm'
+            : 'border-transparent text-on-surface-variant hover:border-outline-variant hover:bg-surface-container-low hover:text-on-surface'
       }`}
     >
-      <Icon className="h-5 w-5" />
-      <span className="text-sm font-semibold tracking-wide">{label}</span>
+      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors ${active && !disabled ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant group-hover:bg-surface-container-high group-hover:text-on-surface'}`}>
+        <Icon className="h-4 w-4" />
+      </span>
+      <span className="min-w-0 flex-1 text-sm font-semibold tracking-wide">{label}</span>
+      {badge ? <span className="rounded-md border border-outline-variant/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-on-surface-variant/70">{badge}</span> : null}
     </button>
   )
 }
@@ -5600,23 +5650,25 @@ export default function DashboardPage({ onLogout, addToast, currentUser }: Props
   return (
     <div className="min-h-screen bg-background text-on-surface">
       {sidebarOpen ? <button className="fixed inset-0 z-40 bg-black/40 lg:hidden" aria-label="Close navigation" onClick={() => setSidebarOpen(false)} /> : null}
-      <aside className={`fixed left-0 top-0 z-50 flex max-h-dvh min-h-dvh w-80 max-w-full flex-col border-r border-outline-variant bg-surface-container-lowest/95 backdrop-blur-xl transition-transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex min-h-28 shrink-0 items-center gap-4 px-5 sm:px-8">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-on-primary shadow-sm">
+      <aside className={`fixed left-0 top-0 z-50 flex max-h-dvh min-h-dvh w-80 max-w-full flex-col border-r border-outline-variant bg-surface-container-lowest/96 shadow-xl shadow-inverse-surface/5 backdrop-blur-xl transition-transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="shrink-0 border-b border-outline-variant/70 px-5 py-6 sm:px-6">
+          <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-on-primary shadow-lg shadow-primary/20">
             <Network className="h-7 w-7" />
           </div>
           <div className="min-w-0 flex-1">
             <h1 className="text-xl font-bold leading-none text-on-surface">Q-Ops Agent</h1>
             <p className="text-xs font-medium text-on-surface-variant">A Purpose-Built AI System for QA Engineering</p>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="rounded-full p-2 text-on-surface-variant hover:bg-surface-container lg:hidden" aria-label="Close navigation">
+          <button onClick={() => setSidebarOpen(false)} className="rounded-lg p-2 text-on-surface-variant hover:bg-surface-container lg:hidden" aria-label="Close navigation">
             <X className="h-5 w-5" />
           </button>
+          </div>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6">
-          <nav className="space-y-5">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
+          <nav className="space-y-6">
             <section className="space-y-2">
-              <div className="sticky top-0 z-10 -mx-5 border-b border-outline-variant/60 bg-surface-container-lowest/95 px-11 py-3 text-xs font-bold uppercase tracking-widest text-on-surface-variant backdrop-blur-xl">
+              <div className="sticky top-0 z-10 -mx-4 bg-surface-container-lowest/95 px-8 py-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant backdrop-blur-xl">
                 QA Intelligence
               </div>
               <div className="space-y-2">
@@ -5628,68 +5680,80 @@ export default function DashboardPage({ onLogout, addToast, currentUser }: Props
               </div>
             </section>
             <section className="space-y-2">
-              <div className="sticky top-11 z-10 -mx-5 border-b border-outline-variant/60 bg-surface-container-lowest/95 px-11 py-3 text-xs font-bold uppercase tracking-widest text-on-surface-variant backdrop-blur-xl">
+              <div className="sticky top-10 z-10 -mx-4 bg-surface-container-lowest/95 px-8 py-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant/50 backdrop-blur-xl">
                 Delivery Intelligence
               </div>
-              <div className="space-y-2">
-                <NavItem active={view === 'di-overview'} icon={Brain} label="DI Overview" onClick={() => navigateTo('di-overview')} />
-                <NavItem active={view === 'di-profile'} icon={Brain} label="Project Profile" onClick={() => navigateTo('di-profile')} />
-                <NavItem active={view === 'di-onboarding'} icon={BookOpen} label="Onboarding" onClick={() => navigateTo('di-onboarding')} />
-                <NavItem active={view === 'di-discovery'} icon={Search} label="Discovery" onClick={() => navigateTo('di-discovery')} />
-                <NavItem active={view === 'di-solutions'} icon={Database} label="Solutions" onClick={() => navigateTo('di-solutions')} />
-                <NavItem active={view === 'di-governance'} icon={ShieldCheck} label="Governance" onClick={() => navigateTo('di-governance')} />
-                <NavItem active={view === 'di-similarity'} icon={Network} label="Similarity" onClick={() => navigateTo('di-similarity')} />
-                <NavItem active={view === 'di-technologies'} icon={Network} label="Technologies" onClick={() => navigateTo('di-technologies')} />
-                <NavItem active={view === 'di-recommendations'} icon={Sparkles} label="Recommendations" onClick={() => navigateTo('di-recommendations')} />
-                <NavItem active={view === 'di-learnings'} icon={Lightbulb} label="Learnings" onClick={() => navigateTo('di-learnings')} />
-                <NavItem active={view === 'di-relationships'} icon={SlidersHorizontal} label="Relationships" onClick={() => navigateTo('di-relationships')} />
+              <div
+                aria-disabled="true"
+                className="rounded-lg border border-outline-variant/70 bg-surface-container-low/55 px-4 py-4 text-on-surface-variant/60 shadow-sm"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-outline-variant/70 bg-surface-container-lowest/70">
+                    <Brain className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-bold tracking-wide text-on-surface-variant/70">Delivery Intelligence</p>
+                      <span className="rounded-md border border-outline-variant/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-on-surface-variant/60">Coming soon</span>
+                    </div>
+                    <p className="mt-1 text-xs leading-5 text-on-surface-variant/55">
+                      This module is disabled for now. QA Intelligence remains available.
+                    </p>
+                  </div>
+                </div>
               </div>
             </section>
           </nav>
         </div>
-        <div className="mt-auto shrink-0 space-y-2 border-t border-outline-variant bg-surface-container-lowest/95 px-5 py-6 backdrop-blur-xl">
+        <div className="mt-auto shrink-0 space-y-2 border-t border-outline-variant bg-surface-container-lowest/95 px-4 py-5 backdrop-blur-xl">
           <NavItem active={view === 'settings'} icon={Settings} label="Settings" onClick={() => navigateTo('settings')} />
           <NavItem active={view === 'docs'} icon={BookOpen} label="Documentation" onClick={() => navigateTo('docs')} />
           <NavItem active={view === 'faqs'} icon={HelpCircle} label="FAQs" onClick={() => navigateTo('faqs')} />
         </div>
       </aside>
 
-      <main className="flex min-h-screen flex-1 flex-col lg:ml-80">
-        <header className="sticky top-0 z-40 flex min-h-16 w-full flex-wrap items-center justify-between gap-3 border-b border-outline-variant bg-surface-container-lowest px-4 py-3 shadow-sm sm:px-6 lg:min-h-20 lg:px-10">
-          <div className="flex min-w-0 items-center gap-3">
-            <button onClick={() => setSidebarOpen(true)} className="rounded-full p-2 text-on-surface-variant hover:bg-surface-container lg:hidden" aria-label="Open navigation">
+      <main className="flex min-h-screen flex-1 flex-col bg-surface lg:ml-80">
+        <header className="sticky top-0 z-40 flex min-h-16 w-full flex-wrap items-center justify-between gap-3 border-b border-outline-variant bg-surface-container-lowest/92 px-4 py-3 shadow-sm backdrop-blur-xl sm:px-6 lg:min-h-20 lg:px-8">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <button onClick={() => setSidebarOpen(true)} className="rounded-lg border border-outline-variant bg-surface-container-low p-2 text-on-surface-variant hover:bg-surface-container lg:hidden" aria-label="Open navigation">
               <Menu className="h-5 w-5" />
             </button>
+            <span className="hidden items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm font-semibold text-on-surface-variant shadow-sm md:inline-flex">
+              <span className="h-2 w-2 rounded-full bg-success" />
+              Workspace active
+            </span>
           </div>
-          <div className="flex flex-1 items-center justify-end gap-2 sm:gap-4 lg:flex-none lg:gap-5">
-            <button onClick={toggle} className="rounded-full p-2 text-on-surface-variant transition-all hover:bg-surface-container" aria-label="Toggle theme">
+          <div className="flex flex-1 items-center justify-end gap-2 sm:gap-3 lg:flex-none">
+            <button onClick={toggle} className="rounded-lg border border-outline-variant bg-surface-container-low p-2 text-on-surface-variant transition-all hover:bg-surface-container-high" aria-label="Toggle theme">
               {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
             </button>
-            <button onClick={() => setOverlay('notifications')} className="relative rounded-full p-2 text-on-surface-variant transition-all hover:bg-surface-container" aria-label="Notifications">
+            <button onClick={() => setOverlay('notifications')} className="relative rounded-lg border border-outline-variant bg-surface-container-low p-2 text-on-surface-variant transition-all hover:bg-surface-container-high" aria-label="Notifications">
               <Bell className="h-5 w-5" />
               {unreadCount ? <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-error px-1 text-center text-xs font-bold text-on-error">{unreadCount}</span> : null}
             </button>
-            <button onClick={() => setOverlay('help')} className="rounded-full p-2 text-on-surface-variant transition-all hover:bg-surface-container" aria-label="Help">
+            <button onClick={() => setOverlay('help')} className="rounded-lg border border-outline-variant bg-surface-container-low p-2 text-on-surface-variant transition-all hover:bg-surface-container-high" aria-label="Help">
               <HelpCircle className="h-5 w-5" />
             </button>
             <div className="hidden h-8 w-px bg-outline-variant sm:block" />
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 rounded-lg border border-outline-variant bg-surface-container-low px-2 py-1.5">
               <div className="hidden text-right sm:block">
                 <p className="text-sm font-bold text-on-surface">{settings.name || 'Admin User'}</p>
                 <p className="text-xs text-on-surface-variant">{settings.role || 'System Architect'}</p>
               </div>
               <img src={avatar} alt="User profile" className="h-10 w-10 rounded-full border-2 border-outline-variant object-cover" />
-              <button onClick={onLogout} className="hidden rounded-lg border border-outline-variant px-3 py-2 text-sm font-semibold hover:bg-surface-container sm:inline-flex">
+              <button onClick={onLogout} className="hidden rounded-md border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm font-semibold hover:bg-surface-container sm:inline-flex">
                 Logout
               </button>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 p-4 sm:p-6 lg:p-10">
+        <div className="flex-1 bg-[radial-gradient(circle_at_top_left,color-mix(in_srgb,var(--primary)_8%,transparent),transparent_28%)] p-4 sm:p-6 lg:p-8">
           <div className="mx-auto w-full max-w-7xl space-y-8">
-            <section className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <section className="rounded-xl border border-outline-variant bg-surface-container-lowest/88 p-5 shadow-sm backdrop-blur sm:p-6">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">QA Intelligence workspace</p>
                 <h2 className="text-3xl font-bold leading-tight tracking-tight text-on-surface sm:text-4xl lg:text-5xl">{pageTitle}</h2>
                 <p className="mt-2 text-base text-on-surface-variant">
                   {view === 'overview'
@@ -5709,6 +5773,7 @@ export default function DashboardPage({ onLogout, addToast, currentUser }: Props
                   ) : null}
                 </div>
               ) : null}
+              </div>
             </section>
 
             {view === 'overview' ? (
@@ -6061,33 +6126,36 @@ function Overview(props: {
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-lg border border-outline-variant bg-surface-container-lowest shadow-sm">
+      <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
         <div className="grid gap-0 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
-          <div className="p-5 sm:p-6">
+          <div className="relative overflow-hidden p-5 sm:p-7">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,color-mix(in_srgb,var(--primary)_12%,transparent),transparent_34%)]" />
+            <div className="relative">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-success">
+              <span className="inline-flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-success">
                 <CheckCircle2 className="h-3.5 w-3.5" /> Live workspace
               </span>
               <span className="text-xs font-semibold text-on-surface-variant">
                 {props.analytics?.meta?.generatedAt ? `Analytics refreshed ${formatTime(props.analytics.meta.generatedAt)}` : 'Using workspace activity'}
               </span>
             </div>
-            <h3 className="mt-4 max-w-4xl text-2xl font-bold leading-tight text-on-surface sm:text-3xl">
+            <h3 className="mt-4 max-w-4xl text-2xl font-bold leading-tight text-on-surface sm:text-3xl lg:text-4xl">
               QA operations cockpit for readiness, coverage, reliability, and cost.
             </h3>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-on-surface-variant">
               Project readiness, live pipeline health, generated output quality, and spend are aligned into one operational view.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
-              <button onClick={() => props.onOpenKnowledge()} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary shadow-sm hover:opacity-90">
+              <button onClick={() => props.onOpenKnowledge()} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary shadow-sm shadow-primary/20 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/25">
                 <UploadCloud className="h-4 w-4" /> Ingest
               </button>
-              <button onClick={() => props.onOpenDocuments()} className="inline-flex items-center gap-2 rounded-lg border border-outline-variant px-4 py-2 text-sm font-semibold hover:bg-surface-container">
+              <button onClick={() => props.onOpenDocuments()} className="inline-flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-surface-container">
                 <FileText className="h-4 w-4" /> Generate
               </button>
-              <button onClick={props.onOpenAnalytics} className="inline-flex items-center gap-2 rounded-lg border border-outline-variant px-4 py-2 text-sm font-semibold hover:bg-surface-container">
+              <button onClick={props.onOpenAnalytics} className="inline-flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-surface-container">
                 <BarChart3 className="h-4 w-4" /> Analytics
               </button>
+            </div>
             </div>
           </div>
           <div className="border-t border-outline-variant bg-surface-container-low p-5 lg:border-l lg:border-t-0">
@@ -6102,7 +6170,7 @@ function Overview(props: {
         </div>
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {kpis.map((item) => (
           <DashboardKpiButton key={item.label} {...item} />
         ))}
@@ -6152,12 +6220,12 @@ function DashboardKpiButton({
 }) {
   const classes = dashboardToneClasses(tone)
   return (
-    <button onClick={onClick} className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:shadow-md">
+    <button onClick={onClick} className={`rounded-xl border bg-surface-container-lowest p-4 text-left shadow-sm transition hover:-translate-y-1 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 ${classes.surface}`}>
       <div className="flex items-center justify-between gap-3">
-        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-full border ${classes.icon}`}>
+        <span className={`inline-flex h-10 w-10 items-center justify-center rounded-lg border ${classes.icon}`}>
           <Icon className="h-4 w-4" />
         </span>
-        <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${classes.badge}`}>{label}</span>
+        <span className={`rounded-md px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${classes.badge}`}>{label}</span>
       </div>
       <p className="mt-4 text-2xl font-bold leading-tight text-on-surface sm:text-3xl">{value}</p>
       <p className="mt-1 text-sm text-on-surface-variant">{detail}</p>
@@ -6168,22 +6236,22 @@ function DashboardKpiButton({
 function DashboardPulseRow({ label, value, tone }: { label: string; value: string; tone: DashboardKpiTone }) {
   const classes = dashboardToneClasses(tone)
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 shadow-sm">
       <span className="text-sm font-semibold text-on-surface-variant">{label}</span>
-      <span className={`rounded-full px-3 py-1 text-sm font-bold ${classes.badge}`}>{value}</span>
+      <span className={`rounded-md px-3 py-1 text-sm font-bold ${classes.badge}`}>{value}</span>
     </div>
   )
 }
 
 function DashboardActionQueue({ actions }: { actions: DashboardActionItem[] }) {
   return (
-    <section className="rounded-lg border border-outline-variant bg-surface-container-lowest shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant p-5">
+    <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant bg-surface-container-low p-5">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Action required</p>
           <h3 className="mt-1 text-xl font-semibold text-on-surface">What needs attention now</h3>
         </div>
-        <span className="rounded-full border border-outline-variant px-3 py-1 text-xs font-bold text-on-surface-variant">{actions.length} recommendations</span>
+        <span className="rounded-md border border-outline-variant bg-surface-container-lowest px-3 py-1 text-xs font-bold text-on-surface-variant">{actions.length} recommendations</span>
       </div>
       <div className="divide-y divide-outline-variant">
         {actions.map((action) => {
@@ -6191,13 +6259,13 @@ function DashboardActionQueue({ actions }: { actions: DashboardActionItem[] }) {
           const classes = dashboardToneClasses(action.tone)
           return (
             <button key={action.title} onClick={action.onAction} className="flex w-full items-start gap-4 p-5 text-left transition hover:bg-surface-container-low">
-              <span className={`mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${classes.icon}`}>
+              <span className={`mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${classes.icon}`}>
                 <Icon className="h-4 w-4" />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-on-surface">{action.title}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide ${classes.badge}`}>{action.priority}</span>
+                  <span className={`rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide ${classes.badge}`}>{action.priority}</span>
                 </span>
                 <span className="mt-1 block text-sm leading-6 text-on-surface-variant">{action.detail}</span>
               </span>
@@ -7222,12 +7290,13 @@ function WorkspaceCard(props: {
   readinessByArtifact: Record<DocumentArtifactKey, DeliverableReadinessState>
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
-      <div className="border-b border-outline-variant bg-surface-container-lowest p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+    <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
+      <div className="relative overflow-hidden border-b border-outline-variant bg-surface-container-lowest p-6">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,color-mix(in_srgb,var(--primary)_10%,transparent),transparent_36%)]" />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">QA Intelligence workspace</p>
-            <h3 className="mt-2 text-2xl font-semibold text-on-surface">{props.tab === 'knowledge' ? 'Knowledge Base' : 'Document Generation'}</h3>
+            <p className="inline-flex rounded-lg border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-primary">QA Intelligence workspace</p>
+            <h3 className="mt-3 text-2xl font-bold text-on-surface sm:text-3xl">{props.tab === 'knowledge' ? 'Knowledge Base' : 'Document Generation'}</h3>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-on-surface-variant">
               {props.tab === 'knowledge'
                 ? 'Collect project artifacts, organize them into a retrieval-ready knowledge base, and monitor ingestion confidence from one place.'
@@ -7237,10 +7306,10 @@ function WorkspaceCard(props: {
           <StatusBadge status="info" label={props.tab === 'knowledge' ? 'Ingestion workflow' : 'Generation workflow'} />
         </div>
       </div>
-      <div className="grid grid-cols-1 items-center border-b border-outline-variant bg-surface-container-low sm:grid-cols-3">
-        <button aria-pressed={props.tab === 'knowledge'} onClick={() => props.setTab('knowledge')} className={`px-6 py-4 text-base transition ${props.tab === 'knowledge' ? 'border-b-2 border-primary font-bold text-primary' : 'font-medium text-on-surface-variant hover:text-on-surface'}`}>1. Knowledge Base</button>
-        <button aria-pressed={props.tab === 'documents'} onClick={() => props.setTab('documents')} className={`px-6 py-4 text-base transition ${props.tab === 'documents' ? 'border-b-2 border-primary font-bold text-primary' : 'font-medium text-on-surface-variant hover:text-on-surface'}`}>2. Generate Documents</button>
-        <span className="px-6 text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Workspace</span>
+      <div className="grid grid-cols-1 items-center gap-3 border-b border-outline-variant bg-surface-container-low p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+        <button aria-pressed={props.tab === 'knowledge'} onClick={() => props.setTab('knowledge')} className={`rounded-lg border px-4 py-3 text-left text-sm transition ${props.tab === 'knowledge' ? 'border-primary/30 bg-primary/10 font-bold text-primary shadow-sm' : 'border-transparent bg-surface-container-lowest font-semibold text-on-surface-variant hover:border-outline-variant hover:text-on-surface'}`}>1. Knowledge Base</button>
+        <button aria-pressed={props.tab === 'documents'} onClick={() => props.setTab('documents')} className={`rounded-lg border px-4 py-3 text-left text-sm transition ${props.tab === 'documents' ? 'border-primary/30 bg-primary/10 font-bold text-primary shadow-sm' : 'border-transparent bg-surface-container-lowest font-semibold text-on-surface-variant hover:border-outline-variant hover:text-on-surface'}`}>2. Generate Documents</button>
+        <span className="rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-xs font-bold uppercase tracking-wider text-on-surface-variant">Workspace</span>
       </div>
       {props.tab === 'knowledge' ? (
         <div>
@@ -7303,7 +7372,7 @@ function KnowledgeBaseSummary({ projects }: { projects: Project[] }) {
           <h3 className="text-lg font-semibold text-on-surface">Existing knowledge bases</h3>
           <p className="mt-1 text-sm text-on-surface-variant">Use assigned projects below to see which ones are already retrieval-ready and which ones still need source artifacts.</p>
         </div>
-        <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">{projects.length} assigned projects</span>
+        <span className="rounded-md border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">{projects.length} assigned projects</span>
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         <InfoMetricCard label="Ready for generation" value={String(ready)} detail="Projects with retrieval-ready context" />
@@ -7313,7 +7382,7 @@ function KnowledgeBaseSummary({ projects }: { projects: Project[] }) {
       {projects.length ? (
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {projects.slice(0, 4).map((project) => (
-            <div key={project.id} className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
+            <div key={project.id} className="rounded-lg border border-outline-variant bg-surface-container-low p-4 shadow-sm transition hover:border-primary/35 hover:bg-surface-container-lowest">
               <div className="flex items-center justify-between gap-3">
                 <p className="font-bold text-on-surface">{project.name}</p>
                 <StatusBadge status={project.status === 'blocked' ? 'error' : project.status === 'ready' ? 'success' : 'info'} label={project.status} />
@@ -7345,7 +7414,7 @@ function ProjectSelect({
       value={value}
       onChange={(event) => onChange(event.target.value)}
       disabled={disabled || !projects.length}
-      className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm outline-none focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
+      className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
     >
       <option value="">{projects.length ? 'Select a project' : 'No assigned projects available'}</option>
       {projects.map((project) => (
@@ -7382,7 +7451,7 @@ function KnowledgeForm(props: {
 }) {
   const selectedFileCount = [props.brd, props.frd, props.hld, props.lld].filter(Boolean).length + props.transcripts.length + props.supportingDocuments.length + props.images.length
   return (
-    <form className="space-y-8 p-8" onSubmit={props.onSubmit}>
+    <form className="space-y-6 p-5 sm:p-6 lg:p-8" onSubmit={props.onSubmit}>
       <div className="grid gap-4 lg:grid-cols-2">
         <ScreenIntroCard
           eyebrow="Ingestion flow"
@@ -7394,7 +7463,7 @@ function KnowledgeForm(props: {
           <InfoMetricCard label="Selected files" value={String(selectedFileCount)} detail="Current upload set" />
         </div>
       </div>
-      <section className="rounded-xl border border-outline-variant bg-surface-container-low p-5">
+      <section className="rounded-xl border border-outline-variant bg-surface-container-low p-5 shadow-sm">
         <LabeledInput label="Project name" helper="Select the project that should own these uploaded artifacts.">
           <ProjectSelect value={props.projectName} onChange={props.setProjectName} projects={props.projects} disabled={props.submitting} />
         </LabeledInput>
@@ -7427,9 +7496,9 @@ function KnowledgeForm(props: {
         <FileDrop label="UI designs" accept=".jpg,.jpeg,.png,.webp,.svg" files={props.images} multiple helper="Upload one or more design images, screenshots, or annotated mockups." onFiles={(files) => props.setImages(appendUniqueFiles(props.images, files))} />
       </FieldGroup>
       {props.error ? <FriendlyInlineNotice title="Knowledge base request could not be started" message={props.error} /> : null}
-      <div className="flex justify-end gap-3 border-t border-outline-variant pt-4">
-        <button type="button" onClick={props.onReset} className="rounded-lg border border-outline-variant px-6 py-3 text-sm font-bold hover:bg-surface-container">Reset</button>
-        <button disabled={props.submitting || !props.projectName.trim() || !props.projects.length} className="rounded-lg bg-primary px-6 py-3 text-sm font-bold text-on-primary shadow-sm disabled:cursor-not-allowed disabled:opacity-60">
+      <div className="flex flex-col-reverse gap-3 border-t border-outline-variant pt-4 sm:flex-row sm:justify-end">
+        <button type="button" onClick={props.onReset} className="rounded-lg border border-outline-variant bg-surface-container-lowest px-6 py-3 text-sm font-bold shadow-sm transition hover:-translate-y-0.5 hover:bg-surface-container">Reset</button>
+        <button disabled={props.submitting || !props.projectName.trim() || !props.projects.length} className="rounded-lg bg-primary px-6 py-3 text-sm font-bold text-on-primary shadow-sm shadow-primary/20 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/25 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60 disabled:shadow-none">
           {props.submitting ? 'Creating knowledge base...' : 'Create Knowledge Base'}
         </button>
       </div>
@@ -7457,7 +7526,7 @@ function DocumentForm(props: {
   const activeJobLabel = props.activeGenerationJob?.jobId || props.activeGenerationJob?.id
 
   return (
-    <form className="space-y-8 p-8" onSubmit={props.onSubmit}>
+    <form className="space-y-6 p-5 sm:p-6 lg:p-8" onSubmit={props.onSubmit}>
       <div className="grid gap-4 lg:grid-cols-2">
         <ScreenIntroCard
           eyebrow="Generation flow"
@@ -7468,12 +7537,12 @@ function DocumentForm(props: {
           <InfoMetricCard label="Available projects" value={String(props.projects.length)} detail="Ready or assigned projects" />
         </div>
       </div>
-      <section className="rounded-xl border border-outline-variant bg-surface-container-low p-5">
+      <section className="rounded-xl border border-outline-variant bg-surface-container-low p-5 shadow-sm">
         <LabeledInput label="Project name" helper="Choose the project whose knowledge base should be used for retrieval.">
           <ProjectSelect value={props.projectName} onChange={props.setProjectName} projects={props.projects} disabled={props.submitting} />
         </LabeledInput>
       </section>
-      <div className="rounded-xl border border-outline-variant bg-surface-container-low p-5">
+      <div className="rounded-xl border border-outline-variant bg-surface-container-low p-5 shadow-sm">
         <div className="mb-4">
           <p className="text-sm font-bold text-on-surface">Select deliverable</p>
           <p className="mt-1 text-sm text-on-surface-variant">Choose the artifact Q-Ops should create from the selected project context.</p>
@@ -7516,7 +7585,7 @@ function DocumentForm(props: {
                 onKeyDown={onKeyDown}
                 title={isDisabled ? lockedReason : undefined}
                 aria-label={isDisabled ? `${item.label}. Locked. ${lockedReason}` : item.label}
-                className={`rounded-xl border p-5 text-left outline-none transition ${isDisabled ? 'cursor-not-allowed border-outline-variant bg-surface-container opacity-60' : selected ? 'cursor-pointer border-primary bg-primary/10 ring-2 ring-primary/10' : 'cursor-pointer border-outline-variant bg-surface-container-lowest hover:border-primary'}`}
+                className={`rounded-lg border p-5 text-left outline-none transition ${isDisabled ? 'cursor-not-allowed border-outline-variant bg-surface-container opacity-60' : selected ? 'cursor-pointer border-primary/45 bg-primary/10 shadow-sm ring-2 ring-primary/10' : 'cursor-pointer border-outline-variant bg-surface-container-lowest shadow-sm hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-md'}`}
               >
                 <input className="sr-only" type="radio" name="artifact" checked={selected} onChange={select} disabled={isDisabled} />
                 <div className="flex items-start justify-between gap-3">
@@ -7553,9 +7622,9 @@ function DocumentForm(props: {
           Generation job {activeJobLabel} is {props.activeGenerationJob.status}. Wait for it to finish before starting another document generation job.
         </p>
       ) : null}
-      <div className="flex justify-end gap-3 border-t border-outline-variant pt-4">
-        <button type="button" onClick={props.onReset} className="rounded-lg border border-outline-variant px-6 py-3 text-sm font-bold hover:bg-surface-container">Reset</button>
-        <button disabled={generationLocked || !props.projectName.trim() || !props.projects.length} className="rounded-lg bg-primary px-6 py-3 text-sm font-bold text-on-primary shadow-sm disabled:cursor-not-allowed disabled:opacity-60">
+      <div className="flex flex-col-reverse gap-3 border-t border-outline-variant pt-4 sm:flex-row sm:justify-end">
+        <button type="button" onClick={props.onReset} className="rounded-lg border border-outline-variant bg-surface-container-lowest px-6 py-3 text-sm font-bold shadow-sm transition hover:-translate-y-0.5 hover:bg-surface-container">Reset</button>
+        <button disabled={generationLocked || !props.projectName.trim() || !props.projects.length} className="rounded-lg bg-primary px-6 py-3 text-sm font-bold text-on-primary shadow-sm shadow-primary/20 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/25 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60 disabled:shadow-none">
           {props.submitting || props.activeGenerationJob ? 'Generation in progress...' : 'Generate Documents'}
         </button>
       </div>
@@ -7687,15 +7756,15 @@ function LabeledInput({ label, helper, children }: { label: string; helper?: str
     <label className="block space-y-2">
       <span className="text-sm font-bold text-on-surface">{label}</span>
       {children}
-      {helper ? <span className="block text-xs text-on-surface-variant">{helper}</span> : null}
+      {helper ? <span className="block text-xs leading-5 text-on-surface-variant">{helper}</span> : null}
     </label>
   )
 }
 
 function FieldGroup({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
-    <section className="rounded-xl border border-outline-variant bg-surface-container-low p-5">
-      <h4 className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{title}</h4>
+    <section className="rounded-xl border border-outline-variant bg-surface-container-low p-5 shadow-sm">
+      <h4 className="text-xs font-bold uppercase tracking-[0.16em] text-primary">{title}</h4>
       {description ? <p className="mt-2 text-sm text-on-surface-variant">{description}</p> : null}
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">{children}</div>
     </section>
@@ -7746,12 +7815,14 @@ function FileDrop({ label, accept, file, files, multiple, helper, onFiles }: { l
       }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
-      className={`cursor-pointer rounded-xl border border-dashed p-5 transition-colors ${dragging ? 'border-primary bg-primary/10' : 'border-outline-variant bg-surface-container-lowest hover:border-primary'}`}
+      className={`group cursor-pointer rounded-lg border border-dashed p-5 shadow-sm transition-all ${dragging ? 'border-primary bg-primary/10 ring-2 ring-primary/10' : 'border-outline-variant bg-surface-container-lowest hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-md'}`}
     >
       <input className="sr-only" type="file" accept={accept} multiple={multiple} onChange={(event) => handleFiles(Array.from(event.target.files ?? []))} />
       <div className="mb-3 flex items-center justify-between">
         <span className="font-bold text-on-surface">{label}</span>
-        <UploadCloud className="h-5 w-5 text-on-surface-variant" />
+        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-container text-on-surface-variant transition group-hover:bg-primary/10 group-hover:text-primary">
+          <UploadCloud className="h-4 w-4" />
+        </span>
       </div>
       <p className="text-xs font-medium text-primary">{selectedText}</p>
       <p className="mt-2 text-xs font-medium text-on-surface-variant">Accepted file types: {formatAcceptedTypes(accept)}</p>
@@ -7764,17 +7835,20 @@ function FileDrop({ label, accept, file, files, multiple, helper, onFiles }: { l
 
 function ScreenIntroCard({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
   return (
-    <section className="rounded-xl border border-outline-variant bg-surface-container-low p-5">
-      <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">{eyebrow}</p>
+    <section className="relative overflow-hidden rounded-xl border border-outline-variant bg-surface-container-low p-5 shadow-sm">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,color-mix(in_srgb,var(--primary)_10%,transparent),transparent_36%)]" />
+      <div className="relative">
+      <p className="inline-flex rounded-md border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.16em] text-primary">{eyebrow}</p>
       <h4 className="mt-2 text-xl font-semibold text-on-surface">{title}</h4>
       <p className="mt-3 text-sm leading-6 text-on-surface-variant">{description}</p>
+      </div>
     </section>
   )
 }
 
 function InfoMetricCard({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
-    <div className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
+    <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4 shadow-sm">
       <p className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-on-surface">{value}</p>
       <p className="mt-2 text-xs text-on-surface-variant">{detail}</p>
@@ -7784,7 +7858,7 @@ function InfoMetricCard({ label, value, detail }: { label: string; value: string
 
 function FriendlyInlineNotice({ title, message }: { title: string; message: string }) {
   return (
-    <div className="rounded-xl border border-error/20 bg-error-container/60 p-4 text-on-error-container">
+    <div className="rounded-lg border border-error/20 bg-error-container/60 p-4 text-on-error-container shadow-sm">
       <p className="text-sm font-semibold">{title}</p>
       <p className="mt-2 text-sm leading-6">{message}</p>
     </div>
@@ -8450,13 +8524,15 @@ function StatusPanel({ kind, state, jobs = [] }: { kind: WorkspaceTab; state: { 
       ? longRunningGenerationMessage(activeJob, nowMs)
       : null
     return (
-      <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+      <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
         <div className="flex items-center justify-between border-b border-outline-variant bg-surface-container-low p-5">
           <div>
             <h3 className="text-xl font-semibold">Job Status</h3>
             <p className="mt-1 text-sm text-on-surface-variant">{completedCount} completed, {failedCount} failed, {activeCount} active</p>
           </div>
-          <RefreshCw className={activeCount ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface-variant">
+            <RefreshCw className={activeCount ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
+          </span>
         </div>
         <div className="space-y-4 p-6">
           <div className="flex items-center justify-between">
@@ -8487,7 +8563,7 @@ function StatusPanel({ kind, state, jobs = [] }: { kind: WorkspaceTab; state: { 
               const extractionWarnings = 'extractionWarnings' in job ? job.extractionWarnings : []
               const extractionWarningCount = 'extractionWarningCount' in job ? job.extractionWarningCount : 0
               return (
-                <div key={job.jobId || job.id} className="rounded-lg border border-outline-variant bg-surface-container-low p-3">
+                <div key={job.jobId || job.id} className="rounded-lg border border-outline-variant bg-surface-container-low p-3 shadow-sm transition hover:border-primary/35 hover:bg-surface-container-lowest">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="break-all font-mono text-sm font-bold text-on-surface" title={jobLabel}>{jobLabel}</p>
@@ -8524,10 +8600,12 @@ function StatusPanel({ kind, state, jobs = [] }: { kind: WorkspaceTab; state: { 
 
   if (state.status === 'idle') {
     return (
-      <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+      <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
         <div className="flex items-center justify-between border-b border-outline-variant bg-surface-container-low p-5">
           <h3 className="text-xl font-semibold">Job Status</h3>
-          <RefreshCw className="h-4 w-4" />
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface-variant">
+            <RefreshCw className="h-4 w-4" />
+          </span>
         </div>
         <div className="p-6 text-sm text-on-surface-variant">No active {kind === 'knowledge' ? 'knowledge base' : 'document generation'} job.</div>
       </section>
@@ -8544,10 +8622,12 @@ function StatusPanel({ kind, state, jobs = [] }: { kind: WorkspaceTab; state: { 
     ? 'Large or high-coverage generations can take 15 minutes or longer. Q-Ops will continue polling and will show Jira or Confluence results when the backend finishes.'
     : null
   return (
-    <section className="flex h-full flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+    <section className="flex h-full flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
       <div className="flex items-center justify-between border-b border-outline-variant bg-surface-container-low p-5">
         <h3 className="text-xl font-semibold">Job Status</h3>
-        <RefreshCw className="h-4 w-4" />
+        <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface-variant">
+          <RefreshCw className="h-4 w-4" />
+        </span>
       </div>
       <div className="space-y-4 p-6">
         <div className="flex items-center justify-between">
@@ -10135,7 +10215,7 @@ function OutputPanel({ status, output, jobId, jobRecord, relatedOutputs = [], on
     const repeatedFailure = retryAttempt >= 2
     const canShowRetry = !isBacklogValidationFailure && retryState === 'actionable'
     return (
-      <section className="rounded-xl border border-error/20 bg-surface-container-lowest p-6 shadow-sm">
+      <section className="rounded-xl border border-error/20 bg-surface-container-lowest p-6 shadow-lg shadow-error/5">
         <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-wider text-error">{failure.code}</p>
             {isBacklogValidationFailure ? null : <h3 className="mt-1 text-lg font-semibold text-on-surface">{failure.title}</h3>}
@@ -10204,7 +10284,7 @@ function GeneratedDocumentSuccessCard({ output, url, jobRecord, relatedOutputs =
   const SuccessIcon = coverageTone === 'error' || coverageTone === 'warning' ? AlertTriangle : CheckCircle2
   const iconClass = coverageTone === 'error' ? 'bg-error/10 text-error' : coverageTone === 'warning' ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success'
   return (
-    <section className={`relative rounded-xl border bg-surface-container-lowest p-5 shadow-sm ${coverageTone === 'error' ? 'border-error/20' : coverageTone === 'warning' ? 'border-warning/20' : 'border-success/20'}`}>
+    <section className={`relative rounded-xl border bg-surface-container-lowest p-5 shadow-lg shadow-inverse-surface/5 ${coverageTone === 'error' ? 'border-error/20' : coverageTone === 'warning' ? 'border-warning/20' : 'border-success/20'}`}>
       <span className={`absolute left-4 top-4 inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl ${iconClass}`}>
         <SuccessIcon className="h-10 w-10" />
       </span>
@@ -10246,7 +10326,7 @@ function GeneratedJiraSuccessCard({ output, jobRecord, relatedOutputs = [] }: { 
   const SuccessIcon = coverageTone === 'error' || coverageTone === 'warning' ? AlertTriangle : CheckCircle2
   const iconClass = coverageTone === 'error' ? 'bg-error/10 text-error' : coverageTone === 'warning' ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success'
   return (
-    <section className={`relative rounded-xl border bg-surface-container-lowest p-5 shadow-sm ${coverageTone === 'error' ? 'border-error/20' : coverageTone === 'warning' ? 'border-warning/20' : 'border-success/20'}`}>
+    <section className={`relative rounded-xl border bg-surface-container-lowest p-5 shadow-lg shadow-inverse-surface/5 ${coverageTone === 'error' ? 'border-error/20' : coverageTone === 'warning' ? 'border-warning/20' : 'border-success/20'}`}>
       <span className={`absolute left-4 top-4 inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl ${iconClass}`}>
         <SuccessIcon className="h-10 w-10" />
       </span>
@@ -10647,7 +10727,7 @@ function DocumentJobsPanel({ jobs, allJobs = jobs, analyticsJobs, onRetry }: { j
   const filterOptions = filterOptionsRaw.filter((filter) => filter.key === 'all' || filter.key === 'completed' || filter.key === 'needs_retry' || filter.key === 'recovered' || filter.count > 0)
 
   return (
-    <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+    <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
       <div className="border-b border-outline-variant bg-surface-container-low p-5">
         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_11rem] sm:items-start">
           <div className="min-w-0">
@@ -10744,7 +10824,7 @@ function DocumentJobsPanel({ jobs, allJobs = jobs, analyticsJobs, onRetry }: { j
             displayStatus === 'processing' ? 'Processing' :
             displayStatus
           return (
-            <div key={job.jobId || job.id} className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
+            <div key={job.jobId || job.id} className="rounded-lg border border-outline-variant bg-surface-container-low p-4 shadow-sm transition hover:border-primary/35 hover:bg-surface-container-lowest">
               <div className="grid gap-3 sm:grid-cols-[minmax(7.5rem,1fr)_auto] sm:items-start">
                 <div className="flex min-h-[30px] min-w-0 items-center">
                   <p className="truncate font-mono text-xs font-bold text-on-surface" title={jobLabel}>{jobLabel}</p>
@@ -10762,7 +10842,7 @@ function DocumentJobsPanel({ jobs, allJobs = jobs, analyticsJobs, onRetry }: { j
                       rel="noopener noreferrer"
                       title="Open in Confluence"
                       aria-label="Open in Confluence"
-                      className={`inline-flex ${compactDocumentIconButtonClasses} items-center justify-center rounded-full border border-primary bg-primary/10 text-primary shadow-sm hover:bg-primary/20 ${iconButtonPressClasses}`}
+                      className={`inline-flex ${compactDocumentIconButtonClasses} items-center justify-center rounded-lg border border-primary bg-primary/10 text-primary shadow-sm hover:bg-primary/20 ${iconButtonPressClasses}`}
                     >
                       <ExternalLink className={compactDocumentIconClasses} />
                     </a>
@@ -10773,7 +10853,7 @@ function DocumentJobsPanel({ jobs, allJobs = jobs, analyticsJobs, onRetry }: { j
                       onClick={() => void onRetry(job)}
                       title="Regenerate"
                       aria-label="Regenerate"
-                      className={`inline-flex ${compactDocumentIconButtonClasses} items-center justify-center rounded-full border border-error bg-error/10 text-error shadow-sm hover:bg-error/20 ${iconButtonPressClasses}`}
+                      className={`inline-flex ${compactDocumentIconButtonClasses} items-center justify-center rounded-lg border border-error bg-error/10 text-error shadow-sm hover:bg-error/20 ${iconButtonPressClasses}`}
                     >
                       <RefreshCw className={compactDocumentIconClasses} />
                     </button>
@@ -10820,7 +10900,7 @@ function DocumentJobStatusIcon({ status, tone, label }: { status: RetryDisplaySt
       role="img"
       aria-label={label}
       title={label}
-      className={`relative inline-flex ${compactDocumentIconButtonClasses} items-center justify-center rounded-full border ${cls}`}
+      className={`relative inline-flex ${compactDocumentIconButtonClasses} items-center justify-center rounded-lg border ${cls}`}
     >
       {status === 'recovered' ? (
         <>
@@ -10865,7 +10945,7 @@ function KnowledgeJobsPanel({ jobs, artifacts, analyticsJobs, onRetry }: { jobs:
   ))
 
   return (
-    <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+    <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
       <div className="border-b border-outline-variant bg-surface-container-low p-5">
         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_11rem] sm:items-start">
           <div className="min-w-0">
@@ -10900,7 +10980,7 @@ function KnowledgeJobsPanel({ jobs, artifacts, analyticsJobs, onRetry }: { jobs:
             displayStatus === 'processing' ? 'Processing' :
             displayStatus
           return (
-            <div key={job.jobId || job.id} className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
+            <div key={job.jobId || job.id} className="rounded-lg border border-outline-variant bg-surface-container-low p-4 shadow-sm transition hover:border-primary/35 hover:bg-surface-container-lowest">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="break-all font-mono text-sm font-bold text-on-surface">{job.jobId || job.id}</p>
@@ -11213,20 +11293,20 @@ function ArtifactsRepository({
   const filterOptions = filterOptionsRaw.filter((filter) => (filter.key !== 'processing' && filter.key !== 'retrying') || filter.count > 0)
   return (
     <section className="flex min-h-0 flex-col gap-4">
-      <section className="shrink-0 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Artifact repository</p>
-            <h3 className="mt-1 text-xl font-semibold text-on-surface">Manage Uploaded Artifacts</h3>
+      <section className="shrink-0 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary">Artifact repository</p>
+            <h3 className="mt-1 text-lg font-semibold text-on-surface">Uploaded artifacts</h3>
             <p className="mt-1 max-w-3xl text-sm leading-5 text-on-surface-variant">
-              Review uploaded files, monitor processing status, and retry failed artifacts.
+              Review file intake, processing state, and extraction telemetry from a single workspace view.
             </p>
           </div>
           <button
             type="button"
             onClick={onRefresh}
             disabled={refreshing}
-            className="inline-flex items-center gap-2 rounded-lg border border-outline-variant px-3 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container disabled:cursor-wait disabled:opacity-60"
           >
             <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
@@ -11240,18 +11320,19 @@ function ArtifactsRepository({
         <MetricCard label="Total recovered" value={summary.recovered} tone="success" />
       </div>
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest">
-        <div className="shrink-0 flex flex-wrap items-center justify-between gap-4 border-b border-outline-variant p-4">
+        <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant px-4 py-3">
           <div className="min-w-0">
-            <h3 className="text-lg font-semibold">Uploaded Artifacts</h3>
+            <h3 className="text-base font-semibold text-on-surface">Artifact queue</h3>
+            <p className="mt-0.5 text-xs text-on-surface-variant">Dense, sortable intake view for review and follow-up.</p>
           </div>
           <div className="flex w-full min-w-0 items-center justify-start sm:w-auto sm:justify-end">
-            <div className="flex w-full max-w-full flex-wrap gap-1 rounded-md border border-outline-variant bg-surface-container-lowest p-0.5 shadow-sm sm:w-auto">
+            <div className="flex w-full max-w-full flex-wrap gap-1 rounded-lg border border-outline-variant bg-surface-container-lowest p-0.5 shadow-sm sm:w-auto">
               {filterOptions.map((filter) => (
                 <button
                   key={filter.key}
                   type="button"
                   onClick={() => setStatusFilter(filter.key)}
-                  className={`flex items-center justify-center gap-1.5 rounded px-2 py-1 text-xs font-bold transition ${
+                  className={`flex items-center justify-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide transition ${
                     statusFilter === filter.key
                       ? 'bg-primary text-on-primary shadow-sm'
                       : 'text-on-surface-variant hover:bg-surface-container'
@@ -11266,43 +11347,45 @@ function ArtifactsRepository({
         </div>
         {records.length ? (
           <>
-          <div className="max-h-[calc(100dvh-24rem)] space-y-3 overflow-y-auto p-3 md:hidden">
+          <div className="max-h-[calc(100dvh-24rem)] space-y-2.5 overflow-y-auto p-3 md:hidden">
             {visibleRecords.map((record) => {
               const retryState = artifactRetryState(record, latestAttempts)
               const canReprocess = retryState === 'actionable'
               const retryLabel = retryStateLabel(retryState)
               const displayStatus = artifactDisplayStatus(record, latestAttempts)
-              const displayTone: StatusTone = displayStatus === 'recovered' || displayStatus === 'processed' ? 'success' : displayStatus === 'needs_retry' ? 'error' : 'info'
-              const displayLabel =
-                displayStatus === 'needs_retry' ? 'Needs retry' :
-                displayStatus === 'retrying' ? 'Retry in progress' :
-                displayStatus
+              const displayTone = artifactDisplayTone(displayStatus)
+              const accentClasses = artifactAccentClasses(displayStatus)
               return (
-                <article key={record.id} className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
-                  <div className="flex items-start justify-between gap-3">
+                <article key={record.id} className="relative overflow-hidden rounded-xl border border-outline-variant bg-surface-container-low p-3">
+                  <div className={`absolute inset-y-0 left-0 w-1 ${accentClasses}`} />
+                  <div className="flex items-start justify-between gap-3 pl-1">
                     <div className="min-w-0">
-                      <p className="break-words font-semibold text-on-surface [overflow-wrap:anywhere]" title={record.fileName}>{record.fileName}</p>
-                      <p className="mt-1 break-all text-xs text-on-surface-variant">Artifact ID: {record.id}</p>
+                      <p className="break-words font-semibold leading-5 text-on-surface [overflow-wrap:anywhere]" title={record.fileName}>{record.fileName}</p>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        <span className="inline-flex items-center rounded-full border border-outline-variant bg-surface-container-lowest px-2 py-0.5 text-[11px] font-semibold text-on-surface-variant">
+                          {record.type}
+                        </span>
+                        <span className="inline-flex items-center rounded-full border border-outline-variant bg-surface-container-lowest px-2 py-0.5 text-[11px] font-semibold text-on-surface-variant">
+                          Job ID: {artifactSourceJobId(record) || '-'}
+                        </span>
+                      </div>
+                      <p className="mt-2 break-all text-[11px] text-on-surface-variant">Artifact ID: {record.id}</p>
                     </div>
                     <div className="shrink-0">
-                      <StatusBadge status={displayTone} label={displayLabel} uppercase />
+                      <StatusBadge status={displayTone} label={artifactStatusLabel(displayStatus)} uppercase />
                     </div>
                   </div>
-                  <dl className="mt-3 grid gap-2 text-xs text-on-surface-variant sm:grid-cols-2">
-                    <div>
-                      <dt className="font-bold uppercase tracking-wide">Type</dt>
-                      <dd className="mt-0.5 text-on-surface">{record.type}</dd>
+                  <dl className="mt-3 grid gap-2 text-[11px] text-on-surface-variant sm:grid-cols-2">
+                    <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-2.5">
+                      <dt className="font-bold uppercase tracking-[0.16em]">Project</dt>
+                      <dd className="mt-1 break-words text-xs font-medium text-on-surface [overflow-wrap:anywhere]">{record.projectName}</dd>
                     </div>
-                    <div>
-                      <dt className="font-bold uppercase tracking-wide">Uploaded</dt>
-                      <dd className="mt-0.5 text-on-surface">{formatTime(record.uploadedAt)}</dd>
-                    </div>
-                    <div className="sm:col-span-2">
-                      <dt className="font-bold uppercase tracking-wide">Project</dt>
-                      <dd className="mt-0.5 break-words text-on-surface [overflow-wrap:anywhere]">{record.projectName}</dd>
+                    <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-2.5">
+                      <dt className="font-bold uppercase tracking-[0.16em]">Uploaded</dt>
+                      <dd className="mt-1 text-xs font-medium text-on-surface">{formatTime(record.uploadedAt)}</dd>
                     </div>
                   </dl>
-                  {retryLabel && retryState !== 'recovered' ? <div className="mt-3"><StatusBadge status={retryStateTone(retryState)} label={retryLabel} /></div> : null}
+                  {retryLabel && retryState !== 'recovered' ? <div className="mt-2"><StatusBadge status={retryStateTone(retryState)} label={retryLabel} /></div> : null}
                   <div className="mt-3 flex justify-end">
                     <ArtifactActionButtons
                       record={record}
@@ -11320,21 +11403,21 @@ function ArtifactsRepository({
           <div className="hidden max-h-[calc(100dvh-24rem)] min-h-0 flex-1 overflow-auto md:block">
             <table className="w-full table-fixed text-left text-sm">
               <colgroup>
-                <col className="w-[30%]" />
-                <col className="w-[10%]" />
-                <col className="w-[18%]" />
+                <col className="w-[32%]" />
                 <col className="w-[12%]" />
+                <col className="w-[18%]" />
                 <col className="w-[14%]" />
-                <col className="w-[16%]" />
+                <col className="w-[12%]" />
+                <col className="w-[12%]" />
               </colgroup>
-              <thead className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container-low text-xs uppercase text-on-surface-variant shadow-sm">
+              <thead className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container-low text-[11px] uppercase tracking-[0.16em] text-on-surface-variant shadow-sm">
                 <tr>
-                  <th className="p-4 text-left">File</th>
-                  <th className="p-4 text-left">Type</th>
-                  <th className="p-4 text-left">Project</th>
-                  <th className="p-4 text-left">Uploaded</th>
-                  <th className="p-4 text-center">Status</th>
-                  <th className="p-4 text-right">Actions</th>
+                  <th className="px-4 py-3 text-left">File</th>
+                  <th className="px-4 py-3 text-left">Type</th>
+                  <th className="px-4 py-3 text-left">Project</th>
+                  <th className="px-4 py-3 text-left">Uploaded</th>
+                  <th className="px-4 py-3 text-center">Status</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
@@ -11343,29 +11426,44 @@ function ArtifactsRepository({
                   const canReprocess = retryState === 'actionable'
                   const retryLabel = retryStateLabel(retryState)
                   const displayStatus = artifactDisplayStatus(record, latestAttempts)
-                  const displayTone: StatusTone = displayStatus === 'recovered' || displayStatus === 'processed' ? 'success' : displayStatus === 'needs_retry' ? 'error' : 'info'
-                  const displayLabel =
-                    displayStatus === 'needs_retry' ? 'Needs retry' :
-                    displayStatus === 'retrying' ? 'Retry in progress' :
-                    displayStatus
+                  const displayTone = artifactDisplayTone(displayStatus)
+                  const accentClasses = artifactAccentClasses(displayStatus)
                   return (
                     <tr key={record.id} className="align-top">
-                      <td className="p-4 text-left">
+                      <td className={`border-l-4 ${accentClasses} px-4 py-3 text-left`}>
                         <div className="min-w-0">
-                          <p className="break-words font-semibold text-on-surface [overflow-wrap:anywhere]" title={record.fileName}>{record.fileName}</p>
-                          <p className="mt-1 break-all text-xs text-on-surface-variant">Artifact ID: {record.id}</p>
+                          <p className="break-words font-semibold leading-5 text-on-surface [overflow-wrap:anywhere]" title={record.fileName}>{record.fileName}</p>
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            <span className="inline-flex items-center rounded-full border border-outline-variant bg-surface-container-lowest px-2 py-0.5 text-[11px] font-semibold text-on-surface-variant">
+                              {record.type}
+                            </span>
+                            <span className="inline-flex items-center rounded-full border border-outline-variant bg-surface-container-lowest px-2 py-0.5 text-[11px] font-semibold text-on-surface-variant">
+                              Job ID: {artifactSourceJobId(record) || '-'}
+                            </span>
+                          </div>
+                          <p className="mt-2 break-all text-[11px] text-on-surface-variant">Artifact ID: {record.id}</p>
                         </div>
                       </td>
-                      <td className="p-4 text-left text-on-surface-variant">{record.type}</td>
-                      <td className="p-4 text-left text-on-surface-variant">{record.projectName}</td>
-                      <td className="whitespace-nowrap p-4 text-left text-on-surface-variant">{formatTime(record.uploadedAt)}</td>
-                      <td className="p-4 text-center">
+                      <td className="px-4 py-3 text-left">
+                        <span className="inline-flex rounded-full border border-outline-variant bg-surface-container-lowest px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant">{record.type}</span>
+                      </td>
+                      <td className="px-4 py-3 text-left text-on-surface-variant">
+                        <div className="min-w-0">
+                          <p className="break-words text-sm font-medium text-on-surface [overflow-wrap:anywhere]">{record.projectName}</p>
+                        </div>
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-left text-on-surface-variant">
+                        <div>
+                          <p className="text-sm font-medium text-on-surface">{formatTime(record.uploadedAt)}</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
                         <div className="flex flex-col items-center gap-1.5">
-                          <StatusBadge status={displayTone} label={displayLabel} uppercase />
+                          <StatusBadge status={displayTone} label={artifactStatusLabel(displayStatus)} uppercase />
                           {retryLabel && retryState !== 'recovered' ? <StatusBadge status={retryStateTone(retryState)} label={retryLabel} /> : null}
                         </div>
                       </td>
-                      <td className="p-4 text-right">
+                      <td className="px-4 py-3 text-right">
                         <ArtifactActionButtons
                           record={record}
                           canReprocess={canReprocess}
@@ -11549,7 +11647,7 @@ function ExtractionDetailsDrawer({
   ].filter(Boolean)
   const auditRows = [
     { label: 'Artifact ID', value: record.id },
-    { label: 'Source job ID', value: artifactSourceJobId(record) || '-' },
+    { label: 'Job ID', value: artifactSourceJobId(record) || '-' },
     { label: 'Uploaded', value: formatTime(record.uploadedAt) },
     { label: 'Original file name', value: displayMetrics?.fileName || record.fileName },
   ]
@@ -11565,7 +11663,7 @@ function ExtractionDetailsDrawer({
     <ModalFrame title="Extraction Details" onClose={onClose} maxWidth="max-w-3xl">
       <div className="space-y-5">
         <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
-          <div className="bg-surface-container-low p-4">
+          <div className="bg-surface-container-low px-4 py-3">
             <div className="flex min-w-0 items-start gap-3">
               <span className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border ${
                 statusTone === 'success' ? 'border-success/25 bg-success/10 text-success' :
@@ -11578,12 +11676,12 @@ function ExtractionDetailsDrawer({
                 <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary">Extraction details</p>
                 <h3 className="mt-1 break-words text-lg font-bold leading-6 text-on-surface">{record.fileName}</h3>
                 <p className="mt-1 text-sm text-on-surface-variant">{record.projectName}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-2.5 flex flex-wrap gap-1.5">
                   <StatusBadge status={statusTone} label={statusLabel} uppercase />
-                  <span className="rounded-full border border-outline-variant bg-surface-container-lowest px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-on-surface-variant">{docType}</span>
-                  <span className="rounded-full border border-outline-variant bg-surface-container-lowest px-2.5 py-1 text-xs font-semibold text-on-surface-variant">{fileType}</span>
-                  <span className="rounded-full border border-outline-variant bg-surface-container-lowest px-2.5 py-1 text-xs font-semibold text-on-surface-variant">Size {fileSizeLabel}</span>
-                  <span className="rounded-full border border-outline-variant bg-surface-container-lowest px-2.5 py-1 text-xs font-semibold text-on-surface-variant">Uploaded {formatTime(record.uploadedAt)}</span>
+                  <span className="rounded-full border border-outline-variant bg-surface-container-lowest px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">{docType}</span>
+                  <span className="rounded-full border border-outline-variant bg-surface-container-lowest px-2 py-0.5 text-[11px] font-semibold text-on-surface-variant">{fileType}</span>
+                  <span className="rounded-full border border-outline-variant bg-surface-container-lowest px-2 py-0.5 text-[11px] font-semibold text-on-surface-variant">Size {fileSizeLabel}</span>
+                  <span className="rounded-full border border-outline-variant bg-surface-container-lowest px-2 py-0.5 text-[11px] font-semibold text-on-surface-variant">Uploaded {formatTime(record.uploadedAt)}</span>
                 </div>
               </div>
             </div>
@@ -11593,14 +11691,14 @@ function ExtractionDetailsDrawer({
               <div key={metric.label} className="rounded-lg border border-outline-variant bg-surface-container-low p-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">{metric.label}</p>
-                    <p className="mt-0.5 text-[10px] font-bold uppercase text-primary">{metric.detail}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-on-surface-variant">{metric.label}</p>
+                    <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-primary">{metric.detail}</p>
                   </div>
                   <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest text-on-surface-variant">
                     <metric.icon className="h-3.5 w-3.5" />
                   </span>
                 </div>
-                <p className={`mt-3 text-2xl font-bold leading-none text-on-surface ${metric.mono ? 'font-mono text-lg' : ''}`}>{metric.value}</p>
+                <p className={`mt-2.5 text-xl font-bold leading-none text-on-surface ${metric.mono ? 'font-mono text-lg' : ''}`}>{metric.value}</p>
               </div>
             ))}
           </div>
@@ -11614,7 +11712,7 @@ function ExtractionDetailsDrawer({
         <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Extraction Profile</h4>
+              <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Extraction profile</h4>
               <p className="mt-1 text-sm text-on-surface-variant">
                 {isImageArtifact
                   ? 'Visual extraction summary for an uploaded UI or image artifact.'
@@ -11623,15 +11721,15 @@ function ExtractionDetailsDrawer({
                     : 'Document extraction summary for source requirements and design files.'}
               </p>
             </div>
-            <span className="rounded-full border border-outline-variant bg-surface-container-low px-3 py-1 text-xs font-semibold text-on-surface-variant">
+            <span className="rounded-full border border-outline-variant bg-surface-container-low px-2.5 py-1 text-[11px] font-semibold text-on-surface-variant">
               {docType} / {fileType}
             </span>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-4">
             {profileRows.map((row) => (
               <div key={row.label} className="rounded-lg border border-outline-variant bg-surface-container-low p-3">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">{row.label}</p>
-                <p className="mt-2 text-sm font-bold leading-5 text-on-surface">{row.value}</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">{row.label}</p>
+                <p className="mt-2 text-sm font-semibold leading-5 text-on-surface">{row.value}</p>
               </div>
             ))}
           </div>
@@ -11639,14 +11737,14 @@ function ExtractionDetailsDrawer({
         <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Extracted Content</h4>
+              <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Extracted content</h4>
               <p className="mt-1 text-sm text-on-surface-variant">
                 {structuredContentCount || visualCandidateCount || displayWarningCount
                   ? 'Only detected content signals are emphasized. Warnings are always shown when present.'
                   : 'No tables, annotations, links, warnings, or visual candidates were detected for this artifact.'}
               </p>
             </div>
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-low px-3 py-1 text-xs font-semibold text-on-surface-variant">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-low px-2.5 py-1 text-[11px] font-semibold text-on-surface-variant">
               <Clock className="h-3.5 w-3.5" />
               {durationLabel}
             </div>
@@ -11655,7 +11753,7 @@ function ExtractionDetailsDrawer({
             {visibleContentSignals.map((signal) => (
               <div key={signal.label} className="rounded-lg border border-outline-variant bg-surface-container-low p-3">
                 <div className="flex min-h-8 items-start justify-between gap-2">
-                  <p className="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">{signal.label}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">{signal.label}</p>
                   <span className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
                     signal.tone === 'warning' ? 'bg-warning/10 text-warning' :
                     signal.tone === 'success' ? 'bg-success/10 text-success' :
@@ -11664,7 +11762,7 @@ function ExtractionDetailsDrawer({
                     <signal.icon className="h-3.5 w-3.5" />
                   </span>
                 </div>
-                <p className="mt-3 text-2xl font-bold leading-none text-on-surface">{formatCompactNumber(signal.value)}</p>
+                <p className="mt-2.5 text-xl font-bold leading-none text-on-surface">{formatCompactNumber(signal.value)}</p>
               </div>
             ))}
           </div>
@@ -11700,16 +11798,16 @@ function ExtractionDetailsDrawer({
         </section>
         {displayWarnings.length || displayWarningCount ? (
           <section className="rounded-xl border border-warning/30 bg-warning/10 p-4">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-warning">Warnings</h4>
+            <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] text-warning">Warnings</h4>
             <ExtractionWarningsInline warnings={displayWarnings} count={displayWarningCount} />
           </section>
         ) : null}
         <details className="rounded-xl border border-outline-variant bg-surface-container-lowest">
-          <summary className="cursor-pointer px-4 py-3 text-xs font-bold uppercase tracking-widest text-on-surface-variant">
-            Audit identifiers
+          <summary className="cursor-pointer px-4 py-3 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">
+            Audit details
           </summary>
           <div className="border-t border-outline-variant px-4 py-3">
-            <UsageDetailList title="Source Details" rows={auditRows} />
+            <UsageDetailList title="Artifact details" rows={auditRows} />
           </div>
         </details>
         <UsageEstimateNote>
@@ -12691,28 +12789,46 @@ function AnalyticsPipelinePerformancePanel({
           </span>
         </div>
       </div>
-      <div className="flex flex-1 flex-col space-y-5 p-5">
+      <div className="flex flex-1 flex-col gap-5 p-5">
         <div className="grid gap-3 sm:grid-cols-3">
           <AnalyticsSummaryStat label="Jobs completed" value={formatCompactNumber(completedTotal)} />
-          <AnalyticsSummaryStat label="Documents" value={formatCompactNumber(generation.producedValue)} tone="info" />
+          <AnalyticsSummaryStat label="Documents generated" value={formatCompactNumber(generation.producedValue)} tone="info" />
           <AnalyticsSummaryStat label="Files ingested" value={formatCompactNumber(ingestion.producedValue)} tone="success" />
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-2">
-          <AnalyticsPipelineColumn icon={Database} title="Ingestion" tone="success" summary={ingestion} onUsageInfo={onUsageInfo} />
-          <AnalyticsPipelineColumn icon={FileText} title="Generation" tone="info" summary={generation} onUsageInfo={onUsageInfo} />
+        <div className="grid gap-5 lg:grid-cols-2">
+          <AnalyticsPipelineDetailBlock
+            title="Ingestion"
+            tone="success"
+            metrics={[
+              { label: 'Completed jobs', value: formatCompactNumber(ingestion.jobs) },
+              { label: 'Avg duration', value: formatDuration(ingestion.avgDuration) },
+              { label: 'Files processed', value: formatCompactNumber(ingestion.producedValue) },
+              { label: 'Chunks stored', value: formatCompactNumber(ingestion.chunks || 0) },
+              { label: 'Words extracted', value: formatCompactNumber(ingestion.words) },
+              { label: 'Cost incurred', value: formatCurrency(ingestion.cost, 4), estimated: true, usageInfo: ingestion.costInfo },
+              { label: 'Tokens used', value: formatCompactNumber(ingestion.tokens), estimated: true, usageInfo: ingestion.tokenInfo },
+            ]}
+            onUsageInfo={onUsageInfo}
+          />
+          <AnalyticsPipelineDetailBlock
+            title="Generation"
+            tone="info"
+            metrics={[
+              { label: 'Completed jobs', value: formatCompactNumber(generation.jobs) },
+              { label: 'Avg duration', value: formatDuration(generation.avgDuration) },
+              { label: 'Documents generated', value: formatCompactNumber(generation.producedValue) },
+              { label: 'Tokens used', value: formatCompactNumber(generation.tokens), estimated: true, usageInfo: generation.tokenInfo },
+              { label: 'Words generated', value: formatCompactNumber(generation.words) },
+              { label: 'Cost incurred', value: formatCurrency(generation.cost, 4), estimated: true, usageInfo: generation.costInfo },
+            ]}
+            onUsageInfo={onUsageInfo}
+          />
         </div>
 
         <div className="grid flex-1 content-end gap-x-6 gap-y-3 lg:grid-cols-2">
-          {usageRows.map((row) => (
-            <AnalyticsWorkloadShareRow
-              key={row.label}
-              label={row.label}
-              value={row.value}
-              total={row.total}
-              valueLabel={row.valueLabel}
-              tone={row.tone}
-            />
+          {[usageRows[1], usageRows[0]].map((row) => (
+            <AnalyticsWorkloadShareRow key={row.label} label={row.label} value={row.value} total={row.total} valueLabel={row.valueLabel} tone={row.tone} />
           ))}
         </div>
       </div>
@@ -12720,41 +12836,59 @@ function AnalyticsPipelinePerformancePanel({
   )
 }
 
-function AnalyticsPipelineColumn({
-  icon: Icon,
+function AnalyticsPipelineDetailBlock({
   title,
   tone,
-  summary,
+  metrics,
   onUsageInfo,
-  className = '',
 }: {
-  icon: LucideIcon
   title: string
   tone: StatusTone
-  summary: AnalyticsPipelineSummary
+  metrics: Array<{ label: string; value: string; estimated?: boolean; usageInfo?: AnalyticsUsageCalculation }>
   onUsageInfo: (value: AnalyticsUsageCalculation) => void
-  className?: string
 }) {
   return (
-    <div className={`rounded-lg border border-outline-variant bg-surface-container-low p-3 ${className}`}>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-bold text-on-surface">{title}</p>
-          <p className="mt-1 text-xs text-on-surface-variant">{summary.producedLabel} and usage recorded from completed jobs.</p>
-        </div>
-        <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${analyticsToneClasses(tone)}`}>
-          <Icon className="h-4 w-4" />
-        </span>
+    <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4">
+      <div className="flex items-center justify-between gap-3 border-b border-outline-variant pb-3">
+        <p className="text-base font-bold text-on-surface">{title}</p>
+        <span className={`h-2 w-16 rounded-full ${analyticsBarClasses(tone)}`} />
       </div>
-      <dl className="mt-3 grid gap-x-4 gap-y-2 text-xs sm:grid-cols-2">
-        <AnalyticsMiniMetric label="Jobs completed" value={formatCompactNumber(summary.jobs)} />
-        <AnalyticsMiniMetric label={summary.producedLabel} value={formatCompactNumber(summary.producedValue)} />
-        <AnalyticsMiniMetric label={summary.wordsLabel} value={formatCompactNumber(summary.words)} />
-        {typeof summary.chunks === 'number' ? <AnalyticsMiniMetric label="Chunks ingested" value={formatCompactNumber(summary.chunks)} /> : null}
-        <AnalyticsMiniMetric label="Tokens" value={formatCompactNumber(summary.tokens)} estimated usageInfo={summary.tokenInfo} onUsageInfo={onUsageInfo} />
-        <AnalyticsMiniMetric label="Cost" value={formatCurrency(summary.cost, 4)} estimated usageInfo={summary.costInfo} onUsageInfo={onUsageInfo} />
-        <AnalyticsMiniMetric label="Avg duration" value={formatDuration(summary.avgDuration)} />
+      <dl className="mt-4 grid gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
+        {metrics.map((metric) => (
+          <AnalyticsPipelineTextMetric
+            key={metric.label}
+            label={metric.label}
+            value={metric.value}
+            estimated={metric.estimated}
+            usageInfo={metric.usageInfo}
+            onUsageInfo={onUsageInfo}
+          />
+        ))}
       </dl>
+    </div>
+  )
+}
+
+function AnalyticsPipelineTextMetric({
+  label,
+  value,
+  estimated = false,
+  usageInfo,
+  onUsageInfo,
+}: {
+  label: string
+  value: string
+  estimated?: boolean
+  usageInfo?: AnalyticsUsageCalculation
+  onUsageInfo: (value: AnalyticsUsageCalculation) => void
+}) {
+  return (
+    <div className="min-w-0">
+      <dt className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">
+        <span className="truncate">{label}</span>
+        {usageInfo ? <AnalyticsUsageInfoButton label={`View ${estimated ? 'estimated ' : ''}${label} calculation`} onClick={() => onUsageInfo(usageInfo)} /> : null}
+      </dt>
+      <dd className="mt-1 break-words text-base font-bold text-on-surface">{value}</dd>
     </div>
   )
 }
@@ -15623,11 +15757,32 @@ function shouldHideNotificationFromTray(item: NotificationEvent) {
   return false
 }
 
-function compactNotifications(notifications: NotificationEvent[]) {
-  const buckets = new Map<string, NotificationEvent & { count?: number }>()
+function notificationCreatedAtMs(item: NotificationEvent) {
+  const createdAt = new Date(item.createdAt || '')
+  return Number.isNaN(createdAt.getTime()) ? null : createdAt.getTime()
+}
+
+function isRecentTrayNotification(item: NotificationEvent, nowMs = Date.now()) {
+  const createdAtMs = notificationCreatedAtMs(item)
+  if (createdAtMs === null) return true
+  return nowMs - createdAtMs <= NOTIFICATION_TRAY_WINDOW_MS
+}
+
+function compactNotifications(notifications: NotificationEvent[]): { items: NotificationTrayItem[]; bucketIdsByKey: Map<string, string[]> } {
+  const nowMs = Date.now()
+  const buckets = new Map<string, NotificationTrayItem>()
+  const bucketIdsByKey = new Map<string, string[]>()
+
   notifications.forEach((item) => {
-    if (shouldHideNotificationFromTray(item)) return
+    if (shouldHideNotificationFromTray(item) || !isRecentTrayNotification(item, nowMs)) return
     const key = notificationBucketKey(item)
+    const existingIds = bucketIdsByKey.get(key)
+    if (existingIds) {
+      existingIds.push(item.id)
+    } else {
+      bucketIdsByKey.set(key, [item.id])
+    }
+
     const existing = buckets.get(key)
     if (!existing) {
       buckets.set(key, { ...item, count: 1 })
@@ -15637,7 +15792,8 @@ function compactNotifications(notifications: NotificationEvent[]) {
     existing.read = existing.read && item.read
     if (String(item.createdAt || '') > String(existing.createdAt || '')) existing.createdAt = item.createdAt
   })
-  return Array.from(buckets.values())
+
+  const items = Array.from(buckets.values())
     .map((item) => {
       if (!isKnowledgeCompletionNotification(item) || !item.count || item.count <= 1) return item
       const project = item.project || notificationProjectFromMessage(item) || 'the selected project'
@@ -15648,6 +15804,8 @@ function compactNotifications(notifications: NotificationEvent[]) {
       }
     })
     .sort((left, right) => String(right.createdAt || '').localeCompare(String(left.createdAt || '')))
+
+  return { items, bucketIdsByKey }
 }
 
 function NotificationDrawer({
@@ -15663,16 +15821,22 @@ function NotificationDrawer({
   onClose: () => void
   setView: (view: View) => void
 }) {
-  const displayNotifications = useMemo(() => compactNotifications(notifications), [notifications])
+  const { items: displayNotifications, bucketIdsByKey } = useMemo(() => compactNotifications(notifications), [notifications])
   const unread = displayNotifications.filter((item) => !item.read).length
-  const visibleIds = useMemo(() => new Set(displayNotifications.flatMap((item) => notifications.filter((raw) => notificationBucketKey(raw) === notificationBucketKey(item)).map((raw) => raw.id))), [displayNotifications, notifications])
+  const visibleIds = useMemo(() => {
+    const ids = new Set<string>()
+    bucketIdsByKey.forEach((bucketIds) => {
+      bucketIds.forEach((id) => ids.add(id))
+    })
+    return ids
+  }, [bucketIdsByKey])
   const markAll = () => {
     setNotifications((current) => current.map((item) => (visibleIds.has(item.id) ? { ...item, read: true } : item)))
     setReadNotificationIds((current) => Array.from(new Set([...current, ...visibleIds])))
   }
   const openItem = (item: NotificationEvent) => {
     const bucket = notificationBucketKey(item)
-    const bucketIds = notifications.filter((notification) => notificationBucketKey(notification) === bucket).map((notification) => notification.id)
+    const bucketIds = bucketIdsByKey.get(bucket) || []
     setNotifications((current) => current.map((notification) => (bucketIds.includes(notification.id) ? { ...notification, read: true } : notification)))
     setReadNotificationIds((current) => Array.from(new Set([...current, ...bucketIds])))
     if (item.actionView) setView(item.actionView)
@@ -15680,6 +15844,10 @@ function NotificationDrawer({
   }
   return (
     <SideDrawer title="Notifications" onClose={onClose}>
+      <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-outline-variant bg-surface-container-low px-3 py-1 text-xs font-semibold text-on-surface-variant">
+        <Clock className="h-3.5 w-3.5" />
+        <span>Recent activity · past 7 days</span>
+      </div>
       <div className="mb-4 flex items-center justify-between">
         <p className="text-sm text-on-surface-variant">{unread} unread</p>
         <button onClick={markAll} className="text-sm font-bold text-primary">Mark all as read</button>

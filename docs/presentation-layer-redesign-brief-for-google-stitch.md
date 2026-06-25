@@ -2,7 +2,7 @@
 
 Date: 2026-06-12
 
-Purpose: Create professional, user-friendly, responsive UI/UX designs for the entire Q-Ops Agent application while preserving all existing functionality, behavior, workflows, roles, data contracts, and business logic.
+Purpose: Create professional, user-friendly, responsive UI/UX designs for the entire Q-Ops Agent application while preserving all existing displayed content, functionality, behavior, workflows, roles, data contracts, and business logic.
 
 This brief is intended for Google Stitch or a UI design agent. The output should be design-only: high-fidelity screens, responsive variants, component states, and design-system guidance that can later be implemented in the existing React application without changing how the product works.
 
@@ -14,6 +14,8 @@ Transform only the presentation layer of Q-Ops Agent across all screens, pages, 
 
 The redesigned application should feel like a polished enterprise SaaS product for QA operations and AI-assisted delivery intelligence. It should be clear, credible, efficient, accessible, and consistent across the complete product surface.
 
+Important: Preserve the existing displayed content exactly. Do not rewrite headings, body copy, CTA labels, form labels, statuses, helper text, validation messages, error messages, comparison text, capability names, navigation labels, footer text, or generated-output labels. The redesign should change how the content is presented, not what the content says.
+
 ---
 
 ## 2. Non-Negotiable Functional Freeze
@@ -22,6 +24,20 @@ The redesign must not change application behavior.
 
 Do not change:
 
+- Existing displayed text/content.
+- Existing headings.
+- Existing subheadings.
+- Existing section copy.
+- Existing navigation labels.
+- Existing CTA labels.
+- Existing form labels.
+- Existing helper text.
+- Existing validation messages.
+- Existing error/success/warning messages.
+- Existing status labels.
+- Existing comparison table content.
+- Existing capability names.
+- Existing footer text.
 - Authentication behavior.
 - Login, logout, password reset, invite, or session restore behavior.
 - API endpoints, request payloads, response handling, polling, retry behavior, or error handling logic.
@@ -60,20 +76,52 @@ Allowed changes:
 - Component styling.
 - Icon selection and icon styling.
 - Responsive layout.
-- UI copy polish, only when meaning remains unchanged.
-- Empty-state wording.
+- Empty-state visual treatment without changing wording.
 - Loading-state presentation.
 - Error/success/warning visual treatment.
 - Progress bar visual treatment.
 - Table/list/card presentation.
 - Modal/drawer presentation.
-- Help text clarity, if behavior and meaning remain unchanged.
+- Help text visual treatment without changing wording.
 
 If a design idea requires new behavior, mark it clearly as "Future enhancement - not part of presentation-only redesign."
 
+If a design idea requires changed wording, mark it separately as "Optional copy recommendation - do not implement in presentation-only redesign."
+
 ---
 
-## 3. Product Context
+## 3. Content Freeze Requirement
+
+Use the current application content as the source of truth and preserve it exactly.
+
+The design may reorganize how the same content is visually arranged:
+
+- Same text in a new layout.
+- Same heading with improved typography.
+- Same form label with improved field styling.
+- Same CTA label with improved button hierarchy.
+- Same status label with improved badge styling.
+- Same table content with improved table layout.
+- Same modal content with improved modal composition.
+
+The design may not:
+
+- Replace content with newly written copy.
+- Shorten or summarize content.
+- Expand content with additional claims.
+- Rename sections.
+- Rename navigation items.
+- Rename CTAs.
+- Rename capabilities.
+- Rename statuses.
+- Add unsupported product promises.
+- Remove existing visible text unless it is hidden by existing responsive behavior.
+
+If optional copy improvements are identified, keep them outside the actual screen design in a separate recommendation section.
+
+---
+
+## 4. Product Context
 
 Q-Ops Agent is an AI-assisted QA operations platform. It helps teams convert project evidence into governed QA intelligence.
 
@@ -103,9 +151,9 @@ Core product tone:
 
 ---
 
-## 4. Target Personas
+## 5. Target Personas
 
-### 4.1 Admin
+### 5.1 Admin
 
 Admin users manage the full workspace.
 
@@ -125,7 +173,7 @@ Admin needs:
 
 Admin UI should feel powerful but controlled. Prioritize dense information, clear grouping, status visibility, and safe admin actions.
 
-### 4.2 Registered User
+### 5.2 Registered User
 
 Registered users work only on assigned projects.
 
@@ -143,11 +191,11 @@ Registered-user UI should feel focused and uncluttered. Avoid exposing admin-onl
 
 ---
 
-## 5. Application Surface To Redesign
+## 6. Application Surface To Redesign
 
 Create designs for all visible application areas listed below.
 
-### 5.1 Public And Authentication Screens
+### 6.1 Public And Authentication Screens
 
 - Landing/login page.
 - Login modal or login panel.
@@ -159,7 +207,7 @@ Create designs for all visible application areas listed below.
 - Public final CTA area.
 - Public footer links and legal/status placeholders if visible.
 
-### 5.2 Authenticated App Shell
+### 6.2 Authenticated App Shell
 
 - Dashboard shell.
 - Sidebar navigation.
@@ -173,7 +221,7 @@ Create designs for all visible application areas listed below.
 - Collapsed sidebar state.
 - Breadcrumb/page title area, if used.
 
-### 5.3 QA Intelligence Workspace
+### 6.3 QA Intelligence Workspace
 
 - Overview/dashboard home.
 - Project summary cards.
@@ -198,7 +246,7 @@ Create designs for all visible application areas listed below.
 - System status modal.
 - Diagnostics modal.
 
-### 5.4 Delivery Intelligence Workspace
+### 6.4 Delivery Intelligence Workspace
 
 Design these views with the same application shell and visual language:
 
@@ -216,7 +264,7 @@ Design these views with the same application shell and visual language:
 
 These sections should look like operational intelligence tools, not marketing pages. They should prioritize scanning, comparison, structured evidence, and clear action areas.
 
-### 5.5 Settings And Administration
+### 6.5 Settings And Administration
 
 - Admin settings.
 - Registered-user settings.
@@ -237,7 +285,7 @@ These sections should look like operational intelligence tools, not marketing pa
 - Backend-managed credential indicators.
 - Read-only states for registered users.
 
-### 5.6 Documentation And Help
+### 6.6 Documentation And Help
 
 - Documentation page/view.
 - FAQs page/view.
@@ -245,7 +293,7 @@ These sections should look like operational intelligence tools, not marketing pa
 - Help article detail or expanded state.
 - Empty search/no result state if visible.
 
-### 5.7 Cross-Application States
+### 6.7 Cross-Application States
 
 For every relevant screen and component, include:
 
@@ -266,9 +314,9 @@ For every relevant screen and component, include:
 
 ---
 
-## 6. Design Language Requirements
+## 7. Design Language Requirements
 
-### 6.1 Overall Style
+### 7.1 Overall Style
 
 The design should be a professional enterprise web application, not a landing-page-heavy marketing site.
 
@@ -300,7 +348,7 @@ Avoid:
 - Inconsistent icon styles.
 - Inconsistent button shapes.
 
-### 6.2 Information Architecture
+### 7.2 Information Architecture
 
 Keep the current feature structure intact.
 
@@ -314,7 +362,7 @@ Recommended grouping:
 
 Navigation should make it obvious which view is active and which workspace the user is in.
 
-### 6.3 Layout Principles
+### 7.3 Layout Principles
 
 - Use full-width application bands and constrained content areas.
 - Use panels/cards only for real content groupings, repeated items, forms, modals, and metrics.
@@ -328,11 +376,11 @@ Navigation should make it obvious which view is active and which workspace the u
 
 ---
 
-## 7. Design System Requirements
+## 8. Design System Requirements
 
 Google Stitch should produce a consistent design system that can be implemented using React, Tailwind, and reusable components.
 
-### 7.1 Tokens
+### 8.1 Tokens
 
 Define tokens for:
 
@@ -352,7 +400,7 @@ Define tokens for:
 - Status colors.
 - Chart colors.
 
-### 7.2 Color
+### 8.2 Color
 
 Use a professional palette with sufficient contrast.
 
@@ -389,7 +437,7 @@ Status colors must be consistent everywhere:
 
 Avoid a design dominated by only purple, blue-purple, dark slate, beige, brown, or orange. Use a balanced enterprise palette with clear semantic contrast.
 
-### 7.3 Typography
+### 8.3 Typography
 
 Use a web-safe professional sans-serif or a realistic enterprise UI font.
 
@@ -406,7 +454,7 @@ Requirements:
 
 Do not use viewport-based font scaling. Text must fit inside controls and panels on all supported breakpoints.
 
-### 7.4 Spacing And Density
+### 8.4 Spacing And Density
 
 Use consistent spacing.
 
@@ -418,7 +466,7 @@ Recommended density:
 - Metrics should be compact but legible.
 - Modals should avoid excessive whitespace.
 
-### 7.5 Radius And Elevation
+### 8.5 Radius And Elevation
 
 Use restrained radius.
 
@@ -431,7 +479,7 @@ Recommended:
 
 ---
 
-## 8. Icon System
+## 9. Icon System
 
 Use one icon family consistently. The implementation currently uses lucide-style icons, so designs should follow the lucide visual language.
 
@@ -460,11 +508,11 @@ Icon-only buttons must have visible hover/focus states and tooltip-ready labels 
 
 ---
 
-## 9. Component Inventory To Redesign
+## 10. Component Inventory To Redesign
 
 Create design specifications for these reusable components.
 
-### 9.1 Navigation Components
+### 10.1 Navigation Components
 
 - Sidebar item.
 - Sidebar group heading.
@@ -476,7 +524,7 @@ Create design specifications for these reusable components.
 - Notification button.
 - Search input.
 
-### 9.2 Action Components
+### 10.2 Action Components
 
 - Primary button.
 - Secondary button.
@@ -488,7 +536,7 @@ Create design specifications for these reusable components.
 - Disabled button.
 - Loading button.
 
-### 9.3 Form Components
+### 10.3 Form Components
 
 - Text input.
 - Textarea.
@@ -505,7 +553,7 @@ Create design specifications for these reusable components.
 - Read-only field.
 - Inline validation summary.
 
-### 9.4 Data Display Components
+### 10.4 Data Display Components
 
 - Metric tile.
 - Status badge.
@@ -525,7 +573,7 @@ Create design specifications for these reusable components.
 - Error state.
 - Loading skeleton.
 
-### 9.5 Feedback Components
+### 10.5 Feedback Components
 
 - Toast.
 - Inline alert.
@@ -539,7 +587,7 @@ Create design specifications for these reusable components.
 - Popover.
 - System status indicator.
 
-### 9.6 Analytics Components
+### 10.6 Analytics Components
 
 - KPI card.
 - Chart container.
@@ -552,9 +600,9 @@ Create design specifications for these reusable components.
 
 ---
 
-## 10. Screen-Level Design Requirements
+## 11. Screen-Level Design Requirements
 
-### 10.1 Landing/Login Page
+### 11.1 Landing/Login Page
 
 Goal: Present Q-Ops Agent clearly and get users into the product.
 
@@ -568,7 +616,7 @@ Requirements:
 - Footer links should look intentional even if behavior is existing placeholder behavior.
 - Login modal/panel must support email, password, validation errors, forgot password, loading, and disabled states.
 
-### 10.2 Explore Page
+### 11.2 Explore Page
 
 Goal: Explain product capabilities without feeling disconnected from the app.
 
@@ -580,7 +628,7 @@ Requirements:
 - Avoid over-marketing visuals.
 - CTAs should remain clear and aligned with existing behavior.
 
-### 10.3 Dashboard Shell
+### 11.3 Dashboard Shell
 
 Goal: Provide a professional operations cockpit.
 
@@ -594,7 +642,7 @@ Requirements:
 - Avoid visual clutter in the top bar.
 - Maintain role-aware UI: admin and registered user should not see the same controls if current behavior hides them.
 
-### 10.4 Overview
+### 11.4 Overview
 
 Goal: Give a quick operational summary.
 
@@ -607,7 +655,7 @@ Requirements:
 - Clear next actions such as project selection, upload, generation, review, or settings depending on current UI.
 - Metrics should be visually consistent and easy to scan.
 
-### 10.5 Knowledge Base
+### 11.5 Knowledge Base
 
 Goal: Help users upload artifacts and understand ingestion progress.
 
@@ -622,7 +670,7 @@ Requirements:
 - Artifact list/summary.
 - Validation errors should be prominent and actionable.
 
-### 10.6 Generate Documents
+### 11.6 Generate Documents
 
 Goal: Help users generate QA deliverables from a project knowledge base.
 
@@ -638,7 +686,7 @@ Requirements:
 - Jira/Confluence/generated output cards should be easy to inspect.
 - Long job IDs and project names must wrap safely.
 
-### 10.7 Artifacts Repository
+### 11.7 Artifacts Repository
 
 Goal: Let users review uploaded and processed artifacts.
 
@@ -652,7 +700,7 @@ Requirements:
 - Error state.
 - Reprocess/retry controls if currently available.
 
-### 10.8 Analytics
+### 11.8 Analytics
 
 Goal: Help admins and users understand operational performance.
 
@@ -664,7 +712,7 @@ Requirements:
 - No-data states must be useful.
 - Avoid fake decorative charts.
 
-### 10.9 Audit Log
+### 11.9 Audit Log
 
 Goal: Show traceable user/project events.
 
@@ -679,7 +727,7 @@ Requirements:
 - Filters should be visually clear if present.
 - Registered users should visually see only scoped events according to current behavior.
 
-### 10.10 Notifications
+### 11.10 Notifications
 
 Goal: Show relevant project, job, assignment, and system notifications.
 
@@ -694,7 +742,7 @@ Requirements:
 - Long messages should wrap.
 - Preserve existing notification behavior.
 
-### 10.11 Settings
+### 11.11 Settings
 
 Goal: Make configuration understandable and safe.
 
@@ -709,7 +757,7 @@ Requirements:
 - Save/test buttons should be consistently placed.
 - Warnings should be clear before risky configuration edits.
 
-### 10.12 Delivery Intelligence Views
+### 11.12 Delivery Intelligence Views
 
 Goal: Present project intelligence as structured operational insight.
 
@@ -721,7 +769,7 @@ Requirements:
 - Tables, charts, relationship panels, recommendation cards, and status summaries should share the same design language as QA Intelligence.
 - Empty/loading/error states are required.
 
-### 10.13 Documentation And FAQs
+### 11.13 Documentation And FAQs
 
 Goal: Help users understand product usage and governance.
 
@@ -734,7 +782,7 @@ Requirements:
 
 ---
 
-## 11. Progress, Status, And Job State Standards
+## 12. Progress, Status, And Job State Standards
 
 Progress and job status are central to Q-Ops Agent. Design these carefully.
 
@@ -771,37 +819,27 @@ Job card requirements:
 
 ---
 
-## 12. Displayed Text And UX Copy Rules
+## 13. Displayed Text Preservation Rules
 
-UI text may be improved for clarity, but meaning must remain intact.
+UI text must be preserved exactly for this presentation-only redesign.
 
 Rules:
 
+- Do not rewrite existing text.
+- Do not summarize existing text.
+- Do not expand existing text.
 - Keep domain terms accurate.
 - Keep deliverable names stable.
 - Keep statuses recognizable.
 - Keep button intent unchanged.
-- Use sentence case unless the current product area intentionally uses title case.
-- Make errors actionable.
-- Avoid vague AI marketing copy inside operational workflows.
-- Avoid overly long helper text in dense dashboard areas.
-- Use concise empty states that explain what is missing and what the user can do next.
+- Keep current capitalization unless the implementation later explicitly approves copy changes.
+- Use visual design to improve readability instead of changing wording.
 
-Examples of acceptable copy improvements:
-
-- "No audit events yet" can become "No audit events for this scope yet."
-- "Generation failed" can include a concise reason and retry guidance if current data supports it.
-- "Not configured" can become "Routing not configured" for integration settings.
-
-Examples of unsafe copy changes:
-
-- Renaming "Epics & User Stories" to a different deliverable name.
-- Renaming "Create Knowledge Base" if tests or product flows depend on that visible CTA.
-- Changing a status label in a way that hides the actual backend state.
+Optional copy recommendations may be documented separately, but must not be used in the redesigned screens for this phase.
 
 ---
 
-## 13. Responsive Design Requirements
+## 14. Responsive Design Requirements
 
 Design responsive layouts for these breakpoints:
 
@@ -827,7 +865,7 @@ Responsive requirements:
 
 ---
 
-## 14. Usability And Accessibility Requirements
+## 15. Usability And Accessibility Requirements
 
 Design must comply with practical usability and accessibility expectations.
 
@@ -849,7 +887,7 @@ Requirements:
 
 ---
 
-## 15. Implementation Alignment Constraints
+## 16. Implementation Alignment Constraints
 
 The final design should be easy to implement in the current stack.
 
@@ -877,11 +915,11 @@ Avoid designs that require:
 
 ---
 
-## 16. Deliverables Requested From Google Stitch
+## 17. Deliverables Requested From Google Stitch
 
 Provide the following design outputs.
 
-### 16.1 Design System
+### 17.1 Design System
 
 - Color tokens.
 - Typography tokens.
@@ -896,7 +934,7 @@ Provide the following design outputs.
 - Table/list/card variants.
 - Progress/job status variants.
 
-### 16.2 High-Fidelity Screens
+### 17.2 High-Fidelity Screens
 
 Provide desktop and mobile variants for:
 
@@ -915,7 +953,7 @@ Provide desktop and mobile variants for:
 - At least one detailed Delivery Intelligence view.
 - Documentation/FAQs.
 
-### 16.3 State Designs
+### 17.3 State Designs
 
 Provide states for:
 
@@ -936,7 +974,7 @@ Provide states for:
 - Integration not configured.
 - Integration unauthorized.
 
-### 16.4 Responsive Specs
+### 17.4 Responsive Specs
 
 Provide guidance for:
 
@@ -948,7 +986,7 @@ Provide guidance for:
 - Header/search/notification behavior.
 - Dense job lists on small screens.
 
-### 16.5 Implementation Notes
+### 17.5 Implementation Notes
 
 For each screen, specify:
 
@@ -958,17 +996,19 @@ For each screen, specify:
 - Text hierarchy.
 - Status treatment.
 - Icon usage.
-- Any visible copy changes.
+- Confirmation that no visible content/text was changed.
 - Any future-enhancement ideas that should not be implemented as part of presentation-only redesign.
 
 ---
 
-## 17. Acceptance Criteria
+## 18. Acceptance Criteria
 
 The design is acceptable only if:
 
 - All current product areas have a redesigned presentation.
 - The same design language is used across the app.
+- All existing displayed content/text is preserved exactly.
+- No headings, body copy, CTA labels, form labels, navigation labels, status labels, comparison content, capability names, or footer text are rewritten.
 - The UI feels professional and enterprise-ready.
 - The UI is user-friendly and clear for both Admin and Registered User personas.
 - Responsive behavior is specified for mobile, tablet, desktop, and wide desktop.
@@ -985,7 +1025,7 @@ The design is acceptable only if:
 
 ---
 
-## 18. Explicit Out Of Scope
+## 19. Explicit Out Of Scope
 
 The following are out of scope for the presentation-only redesign:
 
@@ -996,6 +1036,12 @@ The following are out of scope for the presentation-only redesign:
 - Jira API changes.
 - Confluence API changes.
 - New product features.
+- New or rewritten product copy.
+- Renamed sections.
+- Renamed CTAs.
+- Renamed navigation items.
+- Renamed statuses.
+- Renamed capabilities.
 - New routes unless they only represent existing visible modal/page content.
 - New permission model.
 - New data model.
@@ -1009,11 +1055,11 @@ The following are out of scope for the presentation-only redesign:
 
 ---
 
-## 19. Final Design Direction Summary
+## 20. Final Design Direction Summary
 
 Redesign Q-Ops Agent as a cohesive enterprise QA intelligence platform.
 
 The app should feel like a serious operational workspace where users can upload evidence, generate QA outputs, track jobs, inspect results, manage settings, and understand delivery intelligence with confidence.
 
-The redesign must be visually comprehensive but behaviorally conservative: change how the product looks and reads, not what the product does.
+The redesign must be visually comprehensive but behaviorally and content conservative: change how the product looks, not what the product says and not what the product does.
 

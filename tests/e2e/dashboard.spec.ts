@@ -1,5 +1,17 @@
 import { expect, test } from '@playwright/test'
+import type { Page } from '@playwright/test'
 import { adminUser, mockQopsBackend, nowIso, registeredUser, seedSession } from './fixtures/qops-fixtures'
+
+function daysAgoIso(days: number) {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
+}
+
+async function seedNotifications(page: Page, notifications: unknown[]) {
+  await page.evaluate((items) => {
+    window.localStorage.setItem('qops-agent-notifications', JSON.stringify(items))
+    window.localStorage.setItem('qops-agent-read-notification-ids', '[]')
+  }, notifications)
+}
 
 test.describe('authenticated dashboard', () => {
   test.beforeEach(async ({ page }) => {
@@ -78,6 +90,37 @@ test.describe('authenticated dashboard', () => {
       integrationKey: 'jira',
     })
     await expect(page.getByText('Settings saved')).toBeVisible()
+  })
+
+  test('notification tray only shows recent notifications', async ({ page }) => {
+    await seedSession(page, adminUser)
+    await mockQopsBackend(page, adminUser, { auditEventsResponse: { events: [] } })
+    await seedNotifications(page, [
+      {
+        id: 'notification-old',
+        title: 'Old job complete',
+        message: 'This notification is older than the tray window.',
+        type: 'info',
+        createdAt: daysAgoIso(9),
+        read: false,
+        project: 'Payments Modernization',
+      },
+      {
+        id: 'notification-recent',
+        title: 'Recent job complete',
+        message: 'This notification should remain visible.',
+        type: 'success',
+        createdAt: daysAgoIso(2),
+        read: false,
+        project: 'Payments Modernization',
+      },
+    ])
+
+    await page.goto('/dashboard')
+    await page.getByRole('button', { name: 'Notifications', exact: true }).click()
+
+    await expect(page.getByText('Recent job complete')).toBeVisible()
+    await expect(page.getByText('Old job complete')).not.toBeVisible()
   })
 })
 
@@ -177,5 +220,36 @@ test.describe('registered-user authorization surface', () => {
     await expect(page.getByText('Project access updated').first()).toBeVisible()
     await expect(page.getByText('AstraCart Quick Commerce Application').first()).toBeVisible()
     await expect(page.getByText('AstraCart Previous Assignment')).not.toBeVisible()
+  })
+
+  test('notification tray only shows recent notifications for registered users', async ({ page }) => {
+    await seedSession(page, registeredUser)
+    await mockQopsBackend(page, registeredUser, { auditEventsResponse: { events: [] } })
+    await seedNotifications(page, [
+      {
+        id: 'notification-old-registered',
+        title: 'Old registered notice',
+        message: 'This notification is older than the tray window.',
+        type: 'info',
+        createdAt: daysAgoIso(8),
+        read: false,
+        project: 'Payments Modernization',
+      },
+      {
+        id: 'notification-recent-registered',
+        title: 'Recent registered notice',
+        message: 'This notification should remain visible.',
+        type: 'success',
+        createdAt: daysAgoIso(1),
+        read: false,
+        project: 'Payments Modernization',
+      },
+    ])
+
+    await page.goto('/dashboard')
+    await page.getByRole('button', { name: 'Notifications', exact: true }).click()
+
+    await expect(page.getByText('Recent registered notice')).toBeVisible()
+    await expect(page.getByText('Old registered notice')).not.toBeVisible()
   })
 })
