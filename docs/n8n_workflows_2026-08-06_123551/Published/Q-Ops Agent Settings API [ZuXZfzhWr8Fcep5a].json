@@ -1,0 +1,592 @@
+{
+  "updatedAt": "2026-05-20T11:20:45.258Z",
+  "createdAt": "2026-05-07T06:13:43.882Z",
+  "id": "ZuXZfzhWr8Fcep5a",
+  "name": "Q-Ops Agent Settings API",
+  "description": "Draft GET /webhook/settings endpoint backed by qops_environment_settings, qops_integration_settings, and qops_connection_test_results.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "settings",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "b8028c25-1439-4b34-a108-60f4043144cf",
+      "name": "GET /settings",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "6582e0c4-e418-4ddd-98dc-5093a9360770"
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_environment_settings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "environment_key,display_name,api_base_url,n8n_base_url,webhook_paths,is_active,created_at,updated_at,updated_by"
+            },
+            {
+              "name": "order",
+              "value": "environment_key.asc"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "6f424c5f-39f3-4cf2-8648-ea5b5bc2b398",
+      "name": "Fetch Environment Settings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1344,
+        -80
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_integration_settings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "environment_key,integration_key,display_name,enabled,config,secret_refs,status,last_tested_at,last_tested_by,settings_version,created_at,updated_at,updated_by"
+            },
+            {
+              "name": "order",
+              "value": "environment_key.asc,integration_key.asc"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "58b17e90-36e6-4028-9a65-bd74f96bb611",
+      "name": "Fetch Integration Settings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1568,
+        -80
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_connection_test_results",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "environment_key,integration_key,service_name,status,latency_ms,message,technical_detail,checked_by,checked_at,created_at"
+            },
+            {
+              "name": "order",
+              "value": "checked_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "100"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "353582f2-7578-4368-9fab-ee17e15e9aae",
+      "name": "Fetch Latest Connection Results",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1792,
+        -80
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const envs = $items('Fetch Environment Settings').map(i => i.json).filter(r => r && r.environment_key);\nconst integrations = $items('Fetch Integration Settings').map(i => i.json).filter(r => r && r.integration_key);\nconst userIntegrationsRaw = $items('Fetch User Integration Settings').map(i => i.json).filter(r => r && r.integration_key);\nconst projectOverridesRaw = $items('Fetch Project Integration Overrides').map(i => i.json).filter(r => r && r.integration_key);\nconst rawResults = $items('Fetch Latest Connection Results').map(i => i.json).filter(r => r && r.integration_key);\nconst profileRaw = $('Fetch Current Settings User Profile').first().json || {};\nconst profile = Array.isArray(profileRaw) ? profileRaw[0] : profileRaw;\nconst memberships = $items('Fetch Current Settings Project Memberships').map(i => i.json).filter(r => r && r.project_id);\nconst isAdmin = profile?.role === 'admin';\nconst allowedProjectIds = new Set(memberships.map(m => m.project_id));\nconst latestByKey = {};\nfor (const result of rawResults) {\n  const key = `${result.environment_key}:${result.integration_key}`;\n  if (!latestByKey[key]) latestByKey[key] = result;\n}\nfunction normalizeIntegration(row, scope, extra = {}) {\n  const latest = latestByKey[`${row.environment_key}:${row.integration_key}`] || null;\n  return {\n    ...extra,\n    scope,\n    environmentKey: row.environment_key,\n    integrationKey: row.integration_key,\n    displayName: row.display_name,\n    enabled: Boolean(row.enabled),\n    config: row.config || row.override_config || {},\n    secretRefs: row.secret_refs || {},\n    status: row.status || 'not_configured',\n    lastTestedAt: row.last_tested_at,\n    lastTestedBy: row.last_tested_by,\n    settingsVersion: row.settings_version || 1,\n    updatedAt: row.updated_at,\n    updatedBy: row.updated_by,\n    latestTest: latest ? { status: latest.status, latencyMs: latest.latency_ms, message: latest.message, checkedAt: latest.checked_at, checkedBy: latest.checked_by } : null,\n  };\n}\nconst userIntegrations = userIntegrationsRaw.map(row => normalizeIntegration(row, 'user', { userId: row.user_id }));\nconst projectOverrides = projectOverridesRaw\n  .filter(row => isAdmin || allowedProjectIds.has(row.project_id))\n  .map(row => normalizeIntegration(row, 'project', { projectId: row.project_id }));\nconst byEnvironment = envs.map(env => {\n  const scoped = integrations.filter(integration => integration.environment_key === env.environment_key).map(integration => normalizeIntegration(integration, 'workspace'));\n  return {\n    environmentKey: env.environment_key,\n    displayName: env.display_name,\n    apiBaseUrl: env.api_base_url,\n    n8nBaseUrl: env.n8n_base_url,\n    webhookPaths: env.webhook_paths || {},\n    isActive: Boolean(env.is_active),\n    updatedAt: env.updated_at,\n    updatedBy: env.updated_by,\n    integrations: scoped,\n  };\n});\nreturn [{\n  json: {\n    environments: byEnvironment,\n    environmentSettings: envs,\n    integrations,\n    userIntegrations,\n    projectOverrides,\n    currentUser: profile ? { id: profile.id, email: profile.email, name: profile.name, role: profile.role, status: profile.status } : null,\n    projectMemberships: memberships,\n    latestResults: rawResults,\n  }\n}];"
+      },
+      "id": "cc4da577-3d40-47d6-871c-deb0d53fca8f",
+      "name": "Map Settings Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2464,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "92609ba9-1077-412a-b3d4-aa39deb190c8",
+      "name": "Respond Settings",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2688,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const headers = $json.headers || {};\nconst query = $json.query || {};\nconst authHeader = headers.authorization || headers.Authorization || '';\nif (!String(authHeader).toLowerCase().startsWith('bearer ')) {\n  return [{ json: { ok: false, statusCode: 401, error: { code: 'UNAUTHORIZED', message: 'Missing bearer token' } } }];\n}\nreturn [{\n  json: {\n    ok: true,\n    token: String(authHeader).replace(/^Bearer\\s+/i, ''),\n    environmentKey: String(query.environmentKey || 'local'),\n    selectedProjectId: query.projectId || null\n  }\n}];"
+      },
+      "id": "a3e51ebe-d1d3-433f-9918-ac15151bb955",
+      "name": "Prepare Settings Read Auth",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "fe8a56d6-ae74-4e31-8175-8c9920fdf3d9",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1fcf4075-28d4-48bb-91fa-5ba423983929",
+      "name": "Settings Read Authorized?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d181517b-7d04-42df-bdd4-29aa1208284e",
+      "name": "Verify Settings Read Supabase User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        -80
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{ $json.id }}&status=eq.active&select=id,email,name,role,status&limit=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "307236c2-c9d1-4807-bf1f-51a02fc3c1da",
+      "name": "Fetch Current Settings User Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        -80
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{ (Array.isArray($json) ? $json[0] : $json).id }}&select=project_id,project_role",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "9b846efc-cf9d-4bc6-bc4e-77fa9209299b",
+      "name": "Fetch Current Settings Project Memberships",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        -80
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_user_integration_settings?user_id=eq.{{ (Array.isArray($(\"Fetch Current Settings User Profile\").first().json) ? $(\"Fetch Current Settings User Profile\").first().json[0] : $(\"Fetch Current Settings User Profile\").first().json).id }}&select=environment_key,user_id,integration_key,display_name,enabled,config,secret_refs,status,settings_version,created_at,updated_at,updated_by&order=environment_key.asc,integration_key.asc",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "4da10a32-e123-4fb4-8d16-fa2fb9d289d6",
+      "name": "Fetch User Integration Settings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2016,
+        -80
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_integration_overrides",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "project_id,integration_key,override_config,enabled,secret_refs,status,settings_version,created_at,updated_at,updated_by"
+            },
+            {
+              "name": "order",
+              "value": "project_id.asc,integration_key.asc"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "8b697220-5ffb-445e-85e4-054eea9a0836",
+      "name": "Fetch Project Integration Overrides",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2240,
+        -80
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 401,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "authorization, content-type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "b03de00f-eb04-413c-9ff1-84110d8d30fe",
+      "name": "Respond Settings Unauthorized",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        160
+      ]
+    }
+  ],
+  "connections": {
+    "GET /settings": {
+      "main": [
+        [
+          {
+            "node": "Prepare Settings Read Auth",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Settings Read Auth": {
+      "main": [
+        [
+          {
+            "node": "Settings Read Authorized?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Settings Read Authorized?": {
+      "main": [
+        [
+          {
+            "node": "Verify Settings Read Supabase User",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Settings Unauthorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Settings Read Supabase User": {
+      "main": [
+        [
+          {
+            "node": "Fetch Current Settings User Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Current Settings User Profile": {
+      "main": [
+        [
+          {
+            "node": "Fetch Current Settings Project Memberships",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Current Settings Project Memberships": {
+      "main": [
+        [
+          {
+            "node": "Fetch Environment Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Environment Settings": {
+      "main": [
+        [
+          {
+            "node": "Fetch Integration Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Integration Settings": {
+      "main": [
+        [
+          {
+            "node": "Fetch Latest Connection Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Latest Connection Results": {
+      "main": [
+        [
+          {
+            "node": "Fetch User Integration Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch User Integration Settings": {
+      "main": [
+        [
+          {
+            "node": "Fetch Project Integration Overrides",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Project Integration Overrides": {
+      "main": [
+        [
+          {
+            "node": "Map Settings Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Settings Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": {},
+  "versionId": "c9f9ae9c-5088-4a4c-b59d-fd133631a9e4",
+  "activeVersionId": "c9f9ae9c-5088-4a4c-b59d-fd133631a9e4",
+  "versionCounter": 75,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-07T06:13:43.887Z",
+      "createdAt": "2026-05-07T06:13:43.887Z",
+      "role": "workflow:owner",
+      "workflowId": "ZuXZfzhWr8Fcep5a",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version c9f9ae9c",
+    "description": ""
+  }
+}

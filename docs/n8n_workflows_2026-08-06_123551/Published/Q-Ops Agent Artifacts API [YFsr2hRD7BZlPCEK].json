@@ -1,0 +1,180 @@
+{
+  "updatedAt": "2026-05-29T06:47:28.581Z",
+  "createdAt": "2026-05-07T05:53:42.864Z",
+  "id": "YFsr2hRD7BZlPCEK",
+  "name": "Q-Ops Agent Artifacts API",
+  "description": "Draft additive UI API for GET /webhook/artifacts backed by doc_ingestion_jobs. Assign supabase-service-role-key before activation.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "af529232-24b1-4e87-8f8b-8c94b0ba7091",
+      "name": "GET /artifacts",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "path": "artifacts",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "83bcc929-f092-4b87-853d-3d6f7c62ecb6"
+    },
+    {
+      "id": "8ccdbdb3-c970-4567-9611-e872061f5c3e",
+      "name": "Fetch Ingestion Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "job_id,status,input,output,created_at,updated_at,error"
+            },
+            {
+              "name": "order",
+              "value": "created_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "200"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "3acae756-92d2-4dbe-8b59-a969fd4f4240",
+      "name": "Map Artifacts Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "jsCode": "function numberFromUnknown(value) {\n  const numeric = Number(value);\n  return Number.isFinite(numeric) ? numeric : 0;\n}\n\nfunction extractionDetails(output) {\n  const observability = output?.extractionObservability || output?.extraction_observability || {};\n  const tokenUsage = output?.tokenUsage || output?.token_usage || {};\n  const files = Array.isArray(observability.files) ? observability.files : [];\n  const file = files[0] || {};\n  const warnings = Array.isArray(observability.warnings)\n    ? observability.warnings\n    : Array.isArray(output?.warnings)\n      ? output.warnings\n      : [];\n  const cleanWarnings = warnings.map(warning => String(warning || '').trim()).filter(Boolean);\n  const warningCount = Number(observability.warningCount ?? observability.warning_count ?? output?.warningCount ?? cleanWarnings.length) || cleanWarnings.length;\n  const metrics = {\n    fileName: file.fileName || file.file_name || output?.fileName || '',\n    docType: file.docType || file.doc_type || output?.docType || '',\n    fileType: file.fileType || file.file_type || output?.fileType || '',\n    chunks: numberFromUnknown(output?.totalChunksStored ?? output?.total_chunks_stored ?? output?.chunkCount ?? output?.chunk_count),\n    words: numberFromUnknown(tokenUsage.embeddedWordCount ?? tokenUsage.embedded_word_count ?? output?.wordCount ?? output?.word_count),\n    tokens: numberFromUnknown(tokenUsage.tokensTotal ?? tokenUsage.tokens_total ?? output?.tokensTotal ?? output?.tokens_total),\n    costUsd: numberFromUnknown(tokenUsage.estimatedCostUsd ?? tokenUsage.estimated_cost_usd ?? output?.estimatedCostUsd ?? output?.estimated_cost_usd),\n    durationMs: numberFromUnknown(file.durationMs ?? file.duration_ms ?? observability.durationMs ?? observability.duration_ms),\n    fileSizeBytes: numberFromUnknown(file.fileSizeBytes ?? file.file_size_bytes ?? observability.fileSizeBytes ?? observability.file_size_bytes),\n    responseBytesEstimated: numberFromUnknown(file.responseBytesEstimated ?? file.response_bytes_estimated ?? observability.responseBytesEstimated ?? observability.response_bytes_estimated),\n    tables: numberFromUnknown(file.tableCount ?? file.table_count ?? observability.tableCount ?? observability.table_count),\n    annotations: numberFromUnknown(file.annotationCount ?? file.annotation_count ?? observability.annotationCount ?? observability.annotation_count),\n    links: numberFromUnknown(file.linkCount ?? file.link_count ?? observability.linkCount ?? observability.link_count),\n    visualCandidates: numberFromUnknown(file.visualCandidatesDetected ?? file.visual_candidates_detected ?? observability.visualCandidatesDetected ?? observability.visual_candidates_detected),\n    warnings: warningCount,\n  };\n  return {\n    extractionMetrics: Object.values(metrics).some(value => Boolean(value)) ? metrics : null,\n    extractionWarnings: cleanWarnings,\n    extractionWarningCount: warningCount,\n    extractionObservability: Object.keys(observability).length ? observability : null,\n  };\n}\n\nconst artifacts = [];\nconst statusMap = { completed: 'processed', failed: 'failed', pending: 'processing', processing: 'processing' };\nfor (const item of $input.all()) {\n  const job = item.json;\n  if (!job || !job.job_id) continue;\n  const input = job.input || {};\n  const files = input.files || {};\n  const details = extractionDetails(job.output || {});\n  for (const [type, url] of Object.entries(files)) {\n    const rawName = String(url).split('/').pop() || type;\n    artifacts.push({\n      id: `${job.job_id}:${type}`,\n      projectName: input.projectName || 'Unknown project',\n      type,\n      fileName: decodeURIComponent(rawName),\n      uploadedAt: job.created_at,\n      status: statusMap[job.status] || 'processing',\n      url,\n      jobId: job.job_id,\n      output: job.output || null,\n      extractionMetrics: details.extractionMetrics,\n      extractionWarnings: details.extractionWarnings,\n      extractionWarningCount: details.extractionWarningCount,\n      extractionObservability: details.extractionObservability,\n    });\n  }\n}\nreturn [{ json: { artifacts } }];"
+      }
+    },
+    {
+      "id": "83c06237-a348-4faa-93be-77b86fda6aaa",
+      "name": "Respond Artifacts",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "GET /artifacts": {
+      "main": [
+        [
+          {
+            "node": "Fetch Ingestion Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Ingestion Jobs": {
+      "main": [
+        [
+          {
+            "node": "Map Artifacts Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Artifacts Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Artifacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": null,
+  "versionId": "095c0b3f-edd8-4179-bd69-5673b44c9391",
+  "activeVersionId": "095c0b3f-edd8-4179-bd69-5673b44c9391",
+  "versionCounter": 45,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-07T05:53:42.866Z",
+      "createdAt": "2026-05-07T05:53:42.866Z",
+      "role": "workflow:owner",
+      "workflowId": "YFsr2hRD7BZlPCEK",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

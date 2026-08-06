@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { DragEvent, FormEvent, KeyboardEvent, ReactNode, SetStateAction } from 'react'
+import { createPortal } from 'react-dom'
 import {
   AlertTriangle,
   ArrowRight,
@@ -8456,7 +8457,7 @@ function StoryTestCaseProgressModel({ progress, status, output }: { progress?: J
   const updatedAt = progress?.updatedAt ? formatTime(progress.updatedAt) : ''
 
   return (
-    <div className="mt-3 rounded-lg border border-primary/20 bg-surface-container-lowest p-3">
+    <div className="mt-3 rounded-lg border border-primary/20 bg-surface-container-lowest p-3 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-primary">Story Test Cases progress</p>
@@ -8465,7 +8466,7 @@ function StoryTestCaseProgressModel({ progress, status, output }: { progress?: J
         <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">{Math.round(clampPercent(pct))}%</span>
       </div>
       {progress?.summary ? <p className="mt-2 text-xs leading-5 text-on-surface-variant">{progress.summary}</p> : null}
-      <div className="mt-3 grid gap-2">
+      <div className="mt-3 grid gap-2 rounded-lg border border-outline-variant bg-surface-container-low p-2">
         {STORY_TEST_CASE_PROGRESS_STAGES.map((stage, index) => {
           const isDone = status === 'completed' || index < activeIndex
           const isActive = status !== 'completed' && index === activeIndex
@@ -8478,7 +8479,7 @@ function StoryTestCaseProgressModel({ progress, status, output }: { progress?: J
                 ? 'border-primary bg-primary text-on-primary'
                 : 'border-outline-variant bg-surface-container text-on-surface-variant'
           return (
-            <div key={stage.key} className="grid grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-2 text-xs">
+            <div key={stage.key} className="grid grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-2 rounded-md px-2 py-1.5 text-xs transition hover:bg-surface-container-lowest">
               <span className={`flex h-5 w-5 items-center justify-center rounded-full border ${dotClass}`}>
                 {isFailed ? <AlertTriangle className="h-3 w-3" /> : isDone ? <CheckCircle2 className="h-3 w-3" /> : isActive ? <Clock className="h-3 w-3" /> : null}
               </span>
@@ -8490,7 +8491,7 @@ function StoryTestCaseProgressModel({ progress, status, output }: { progress?: J
       {metrics.length ? (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {metrics.map((metric) => (
-            <span key={metric.label} className="rounded-full bg-surface-container px-2 py-0.5 text-[11px] font-bold text-on-surface-variant">
+            <span key={metric.label} className="rounded-full border border-outline-variant bg-surface-container px-2 py-0.5 text-[11px] font-bold text-on-surface-variant">
               {metric.label}: {formatCompactNumber(metric.value)}
             </span>
           ))}
@@ -8749,14 +8750,14 @@ function UpdateSummarySectionList({ title, items, tone = 'info' }: { title: stri
     tone === 'error' ? 'bg-error' :
     'bg-primary'
   return (
-    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest">
-      <div className="flex items-center justify-between gap-3 border-b border-outline-variant px-4 py-3">
+    <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+      <div className="flex items-center justify-between gap-3 border-b border-outline-variant bg-surface-container-low px-4 py-3">
         <p className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">{title}</p>
         <span className="rounded-full bg-surface-container px-2 py-0.5 text-[11px] font-bold text-on-surface-variant">{normalized.length}</span>
       </div>
       <div className="max-h-44 space-y-1 overflow-y-auto p-3">
         {normalized.map((item, index) => (
-          <div key={`${item}-${index}`} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-on-surface hover:bg-surface-container-low">
+          <div key={`${item}-${index}`} className="flex items-center gap-2 rounded-lg border border-transparent px-2 py-1.5 text-sm text-on-surface transition hover:border-outline-variant hover:bg-surface-container-low">
             <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${markerClass}`} />
             <span className="min-w-0 break-words leading-5">{item}</span>
           </div>
@@ -8803,7 +8804,7 @@ function JiraChangeBucket({
     'text-primary'
 
   return (
-    <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+    <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between gap-3">
         <p className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">{title}</p>
         <span className={`rounded-full bg-surface-container px-2 py-0.5 text-[11px] font-bold ${toneClass}`}>{items.length}</span>
@@ -8850,7 +8851,7 @@ function UpdateSummaryStat({ label, value, hint, tone = 'info' }: { label: strin
     tone === 'error' ? 'text-error' :
     'text-primary'
   return (
-    <div className="min-w-0 rounded-lg bg-surface-container-low px-3 py-2">
+    <div className="min-w-0 rounded-lg border border-outline-variant/70 bg-surface-container-low px-3 py-2 shadow-sm">
       <p className="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">{label}</p>
       <p className={`mt-1 break-words text-lg font-bold leading-tight ${cls}`}>{value}</p>
       {hint ? <p className="mt-1 text-[11px] leading-4 text-on-surface-variant">{hint}</p> : null}
@@ -8875,7 +8876,7 @@ function BacklogChangeImpactSummary({
   const storyRemoved = groups.removed.filter((item) => item.kind === 'story').length
 
   return (
-    <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+    <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between gap-3">
         <p className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Change impact</p>
         <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">{updateModeLabel}</span>
@@ -9224,7 +9225,7 @@ function RTMTraceabilityChangeSummary({ groups }: { groups?: ReturnType<typeof r
 
 function UpdateSummaryDetailRow({ label, value, tag }: { label: string; value: string; tag?: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg bg-surface-container-low px-3 py-2">
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 shadow-sm">
       <div className="min-w-0">
         <p className="text-xs font-semibold text-on-surface-variant">{label}</p>
         {tag ? <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">{tag}</p> : null}
@@ -9293,19 +9294,21 @@ function UpdateSummaryButton({ output, jobRecord, relatedOutputs = [], compact =
       {open ? (
         <ModalFrame title="Update Summary" onClose={() => setOpen(false)} maxWidth={wideSummaryModal ? 'max-w-4xl' : 'max-w-3xl'}>
           <div className="space-y-5">
-            <div className="flex flex-col gap-3 border-b border-outline-variant pb-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="rounded-xl border border-outline-variant bg-surface-container-low p-4 shadow-sm">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">{documentType}</p>
-                <h3 className="mt-1 text-xl font-semibold leading-tight text-on-surface">{projectName}</h3>
+                <h3 className="mt-1 text-xl font-bold leading-tight text-on-surface">{projectName}</h3>
                 <p className="mt-1 break-all font-mono text-xs text-on-surface-variant">{jobId}</p>
               </div>
               <span className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold ${summary.tone === 'success' ? 'border-success/30 bg-success/10 text-success' : statusDisplayClasses(summary.tone)}`}>
                 <UpdateSummaryStatusIcon size="xs" />
                 {summary.title}
               </span>
+              </div>
             </div>
 
-            <div className={`rounded-xl border p-4 ${statusDisplayClasses(summary.tone)}`}>
+            <div className={`rounded-xl border p-4 shadow-sm ${statusDisplayClasses(summary.tone)}`}>
               <div className="flex items-start gap-3">
                 <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest/80">
                   <UpdateSummaryStatusIcon size="sm" />
@@ -9325,7 +9328,7 @@ function UpdateSummaryButton({ output, jobRecord, relatedOutputs = [], compact =
               ) : rtmChangeGroups ? (
                 <RTMChangeImpactSummary groups={rtmChangeGroups} coverage={rtmCoverage} updateModeLabel={updateModeLabel} />
               ) : (
-                <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+                <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm">
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <p className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Change impact</p>
                     <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">{updateModeLabel}</span>
@@ -9338,7 +9341,7 @@ function UpdateSummaryButton({ output, jobRecord, relatedOutputs = [], compact =
                 </section>
               )}
 
-              <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+              <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <p className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Usage and estimated savings</p>
                   <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase text-primary">Estimated</span>
@@ -9358,7 +9361,7 @@ function UpdateSummaryButton({ output, jobRecord, relatedOutputs = [], compact =
             <RTMTraceabilityChangeSummary groups={rtmChangeGroups} />
 
             {summary.updateReasons?.length ? (
-              <div className="flex items-start gap-3 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3">
+              <div className="flex items-start gap-3 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 shadow-sm">
                 <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <HelpCircle className="h-3.5 w-3.5" />
                 </span>
@@ -9427,14 +9430,14 @@ function FinalValidationButton({ output, compact = false }: { output?: any; comp
       {open ? (
         <ModalFrame title="Document Check" onClose={() => setOpen(false)} maxWidth="max-w-2xl">
           <div className="space-y-4">
-            <div className={`rounded-xl border p-4 ${statusDisplayClasses(verdict.tone)}`}>
+            <div className={`rounded-xl border p-4 shadow-sm ${statusDisplayClasses(verdict.tone)}`}>
               <div className="flex items-start gap-3">
                 <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest/80">
                   <ShieldCheck className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
                   <p className="text-xs font-bold uppercase tracking-widest">{verdict.label}</p>
-                  <h3 className="mt-1 text-xl font-semibold leading-7">{verdict.title}</h3>
+                  <h3 className="mt-1 text-xl font-bold leading-7">{verdict.title}</h3>
                   <p className="mt-2 text-sm leading-6 opacity-85">{verdict.summary}</p>
                 </div>
               </div>
@@ -9446,13 +9449,13 @@ function FinalValidationButton({ output, compact = false }: { output?: any; comp
               <UpdateSummaryDetailRow label="Support details" value={verdict.needsReview ? (diagnostics ? 'Saved for admin' : 'Review needed') : 'Not required'} />
             </div>
             {issues.length ? (
-              <div className="rounded-xl border border-outline-variant bg-surface-container-lowest">
-                <div className="border-b border-outline-variant px-4 py-3">
+              <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+                <div className="border-b border-outline-variant bg-surface-container-low px-4 py-3">
                   <p className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">What support should review</p>
                 </div>
                 <div className="max-h-52 space-y-2 overflow-y-auto p-3">
                   {issues.map((issue: any, index: number) => (
-                    <div key={`${issue?.code || 'issue'}-${index}`} className="rounded-lg bg-surface-container-low px-3 py-2 text-sm text-on-surface">
+                    <div key={`${issue?.code || 'issue'}-${index}`} className="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface">
                       <p className="font-semibold">{validationIssueTitle(issue, index)}</p>
                       <p className="mt-1 leading-5 text-on-surface-variant">{validationIssueMessage(issue)}</p>
                     </div>
@@ -9461,7 +9464,7 @@ function FinalValidationButton({ output, compact = false }: { output?: any; comp
               </div>
             ) : null}
             {diagnostics ? (
-              <p className="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-xs leading-5 text-on-surface-variant">
+              <p className="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-xs leading-5 text-on-surface-variant shadow-sm">
                 Technical diagnostics are stored with this job, so support can investigate without asking the user to rerun immediately.
               </p>
             ) : null}
@@ -9479,7 +9482,7 @@ function CoverageMetricTile({ label, value, tone }: { label: string; value: numb
     tone === 'error' ? 'text-error' :
     'text-primary'
   return (
-    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-3">
+    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-3 shadow-sm">
       <p className="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">{label}</p>
       <p className={`mt-2 text-2xl font-bold leading-tight ${valueClass}`}>{formatCompactNumber(value || 0)}</p>
     </div>
@@ -9660,7 +9663,7 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
           {showCoverageDetails ? (
             <ModalFrame title="Coverage Review" onClose={() => setShowCoverageDetails(false)} maxWidth="max-w-2xl">
               <div className="space-y-5">
-                <div className={`rounded-xl border p-4 text-left ${statusDisplayClasses(summaryTone)}`}>
+                <div className={`rounded-xl border p-4 text-left shadow-sm ${statusDisplayClasses(summaryTone)}`}>
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex min-w-0 gap-3">
                       <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest/80">
@@ -9668,7 +9671,7 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
                       </span>
                       <div className="min-w-0">
                       <p className="text-xs font-bold uppercase tracking-widest">{effectiveCoverageVerdict?.label || stageLabel || 'Coverage review'}</p>
-                        <h3 className="mt-1 text-xl font-semibold leading-7">{summaryLabel}</h3>
+                        <h3 className="mt-1 text-xl font-bold leading-7">{summaryLabel}</h3>
                         <p className="mt-2 text-sm leading-6 opacity-85">
                           {reviewActionText || effectiveCoverageVerdict?.summary}
                         </p>
@@ -9712,7 +9715,7 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
                   </div>
                 ) : null}
                 {rtmLayers.requirementRows.length || rtmLayers.storyRows.length ? (
-                  <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4 text-on-surface">
+                  <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 text-on-surface shadow-sm">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">RTM traceability layers</span>
                       {rtmLayers.requirementRows.length ? (
@@ -9732,15 +9735,15 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
                       ) : null}
                     </div>
                     {rtmLayers.requirementRows.length ? (
-                      <div className="mt-3 rounded-lg border border-outline-variant">
-                        <div className="grid grid-cols-[minmax(0,1fr)_92px_88px] gap-3 border-b border-outline-variant bg-surface-container-low px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-on-surface-variant sm:grid-cols-[minmax(0,1fr)_120px_120px]">
+                      <div className="mt-3 overflow-hidden rounded-lg border border-outline-variant">
+                        <div className="grid grid-cols-[minmax(0,1fr)_92px_88px] gap-3 border-b border-outline-variant bg-surface-container-high px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-on-surface-variant sm:grid-cols-[minmax(0,1fr)_120px_120px]">
                           <span>Layer 1: Requirement to epic / stories</span>
                           <span>Epic</span>
                           <span className="text-right">Stories</span>
                         </div>
                         <div className="max-h-56 divide-y divide-outline-variant overflow-y-auto">
                           {rtmLayers.requirementRows.map((row: any, index: number) => (
-                            <div key={`${row.id}-${index}`} className="grid grid-cols-[minmax(0,1fr)_92px_88px] gap-3 px-3 py-3 text-sm sm:grid-cols-[minmax(0,1fr)_120px_120px]">
+                            <div key={`${row.id}-${index}`} className="grid grid-cols-[minmax(0,1fr)_92px_88px] gap-3 px-3 py-3 text-sm transition hover:bg-surface-container-low sm:grid-cols-[minmax(0,1fr)_120px_120px]">
                               <div className="min-w-0">
                                 <p className="break-words font-semibold leading-5 text-on-surface">{row.id} - {row.title}</p>
                                 {row.notes ? <p className="mt-1 break-words text-xs leading-5 text-on-surface-variant">{row.notes}</p> : null}
@@ -9768,8 +9771,8 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
                       </div>
                     ) : null}
                     {rtmLayers.storyRows.length ? (
-                      <div className="mt-3 rounded-lg border border-outline-variant">
-                        <div className="grid grid-cols-[minmax(0,1fr)_92px_88px] gap-3 border-b border-outline-variant bg-surface-container-low px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-on-surface-variant sm:grid-cols-[minmax(0,1fr)_120px_120px]">
+                      <div className="mt-3 overflow-hidden rounded-lg border border-outline-variant">
+                        <div className="grid grid-cols-[minmax(0,1fr)_92px_88px] gap-3 border-b border-outline-variant bg-surface-container-high px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-on-surface-variant sm:grid-cols-[minmax(0,1fr)_120px_120px]">
                           <span>Layer 2: User story to generated test cases</span>
                           <span>Status</span>
                           <span className="text-right">Test cases</span>
@@ -9785,7 +9788,7 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
                             const visibleTestCaseKeys = row.testCaseKeys.slice(0, 3)
                             const hiddenTestCaseCount = Math.max(0, row.testCaseKeys.length - visibleTestCaseKeys.length)
                             return (
-                              <div key={`${row.storyKey}-${index}`} className="grid grid-cols-[minmax(0,1fr)_92px_88px] gap-3 px-3 py-3 text-sm sm:grid-cols-[minmax(0,1fr)_120px_120px]">
+                              <div key={`${row.storyKey}-${index}`} className="grid grid-cols-[minmax(0,1fr)_92px_88px] gap-3 px-3 py-3 text-sm transition hover:bg-surface-container-low sm:grid-cols-[minmax(0,1fr)_120px_120px]">
                                 <div className="min-w-0">
                                   <p className="break-words font-semibold leading-5 text-on-surface">{row.storyKey} - {row.storySummary}</p>
                                   {row.categories.length ? (
@@ -9825,7 +9828,7 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
                   </div>
                 ) : null}
                 {showCoverageDetailBlock ? (
-                  <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4 text-on-surface">
+                  <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 text-on-surface shadow-sm">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">
                         {isMappedDocumentCoverage ? sharedCoverageLabels.mapTitle : isStoryTestCasesCoverage ? 'Story test coverage map' : hasBatches ? 'Batch coverage' : 'Coverage ledger'}
@@ -9867,7 +9870,7 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
                               : 'border-success/30 bg-success/5 text-success'
                           const sectionChips = row.coveredSections.length ? row.coveredSections : []
                           return (
-                            <article key={`${row.key || row.title}-${index}`} className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+                            <article key={`${row.key || row.title}-${index}`} className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm transition hover:border-primary/35">
                               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                 <div className="min-w-0">
                                   <p className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">{sharedCoverageLabels.itemLabel}</p>
@@ -9881,7 +9884,7 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
                               </div>
 
                               <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-                                <div className="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-3">
+                                <div className="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-3 shadow-sm">
                                   <p className="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">{sharedCoverageLabels.sectionLabel}</p>
                                   {sectionChips.length ? (
                                     <div className="mt-2 flex flex-wrap gap-1.5">
@@ -9897,7 +9900,7 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
                                     </p>
                                   )}
                                 </div>
-                                <div className="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-3">
+                                <div className="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-3 shadow-sm">
                                   <p className="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">{sharedCoverageLabels.rationaleLabel}</p>
                                   <p className="mt-2 break-words text-sm leading-6 text-on-surface">
                                     {row.notes || (status.includes('missing') ? 'Q-Ops could not confirm this item in the generated document.' : 'Q-Ops marked this item covered in the generated document.')}
@@ -9948,7 +9951,7 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
                             ? 'text-on-surface-variant bg-surface-container'
                             : row.categoryComplete ? 'text-success bg-success/10' : 'text-warning bg-warning/10'
                           return (
-                            <article key={`${row.key || row.title}-${index}`} className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+                            <article key={`${row.key || row.title}-${index}`} className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm transition hover:border-primary/35">
                               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                 <div className="min-w-0">
                                   <p className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">Jira story coverage</p>
@@ -9967,7 +9970,7 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
                               </div>
 
                               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                                <div className="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-3">
+                                <div className="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-3 shadow-sm">
                                   <div className="flex items-start justify-between gap-3">
                                     <div>
                                       <p className="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">Test cases</p>
@@ -9984,7 +9987,7 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
                                   </p>
                                 </div>
 
-                                <div className="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-3">
+                                <div className="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-3 shadow-sm">
                                   <div className="flex items-start justify-between gap-3">
                                     <div>
                                       <p className="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">Coverage categories</p>
@@ -10048,8 +10051,8 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
                       </div>
                     ) : null}
                     {coverageDetailRows.length && !isMappedDocumentCoverage && !isStoryTestCasesCoverage ? (
-                      <div className="mt-3 max-h-[24rem] overflow-y-auto rounded-lg border border-outline-variant">
-                        <div className={`${coverageDetailGridClass} border-b border-outline-variant bg-surface-container-low px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wide text-on-surface-variant`}>
+                      <div className="mt-3 max-h-[24rem] overflow-y-auto rounded-lg border border-outline-variant shadow-sm">
+                        <div className={`${coverageDetailGridClass} border-b border-outline-variant bg-surface-container-high px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wide text-on-surface-variant`}>
                           <span>{coverageDetailHeaderLabel}</span>
                           <span>Status</span>
                           {showCoverageTestsColumn ? <span className="text-right">Tests</span> : null}
@@ -10068,7 +10071,7 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
                                 ? formatCompactNumber(row.generated)
                                 : '-'
                             return (
-                              <div key={`${row.key || row.title}-${index}`} className={`${coverageDetailGridClass} px-3 py-3 text-left text-sm`}>
+                              <div key={`${row.key || row.title}-${index}`} className={`${coverageDetailGridClass} px-3 py-3 text-left text-sm transition hover:bg-surface-container-low`}>
                                 <div className="min-w-0">
                                   <p className="break-words font-semibold leading-5 text-on-surface">
                                     {row.key && !row.title.startsWith(row.key) ? `${row.key} - ${row.title}` : row.title}
@@ -10129,14 +10132,14 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
   return (
     <div className={`mt-3 space-y-2 ${compact ? 'text-xs' : 'text-sm'}`}>
       {hasProgress ? (
-        <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-3">
+        <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-3 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <p className="font-bold text-on-surface">{stageLabel || 'Generation progress'}</p>
             {Number.isFinite(pct) ? <span className="text-xs font-bold text-primary">{Math.round(clampPercent(pct))}%</span> : null}
           </div>
           {progress?.summary ? <p className="mt-1 leading-5 text-on-surface-variant">{progress.summary}</p> : null}
           {Number.isFinite(pct) ? (
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-container">
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-container shadow-inner">
               <div className="h-full rounded-full bg-primary" style={{ width: `${clampPercent(pct)}%` }} />
             </div>
           ) : null}
@@ -10144,7 +10147,7 @@ function JobProgressSummary({ output, jobRecord = null, relatedOutputs = [], com
       ) : null}
       <CoverageSummaryStrip coverage={coverage} compact={compact} />
       {hasBatches ? (
-        <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-3">
+        <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-3 shadow-sm">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">Batch coverage</span>
             {completedBatches || batchTotal ? (
@@ -10215,12 +10218,21 @@ function OutputPanel({ status, output, jobId, jobRecord, relatedOutputs = [], on
     const repeatedFailure = retryAttempt >= 2
     const canShowRetry = !isBacklogValidationFailure && retryState === 'actionable'
     return (
-      <section className="rounded-xl border border-error/20 bg-surface-container-lowest p-6 shadow-lg shadow-error/5">
-        <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-wider text-error">{failure.code}</p>
-            {isBacklogValidationFailure ? null : <h3 className="mt-1 text-lg font-semibold text-on-surface">{failure.title}</h3>}
+      <section className="overflow-hidden rounded-xl border border-error/20 bg-surface-container-lowest shadow-lg shadow-error/5">
+        <div className="border-b border-error/10 bg-error/5 px-5 py-4">
+          <div className="flex items-start gap-3">
+            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-error/25 bg-error/10 text-error">
+              <AlertTriangle className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-wider text-error">{failure.code}</p>
+              {isBacklogValidationFailure ? null : <h3 className="mt-1 text-lg font-bold text-on-surface">{failure.title}</h3>}
+            </div>
+          </div>
+        </div>
+        <div className="min-w-0 p-5">
             <p className="mt-2 text-sm leading-6 text-on-surface-variant">{failure.summary}</p>
-            <p className="mt-3 rounded-lg bg-surface-container-low p-3 text-sm leading-6 text-on-surface">{failure.action}</p>
+            <p className="mt-3 rounded-lg border border-outline-variant bg-surface-container-low p-3 text-sm leading-6 text-on-surface">{failure.action}</p>
             {repeatedFailure ? (
               <p className="mt-3 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm leading-6 text-warning">
                 {isStoryTestCaseFailure
@@ -10228,7 +10240,7 @@ function OutputPanel({ status, output, jobId, jobRecord, relatedOutputs = [], on
                   : 'This job has already failed after multiple attempts. Regenerate is still available because an admin or workflow fix may have changed the outcome; review Error Details before retrying if no fix was applied.'}
               </p>
             ) : null}
-            <div className="mt-4 flex flex-wrap items-center gap-2">
+            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-outline-variant pt-4">
               <GenerationUsageButton output={output} jobRecord={jobRecord} label="Usage recorded before failure" compact />
               {canShowRetry && jobRecord && onRetry ? (
                 <button
@@ -10284,25 +10296,25 @@ function GeneratedDocumentSuccessCard({ output, url, jobRecord, relatedOutputs =
   const SuccessIcon = coverageTone === 'error' || coverageTone === 'warning' ? AlertTriangle : CheckCircle2
   const iconClass = coverageTone === 'error' ? 'bg-error/10 text-error' : coverageTone === 'warning' ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success'
   return (
-    <section className={`relative rounded-xl border bg-surface-container-lowest p-5 shadow-lg shadow-inverse-surface/5 ${coverageTone === 'error' ? 'border-error/20' : coverageTone === 'warning' ? 'border-warning/20' : 'border-success/20'}`}>
-      <span className={`absolute left-4 top-4 inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl ${iconClass}`}>
-        <SuccessIcon className="h-10 w-10" />
-      </span>
-      <div className="flex flex-wrap items-center justify-center gap-5 text-center">
-        <div className="flex min-w-0 flex-col items-center">
-          <div className="px-16">
-            <div>
-              <h3 className="text-lg font-semibold text-on-surface">{generatedDocumentTitle(documentType, artifactLabel, mode)}</h3>
-              <p className="mt-0.5 text-sm text-on-surface-variant">{projectName} | Completed</p>
-            </div>
+    <section className={`overflow-hidden rounded-xl border bg-surface-container-lowest shadow-lg shadow-inverse-surface/5 ${coverageTone === 'error' ? 'border-error/20' : coverageTone === 'warning' ? 'border-warning/20' : 'border-success/20'}`}>
+      <div className="grid gap-4 p-5 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-start">
+        <span className={`inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-outline-variant/60 ${iconClass}`}>
+          <SuccessIcon className="h-7 w-7" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Document preview</p>
+          <h3 className="mt-1 break-words text-xl font-bold leading-7 text-on-surface">{generatedDocumentTitle(documentType, artifactLabel, mode)}</h3>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold text-on-surface-variant">
+            <span className="rounded-full border border-outline-variant bg-surface-container-low px-2.5 py-1">{projectName}</span>
+            <span className="rounded-full border border-success/25 bg-success/10 px-2.5 py-1 text-success">Completed</span>
           </div>
-          <div className="mt-4 flex items-center justify-center gap-2">
+        </div>
+        <div className="flex items-center gap-2 sm:justify-end">
             <GeneratedOutputLinkIcon url={url} label={generatedDocumentActionLabel(url)} compact />
             <GenerationUsageButton output={output} jobRecord={jobRecord} label="View generation usage" compact />
             <UpdateSummaryButton output={output} jobRecord={jobRecord} relatedOutputs={relatedOutputs} compact />
             <FinalValidationButton output={output} compact />
             <JobProgressSummary output={output} jobRecord={jobRecord} relatedOutputs={relatedOutputs} compact iconOnly />
-          </div>
         </div>
       </div>
     </section>
@@ -10326,27 +10338,31 @@ function GeneratedJiraSuccessCard({ output, jobRecord, relatedOutputs = [] }: { 
   const SuccessIcon = coverageTone === 'error' || coverageTone === 'warning' ? AlertTriangle : CheckCircle2
   const iconClass = coverageTone === 'error' ? 'bg-error/10 text-error' : coverageTone === 'warning' ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success'
   return (
-    <section className={`relative rounded-xl border bg-surface-container-lowest p-5 shadow-lg shadow-inverse-surface/5 ${coverageTone === 'error' ? 'border-error/20' : coverageTone === 'warning' ? 'border-warning/20' : 'border-success/20'}`}>
-      <span className={`absolute left-4 top-4 inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl ${iconClass}`}>
-        <SuccessIcon className="h-10 w-10" />
-      </span>
-      <div className="flex flex-col items-center gap-5 text-center">
-        <div className="px-16">
-          <h3 className="text-lg font-semibold text-on-surface">Epics & User Stories Generated</h3>
-          <p className="mt-0.5 text-sm text-on-surface-variant">{projectName} | Completed in Jira</p>
+    <section className={`overflow-hidden rounded-xl border bg-surface-container-lowest shadow-lg shadow-inverse-surface/5 ${coverageTone === 'error' ? 'border-error/20' : coverageTone === 'warning' ? 'border-warning/20' : 'border-success/20'}`}>
+      <div className="grid gap-4 p-5 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-start">
+        <span className={`inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-outline-variant/60 ${iconClass}`}>
+          <SuccessIcon className="h-7 w-7" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Jira output preview</p>
+          <h3 className="mt-1 text-xl font-bold leading-7 text-on-surface">Epics & User Stories Generated</h3>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold text-on-surface-variant">
+            <span className="rounded-full border border-outline-variant bg-surface-container-low px-2.5 py-1">{projectName}</span>
+            <span className="rounded-full border border-success/25 bg-success/10 px-2.5 py-1 text-success">Completed in Jira</span>
+          </div>
         </div>
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center gap-2 sm:justify-end">
           {confluenceUrl ? <GeneratedOutputLinkIcon url={confluenceUrl} label="Open in Confluence" compact /> : null}
           <GenerationUsageButton output={output} jobRecord={jobRecord} label="View generation usage" compact />
           <UpdateSummaryButton output={output} jobRecord={jobRecord} relatedOutputs={relatedOutputs} compact />
           <FinalValidationButton output={output} compact />
           <JobProgressSummary output={output} jobRecord={jobRecord} relatedOutputs={relatedOutputs} compact iconOnly />
         </div>
-        <div className="grid w-full gap-3 sm:grid-cols-2">
+      </div>
+        <div className="grid gap-3 border-t border-outline-variant bg-surface-container-low p-4 sm:grid-cols-2">
           <JiraIssueGroup title="Epics" items={epics} />
           <JiraIssueGroup title="User Stories" items={stories} />
         </div>
-      </div>
     </section>
   )
 }
@@ -10374,40 +10390,44 @@ function GeneratedStoryTestCasesSuccessCard({ output, jobRecord, relatedOutputs 
   const SuccessIcon = coverageTone === 'error' || coverageTone === 'warning' ? AlertTriangle : CheckCircle2
   const iconClass = coverageTone === 'error' ? 'bg-error/10 text-error' : coverageTone === 'warning' ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success'
   return (
-    <section className={`relative rounded-xl border bg-surface-container-lowest p-5 shadow-sm ${coverageTone === 'error' ? 'border-error/20' : coverageTone === 'warning' ? 'border-warning/20' : 'border-success/20'}`}>
-      <span className={`absolute left-4 top-4 inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl ${iconClass}`}>
-        <SuccessIcon className="h-10 w-10" />
-      </span>
-      <div className="flex flex-col items-center gap-5 text-center">
-        <div className="px-16">
-          <h3 className="text-lg font-semibold text-on-surface">Story Test Cases Generated</h3>
-          <p className="mt-0.5 text-sm text-on-surface-variant">{projectName} | Completed in Jira</p>
+    <section className={`overflow-hidden rounded-xl border bg-surface-container-lowest shadow-lg shadow-inverse-surface/5 ${coverageTone === 'error' ? 'border-error/20' : coverageTone === 'warning' ? 'border-warning/20' : 'border-success/20'}`}>
+      <div className="grid gap-4 p-5 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-start">
+        <span className={`inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-outline-variant/60 ${iconClass}`}>
+          <SuccessIcon className="h-7 w-7" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Jira test preview</p>
+          <h3 className="mt-1 text-xl font-bold leading-7 text-on-surface">Story Test Cases Generated</h3>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold text-on-surface-variant">
+            <span className="rounded-full border border-outline-variant bg-surface-container-low px-2.5 py-1">{projectName}</span>
+            <span className="rounded-full border border-success/25 bg-success/10 px-2.5 py-1 text-success">Completed in Jira</span>
+          </div>
         </div>
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center gap-2 sm:justify-end">
           <GenerationUsageButton output={output} jobRecord={jobRecord} label="View generation usage" compact />
           <UpdateSummaryButton output={output} jobRecord={jobRecord} relatedOutputs={relatedOutputs} compact />
           <FinalValidationButton output={output} compact />
           <JobProgressSummary output={output} jobRecord={jobRecord} relatedOutputs={relatedOutputs} compact iconOnly />
         </div>
-        <div className="grid w-full gap-3 sm:grid-cols-2">
+      </div>
+        <div className="grid gap-3 border-t border-outline-variant bg-surface-container-low p-4 sm:grid-cols-2">
           <JiraIssueGroup title="Source Stories" items={sourceStories} />
           <JiraIssueGroup title="Test Cases" items={testCases} />
         </div>
-      </div>
     </section>
   )
 }
 
 function JiraIssueGroup({ title, items }: { title: string; items: Array<{ id: string | number; label: string; link?: string }> }) {
   return (
-    <div className="rounded-lg border border-outline-variant bg-surface-container-low p-3 text-left">
+    <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-3 text-left shadow-sm">
       <div className="mb-3 flex items-center justify-between gap-2">
         <p className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">{title}</p>
         <span className="rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-bold text-success">{items.length}</span>
       </div>
       <div className="max-h-32 space-y-2 overflow-y-auto pr-1">
         {items.map((item) => {
-          const className = 'flex w-full items-center justify-between gap-2 rounded-lg bg-surface-container-lowest px-3 py-2 text-sm font-bold text-primary transition hover:bg-primary/10'
+          const className = 'flex w-full items-center justify-between gap-2 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm font-bold text-primary transition hover:border-primary/35 hover:bg-primary/10'
           return item.link ? (
             <a key={item.id} className={className} href={item.link} target="_blank" rel="noopener noreferrer">
               <span className="truncate">{item.label}</span>
@@ -10728,10 +10748,11 @@ function DocumentJobsPanel({ jobs, allJobs = jobs, analyticsJobs, onRetry }: { j
 
   return (
     <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
-      <div className="border-b border-outline-variant bg-surface-container-low p-5">
+      <div className="border-b border-outline-variant bg-surface-container-low px-5 py-4">
         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_11rem] sm:items-start">
           <div className="min-w-0">
-            <h3 className="text-xl font-semibold">My Document Jobs</h3>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Generated outputs</p>
+            <h3 className="mt-1 text-xl font-bold">My Document Jobs</h3>
             <p className="mt-1 text-sm text-on-surface-variant">Track multiple generation requests and retry failed runs.</p>
           </div>
           <StatusFilterSelect
@@ -10824,10 +10845,13 @@ function DocumentJobsPanel({ jobs, allJobs = jobs, analyticsJobs, onRetry }: { j
             displayStatus === 'processing' ? 'Processing' :
             displayStatus
           return (
-            <div key={job.jobId || job.id} className="rounded-lg border border-outline-variant bg-surface-container-low p-4 shadow-sm transition hover:border-primary/35 hover:bg-surface-container-lowest">
+            <div key={job.jobId || job.id} className="rounded-lg border border-outline-variant bg-surface-container-low p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-surface-container-lowest hover:shadow-md">
               <div className="grid gap-3 sm:grid-cols-[minmax(7.5rem,1fr)_auto] sm:items-start">
                 <div className="flex min-h-[30px] min-w-0 items-center">
-                  <p className="truncate font-mono text-xs font-bold text-on-surface" title={jobLabel}>{jobLabel}</p>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold text-on-surface" title={jobTypeLabel}>{jobTypeLabel}</p>
+                    <p className="mt-1 truncate font-mono text-xs font-semibold text-on-surface-variant" title={jobLabel}>{jobLabel}</p>
+                  </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5 sm:justify-end">
                   <DocumentJobStatusIcon status={displayStatus} tone={badgeTone} label={statusLabel} />
@@ -10863,7 +10887,6 @@ function DocumentJobsPanel({ jobs, allJobs = jobs, analyticsJobs, onRetry }: { j
               <JobCardDetailRows
                 className="mt-3"
                 items={[
-                  { label: 'Type', value: jobTypeLabel },
                   { label: 'Project', value: job.projectName },
                   { label: 'Started at', value: formatTime(job.createdAt) },
                   { label: 'Retried by', value: job.retriedByJobId, mono: true },
@@ -11292,12 +11315,13 @@ function ArtifactsRepository({
   ]
   const filterOptions = filterOptionsRaw.filter((filter) => (filter.key !== 'processing' && filter.key !== 'retrying') || filter.count > 0)
   return (
-    <section className="flex min-h-0 flex-col gap-4">
-      <section className="shrink-0 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+    <section className="flex min-h-0 flex-col gap-5">
+      <section className="relative shrink-0 overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-5 shadow-lg shadow-inverse-surface/5">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,color-mix(in_srgb,var(--primary)_10%,transparent),transparent_36%)]" />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary">Artifact repository</p>
-            <h3 className="mt-1 text-lg font-semibold text-on-surface">Uploaded artifacts</h3>
+            <p className="inline-flex rounded-lg border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">Artifact repository</p>
+            <h3 className="mt-3 text-2xl font-bold text-on-surface">Uploaded artifacts</h3>
             <p className="mt-1 max-w-3xl text-sm leading-5 text-on-surface-variant">
               Review file intake, processing state, and extraction telemetry from a single workspace view.
             </p>
@@ -11306,7 +11330,7 @@ function ArtifactsRepository({
             type="button"
             onClick={onRefresh}
             disabled={refreshing}
-            className="inline-flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold text-on-surface shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-surface-container disabled:cursor-wait disabled:translate-y-0 disabled:opacity-60"
           >
             <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
@@ -11319,10 +11343,10 @@ function ArtifactsRepository({
         <MetricCard label="Needs retry" value={summary.needsRetry} tone="error" />
         <MetricCard label="Total recovered" value={summary.recovered} tone="success" />
       </div>
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest">
-        <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant px-4 py-3">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
+        <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant bg-surface-container-low px-4 py-4">
           <div className="min-w-0">
-            <h3 className="text-base font-semibold text-on-surface">Artifact queue</h3>
+            <h3 className="text-lg font-bold text-on-surface">Artifact queue</h3>
             <p className="mt-0.5 text-xs text-on-surface-variant">Dense, sortable intake view for review and follow-up.</p>
           </div>
           <div className="flex w-full min-w-0 items-center justify-start sm:w-auto sm:justify-end">
@@ -11335,7 +11359,7 @@ function ArtifactsRepository({
                   className={`flex items-center justify-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide transition ${
                     statusFilter === filter.key
                       ? 'bg-primary text-on-primary shadow-sm'
-                      : 'text-on-surface-variant hover:bg-surface-container'
+                      : 'text-on-surface-variant hover:bg-surface-container-high'
                   }`}
                 >
                   <span>{filter.label}</span>
@@ -11356,7 +11380,7 @@ function ArtifactsRepository({
               const displayTone = artifactDisplayTone(displayStatus)
               const accentClasses = artifactAccentClasses(displayStatus)
               return (
-                <article key={record.id} className="relative overflow-hidden rounded-xl border border-outline-variant bg-surface-container-low p-3">
+                <article key={record.id} className="relative overflow-hidden rounded-lg border border-outline-variant bg-surface-container-low p-4 shadow-sm transition hover:border-primary/35 hover:bg-surface-container-lowest">
                   <div className={`absolute inset-y-0 left-0 w-1 ${accentClasses}`} />
                   <div className="flex items-start justify-between gap-3 pl-1">
                     <div className="min-w-0">
@@ -11410,7 +11434,7 @@ function ArtifactsRepository({
                 <col className="w-[12%]" />
                 <col className="w-[12%]" />
               </colgroup>
-              <thead className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container-low text-[11px] uppercase tracking-[0.16em] text-on-surface-variant shadow-sm">
+              <thead className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container-high text-[11px] uppercase tracking-[0.16em] text-on-surface-variant shadow-sm">
                 <tr>
                   <th className="px-4 py-3 text-left">File</th>
                   <th className="px-4 py-3 text-left">Type</th>
@@ -11429,7 +11453,7 @@ function ArtifactsRepository({
                   const displayTone = artifactDisplayTone(displayStatus)
                   const accentClasses = artifactAccentClasses(displayStatus)
                   return (
-                    <tr key={record.id} className="align-top">
+                    <tr key={record.id} className="align-top transition hover:bg-surface-container-low">
                       <td className={`border-l-4 ${accentClasses} px-4 py-3 text-left`}>
                         <div className="min-w-0">
                           <p className="break-words font-semibold leading-5 text-on-surface [overflow-wrap:anywhere]" title={record.fileName}>{record.fileName}</p>
@@ -12042,33 +12066,38 @@ function AnalyticsPage({
     : `Using local workspace activity until the analytics endpoint is available. ${projects.length} projects, ${artifacts.length} artifacts, ${artifactSummary.recovered} recovered, and ${outputs.length} generated outputs are visible in the workspace.`
   return (
     <section className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-5">
+      <div className="relative overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-5 shadow-lg shadow-inverse-surface/5">
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(79,70,229,0.14),transparent_58%)]" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h3 className="text-lg font-semibold">QA Operations Analytics</h3>
+          <p className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-primary">Analytics workspace</p>
+          <h3 className="mt-3 text-2xl font-bold text-on-surface">QA Operations Analytics</h3>
           <p className="text-sm text-on-surface-variant">{analytics ? `Live n8n analytics generated ${formatTime(String(analytics.meta?.generatedAt || ''))}.` : 'Local metrics are shown until /webhook/analytics-summary is available.'}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <select value={projectScope || 'all'} onChange={(event) => setProjectScope(event.target.value)} className="rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm font-bold" aria-label="Analytics project scope">
+          <select value={projectScope || 'all'} onChange={(event) => setProjectScope(event.target.value)} className="rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm font-bold shadow-sm outline-none focus:border-primary" aria-label="Analytics project scope">
             <option value="all">All assigned projects</option>
             {projects.map((project) => (
               <option key={project.id} value={project.id}>{project.name}</option>
             ))}
           </select>
-          <select value={pipeline} onChange={(event) => setPipeline(event.target.value)} className="rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm font-bold">
+          <select value={pipeline} onChange={(event) => setPipeline(event.target.value)} className="rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm font-bold shadow-sm outline-none focus:border-primary">
             <option value="all">All pipelines</option>
             <option value="generation">Generation</option>
             <option value="ingestion">Ingestion</option>
           </select>
-          <select value={days} onChange={(event) => setDays(Number(event.target.value))} className="rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm font-bold">
+          <select value={days} onChange={(event) => setDays(Number(event.target.value))} className="rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm font-bold shadow-sm outline-none focus:border-primary">
             <option value={7}>Last 7 days</option>
             <option value={30}>Last 30 days</option>
             <option value={90}>Last 90 days</option>
           </select>
-          <button onClick={onRefresh} className="rounded-lg border border-outline-variant px-4 py-2 text-sm font-bold hover:bg-surface-container">{loading ? 'Refreshing...' : 'Refresh'}</button>
+          <button onClick={onRefresh} className="rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-surface-container-low">{loading ? 'Refreshing...' : 'Refresh'}</button>
+        </div>
         </div>
       </div>
       {error ? <StatusNotice status="warning" message={error} /> : null}
-      <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+      <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
+        <div className="border-b border-outline-variant bg-surface-container-low px-6 py-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Operations overview</p>
@@ -12077,7 +12106,8 @@ function AnalyticsPage({
             </div>
             <StatusBadge status={analyticsTone} label={analytics ? 'Live analytics' : 'Local fallback'} />
           </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+        </div>
+          <div className="grid gap-4 p-6 sm:grid-cols-2 xl:grid-cols-6">
             <AnalyticsKpiCard
               icon={CheckCircle2}
               title="Completed jobs"
@@ -12459,12 +12489,12 @@ function costCalculationInfo(scope: string, total: number, rows: AnalyticsUsageC
 
 function AnalyticsProjectPerformanceTable({ rows, emptyText }: { rows: AnalyticsProjectPerformanceRow[]; emptyText: string }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
-      <div className="border-b border-outline-variant bg-surface-container-low p-5">
+    <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
+      <div className="border-b border-outline-variant bg-surface-container-low px-5 py-4">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Project analytics</p>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h4 className="text-xl font-semibold text-on-surface">Cost, usage, ingestion, and output volume by project</h4>
+            <h4 className="text-xl font-bold text-on-surface">Cost, usage, ingestion, and output volume by project</h4>
             <p className="mt-1 text-sm text-on-surface-variant">Compare where work, tokens, chunks, generated outputs, and spend are concentrated.</p>
           </div>
           <span className="rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1 text-xs font-bold text-on-surface-variant">
@@ -12485,7 +12515,7 @@ function AnalyticsProjectPerformanceTable({ rows, emptyText }: { rows: Analytics
               <col className="w-[12%]" />
               <col className="w-[8%]" />
             </colgroup>
-            <thead className="border-b border-outline-variant bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
+            <thead className="border-b border-outline-variant bg-surface-container-high text-xs uppercase tracking-wide text-on-surface-variant">
               <tr>
                 <th className="px-5 py-3">Project</th>
                 <th className="px-4 py-3 text-right">Jobs</th>
@@ -12522,10 +12552,10 @@ function AnalyticsProjectPerformanceTable({ rows, emptyText }: { rows: Analytics
 
 function AnalyticsDocumentTypeTable({ rows, emptyText }: { rows: AnalyticsDocumentTypeRow[]; emptyText: string }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
-      <div className="border-b border-outline-variant bg-surface-container-low p-5">
+    <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
+      <div className="border-b border-outline-variant bg-surface-container-low px-5 py-4">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Document type analytics</p>
-        <h4 className="mt-1 text-xl font-semibold text-on-surface">Output performance by deliverable</h4>
+        <h4 className="mt-1 text-xl font-bold text-on-surface">Output performance by deliverable</h4>
         <p className="mt-1 text-sm text-on-surface-variant">Compare final deliverable success, attempt reliability, coverage, cost, duration, and tokens by generated output type.</p>
       </div>
       {rows.length ? (
@@ -12541,7 +12571,7 @@ function AnalyticsDocumentTypeTable({ rows, emptyText }: { rows: AnalyticsDocume
               <col className="w-[11%]" />
               <col className="w-[7%]" />
             </colgroup>
-            <thead className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
+            <thead className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container-high text-xs uppercase tracking-wide text-on-surface-variant">
               <tr>
                 <th className="px-5 py-3">Output type</th>
                 <th className="px-4 py-3 text-right">Deliverables</th>
@@ -12710,9 +12740,10 @@ function AnalyticsKpiCard({
   onUsageInfo?: (value: AnalyticsUsageCalculation) => void
 }) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-outline-variant bg-surface-container-low p-4">
+    <div className="group relative overflow-hidden rounded-xl border border-outline-variant bg-surface-container-low p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-surface-container-lowest hover:shadow-md">
+      <div className={`pointer-events-none absolute inset-x-0 top-0 h-1 ${analyticsBarClasses(tone)}`} />
       <div className="flex min-h-28 flex-col items-center justify-center text-center">
-        <div className={`mb-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${analyticsToneClasses(tone)}`}>
+        <div className={`mb-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${analyticsToneClasses(tone)}`}>
           <Icon className="h-3.5 w-3.5" />
         </div>
         <p className="whitespace-nowrap text-xs font-bold uppercase tracking-[0.12em] text-on-surface-variant">{title}</p>
@@ -12776,7 +12807,7 @@ function AnalyticsPipelinePerformancePanel({
     { label: 'Ingestion workload', value: ingestion.jobs, total: completedTotal, valueLabel: `Ingestion ${formatAnalyticsPercent(ingestionShare)}`, tone: 'success' as StatusTone },
   ]
   return (
-    <section className="flex h-full flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+    <section className="flex h-full flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
       <div className="border-b border-outline-variant bg-surface-container-low px-5 py-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -12848,7 +12879,7 @@ function AnalyticsPipelineDetailBlock({
   onUsageInfo: (value: AnalyticsUsageCalculation) => void
 }) {
   return (
-    <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4">
+    <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4 shadow-sm">
       <div className="flex items-center justify-between gap-3 border-b border-outline-variant pb-3">
         <p className="text-base font-bold text-on-surface">{title}</p>
         <span className={`h-2 w-16 rounded-full ${analyticsBarClasses(tone)}`} />
@@ -12913,7 +12944,7 @@ function AnalyticsWorkloadShareRow({
         <span className="font-semibold text-on-surface">{label}</span>
         <span className={`shrink-0 text-right text-xs font-bold ${tone === 'success' ? 'text-success' : 'text-primary'}`}>{valueLabel}</span>
       </div>
-      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-container">
+      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-container shadow-inner">
         <div className={`h-full rounded-full ${analyticsBarClasses(tone)}`} style={{ width: `${clampPercent(percent)}%` }} />
       </div>
     </div>
@@ -12967,7 +12998,7 @@ function AnalyticsCostFailurePanel({
     { label: 'Failed ingestion', value: failedIngestion.cost, tone: 'warning' as StatusTone },
   ]
   return (
-    <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+    <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
       <div className="border-b border-outline-variant bg-surface-container-low px-5 py-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -13004,7 +13035,7 @@ function AnalyticsCostFailurePanel({
 
 function AnalyticsSummaryStat({ label, value, tone = 'info' }: { label: string; value: string; tone?: StatusTone }) {
   return (
-    <div className="flex min-h-28 flex-col justify-between rounded-lg bg-surface-container-low p-4">
+    <div className="flex min-h-28 flex-col justify-between rounded-lg border border-outline-variant/70 bg-surface-container-low p-4 shadow-sm">
       <p className="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">{label}</p>
       <p className={`mt-3 break-words text-xl font-bold ${tone === 'warning' ? 'text-warning' : tone === 'success' ? 'text-success' : 'text-on-surface'}`}>{value}</p>
     </div>
@@ -13019,7 +13050,7 @@ function AnalyticsCostSplitRow({ label, value, total, tone }: { label: string; v
         <span className="font-semibold text-on-surface">{label}</span>
         <span className="shrink-0 text-right font-bold text-on-surface">{formatCurrency(value, 4)}</span>
       </div>
-      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-container">
+      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-container shadow-inner">
         <div className={`h-full rounded-full ${analyticsBarClasses(tone)}`} style={{ width: `${clampPercent(percent)}%` }} />
       </div>
     </div>
@@ -13028,7 +13059,7 @@ function AnalyticsCostSplitRow({ label, value, total, tone }: { label: string; v
 
 function AnalyticsFailedSpendRow({ title, summary, onUsageInfo }: { title: string; summary: AnalyticsFailedPipelineSummary; onUsageInfo: (value: AnalyticsUsageCalculation) => void }) {
   return (
-    <div className="rounded-lg border border-outline-variant bg-surface-container-low p-3">
+    <div className="rounded-lg border border-outline-variant bg-surface-container-low p-3 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-bold text-on-surface">{title}</p>
@@ -13095,7 +13126,7 @@ function AnalyticsPipelineCard({
     tone === 'error' ? 'border-l-error' :
     'border-l-primary'
   return (
-    <section className={`relative overflow-hidden rounded-xl border border-l-4 border-outline-variant ${accentBorder} bg-surface-container-lowest shadow-sm`}>
+    <section className={`relative overflow-hidden rounded-xl border border-l-4 border-outline-variant ${accentBorder} bg-surface-container-lowest shadow-lg shadow-inverse-surface/5`}>
       <div className="border-b border-outline-variant bg-surface-container-low px-4 py-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-start gap-3">
@@ -13174,7 +13205,7 @@ function AnalyticsPipelineMetricTile({
 }) {
   const MetricIcon = analyticsMetricIcon(metric.label)
   return (
-    <div className={`rounded-lg border border-outline-variant bg-surface-container-lowest ${featured ? 'p-4' : 'p-3'}`}>
+    <div className={`rounded-lg border border-outline-variant bg-surface-container-lowest shadow-sm ${featured ? 'p-4' : 'p-3'}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5">
@@ -13301,10 +13332,10 @@ function AnalyticsTrendPanel({
   const tickMax = Math.max(tickCount, niceChartStep(paddedMaxValue / tickCount) * tickCount)
   const ticks = Array.from({ length: tickCount + 1 }, (_, index) => Math.round((tickMax / tickCount) * (tickCount - index)))
   return (
-    <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+    <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-lg shadow-inverse-surface/5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h4 className="text-xl font-semibold text-on-surface">{title}</h4>
+          <h4 className="text-xl font-bold text-on-surface">{title}</h4>
           <p className="mt-1 text-sm text-on-surface-variant">{subtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">
@@ -13320,7 +13351,7 @@ function AnalyticsTrendPanel({
             {ticks.map((tick, index) => <span key={`${tick}-${index}`}>{tick}</span>)}
           </div>
           <div>
-            <div className="relative h-56 border-b border-l border-outline-variant pl-3">
+              <div className="relative h-56 border-b border-l border-outline-variant bg-surface-container-lowest pl-3">
               <div className="pointer-events-none absolute inset-0 flex flex-col justify-between">
                 {ticks.map((tick, index) => (
                   <span key={`grid-${tick}-${index}`} className="block border-t border-outline-variant/60" />
@@ -13342,7 +13373,7 @@ function AnalyticsTrendPanel({
                         {bar.value}
                       </p>
                       <div
-                        className="absolute bottom-0 left-1/2 flex w-full max-w-[4rem] -translate-x-1/2 flex-col-reverse overflow-hidden rounded-t-lg bg-surface-container shadow-sm"
+                        className="absolute bottom-0 left-1/2 flex w-full max-w-[4rem] -translate-x-1/2 flex-col-reverse overflow-hidden rounded-t-lg bg-surface-container shadow-md"
                         style={{ height: `${height}%` }}
                         title={`${bar.value} jobs: ${bar.generation} generation, ${bar.ingestion} ingestion${bar.needsRetry ? `, ${bar.needsRetry} need retry` : ''}${bar.recovered ? `, ${bar.recovered} recovered` : ''}`}
                       >
@@ -13385,8 +13416,8 @@ function AnalyticsBarList({
 }) {
   const maxValue = Math.max(...items.map((item) => item.value), 1)
   return (
-    <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-      <h4 className="text-xl font-semibold text-on-surface">{title}</h4>
+    <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-lg shadow-inverse-surface/5">
+      <h4 className="text-xl font-bold text-on-surface">{title}</h4>
       <p className="mt-1 text-sm text-on-surface-variant">{subtitle}</p>
       {items.length ? (
         <div className="mt-6 space-y-4">
@@ -13403,7 +13434,7 @@ function AnalyticsBarList({
                 </div>
                 <p className="shrink-0 text-sm font-semibold text-on-surface">{item.valueLabel || formatCompactNumber(item.value)}</p>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-surface-container">
+              <div className="h-2 overflow-hidden rounded-full bg-surface-container shadow-inner">
                 <div className={`h-full rounded-full ${analyticsBarClasses(tone)}`} style={{ width: `${Math.max(6, (item.value / maxValue) * 100)}%` }} />
               </div>
             </div>
@@ -13490,11 +13521,11 @@ function AnalyticsRecentJobsPanel({
   }, [statusFilter, statusFilterOptions])
 
   return (
-    <section className="flex min-h-96 flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
-      <div className="border-b border-outline-variant p-5">
+    <section className="flex min-h-96 flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg shadow-inverse-surface/5">
+      <div className="border-b border-outline-variant bg-surface-container-low p-5">
         <div className="space-y-4">
           <div className="min-w-0 max-w-3xl">
-            <h4 className="text-xl font-semibold text-on-surface">{title}</h4>
+            <h4 className="text-xl font-bold text-on-surface">{title}</h4>
             <p className="mt-1 text-sm leading-5 text-on-surface-variant">{subtitle}</p>
           </div>
           <AnalyticsJobsToolbar
@@ -13532,7 +13563,7 @@ function AnalyticsRecentJobsPanel({
                 : 'Generation job cost is estimated from recorded token usage. Final provider billing may differ.'
             )
             return (
-              <div key={job.jobId} className="p-5">
+              <div key={job.jobId} className="p-5 transition hover:bg-surface-container-low">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="break-all font-mono text-sm font-semibold text-on-surface">{job.jobId}</p>
@@ -13591,7 +13622,7 @@ function AnalyticsJobStat({
   onUsageInfo?: (value: AnalyticsUsageCalculation) => void
 }) {
   return (
-    <div className="relative min-w-0 rounded-lg bg-surface-container-low p-3 text-center">
+    <div className="relative min-w-0 rounded-lg border border-outline-variant/70 bg-surface-container-low p-3 text-center shadow-sm">
       <p className="flex flex-wrap items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wide text-on-surface-variant">
         <span>{label}</span>
         {usageInfo && onUsageInfo ? (
@@ -13618,15 +13649,15 @@ function AnalyticsCostSplitPanel({
 }) {
   const totalCost = rows.reduce((sum, row) => sum + Number(row.estimatedCostUsd || 0), 0)
   return (
-    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
-      <h3 className="text-base font-semibold text-on-surface">Cost By Pipeline</h3>
+    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-lg shadow-inverse-surface/5">
+      <h3 className="text-base font-bold text-on-surface">Cost By Pipeline</h3>
       {rows.length ? (
         <div className="mt-4 space-y-3">
           {rows.map((row) => {
             const share = totalCost ? clampPercent((Number(row.estimatedCostUsd || 0) / totalCost) * 100) : 0
             const shareLabel = share.toFixed(2)
             return (
-              <div key={`cost-${row.pipeline || 'unknown'}`} className="rounded-lg border border-outline-variant bg-surface-container-low p-3">
+              <div key={`cost-${row.pipeline || 'unknown'}`} className="rounded-lg border border-outline-variant bg-surface-container-low p-3 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-on-surface">{pipelineDisplayName(row.pipeline)}</p>
@@ -13657,8 +13688,8 @@ function AnalyticsFailureWatchlist({
   emptyText: string
 }) {
   return (
-    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
-      <h3 className="text-base font-semibold text-on-surface">Failure Watchlist</h3>
+    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-lg shadow-inverse-surface/5">
+      <h3 className="text-base font-bold text-on-surface">Failure Watchlist</h3>
       {rows.length ? (
         <div className="mt-4 space-y-3">
           {rows.map((row) => (
@@ -14295,28 +14326,29 @@ function SettingsPage({
 
   return (
     <section className="space-y-6">
-      <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="relative overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-5 shadow-lg shadow-inverse-surface/5">
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(79,70,229,0.14),transparent_58%)]" />
+        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-primary">Settings workspace</p>
+            <p className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-primary">Settings workspace</p>
             <h3 className="mt-2 text-2xl font-bold text-on-surface">Configure Q-Ops</h3>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-on-surface-variant">
               Admins manage workspace defaults and access. Registered users can keep personal integration routing while project overrides stay tied to assigned projects.
             </p>
           </div>
-          <div className="flex rounded-lg border border-outline-variant bg-surface-container-low p-1">
+          <div className="flex rounded-lg border border-outline-variant bg-surface-container-low p-1 shadow-sm">
             {(isAdmin ? (['admin', 'user'] as SettingsPersona[]) : (['user'] as SettingsPersona[])).map((item) => (
               <button
                 key={item}
                 onClick={() => setPersona(item)}
-                className={`rounded-md px-4 py-2 text-sm font-bold ${persona === item ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
+                className={`rounded-md px-4 py-2 text-sm font-bold transition ${persona === item ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:bg-surface-container-lowest hover:text-on-surface'}`}
               >
                 {item === 'admin' ? 'Admin' : 'Registered User'}
               </button>
             ))}
           </div>
         </div>
-        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="relative mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {sectionTabs.map((tab) => {
             const isActive = activeSection === tab.key
             return (
@@ -14336,7 +14368,7 @@ function SettingsPage({
       {effectivePersona === 'admin' && adminSection === 'profile' ? (
         <div className="grid gap-6 lg:grid-cols-2">
           <SettingsPanel title="Admin Profile">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 rounded-lg border border-outline-variant bg-surface-container-low p-4">
               <img src={avatar} alt="Admin profile" className="h-20 w-20 rounded-xl border border-outline-variant object-cover" />
               <div>
                 <p className="text-lg font-bold">{settings.name || 'Admin User'}</p>
@@ -14353,7 +14385,7 @@ function SettingsPage({
           <SettingsPanel title="Admin Capabilities">
             <div className="grid gap-3 sm:grid-cols-2">
               {['Manage users and roles', 'Edit all integrations', 'Test system connections', 'View audit and diagnostics'].map((item) => (
-                <div key={item} className="flex items-center gap-3 rounded-lg border border-outline-variant bg-surface-container-low p-4">
+                <div key={item} className="flex items-center gap-3 rounded-lg border border-outline-variant bg-surface-container-low p-4 shadow-sm">
                   <ShieldCheck className="h-5 w-5 text-success" />
                   <span className="text-sm font-semibold">{item}</span>
                 </div>
@@ -14404,9 +14436,9 @@ function SettingsPage({
               }}
             />
           ) : null}
-          <div className="overflow-x-auto rounded-lg border border-outline-variant">
+          <div className="overflow-x-auto rounded-lg border border-outline-variant shadow-sm">
             <table className="w-full min-w-full text-left text-sm">
-              <thead className="bg-surface-container-low text-xs uppercase text-on-surface-variant">
+              <thead className="bg-surface-container-high text-xs uppercase text-on-surface-variant">
                 <tr>
                   <th className="p-4">User</th>
                   <th className="p-4">Role</th>
@@ -14421,7 +14453,7 @@ function SettingsPage({
                   const statusTone: StatusTone = user.status === 'active' ? 'success' : user.status === 'pending_invite' ? 'warning' : 'error'
                   const projectLabels = projectLabelsForUser(user)
                   return (
-                  <tr key={user.email} className="hover:bg-surface-container-low">
+                  <tr key={user.email} className="transition hover:bg-surface-container-low">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">{user.name.split(' ').map((part) => part[0]).join('').slice(0, 2)}</div>
@@ -14434,7 +14466,7 @@ function SettingsPage({
                     <td className="p-4"><StatusBadge status={statusTone} label={roleLabel} /></td>
                     <td className="p-4">
                       <div className="flex flex-wrap gap-1.5">
-                        {projectLabels.map((project) => <span key={project} className="rounded bg-surface-container px-2 py-1 text-xs font-semibold text-on-surface-variant">{project}</span>)}
+                        {projectLabels.map((project) => <span key={project} className="rounded-full border border-outline-variant bg-surface-container px-2 py-1 text-xs font-semibold text-on-surface-variant">{project}</span>)}
                       </div>
                     </td>
                     <td className="p-4 text-on-surface-variant">{formatActivity(user.lastLoginAt)}</td>
@@ -14455,7 +14487,7 @@ function SettingsPage({
           <SettingsPanel title="Environment">
             <SettingsInput label="Environment name" value="Local development" onChange={() => undefined} />
             <SettingsInput label="n8n API base URL" value={settings.apiBaseUrl} onChange={(value) => update({ apiBaseUrl: value })} />
-            <div className="rounded-lg bg-surface-container-low p-4 text-xs leading-5 text-on-surface-variant">
+            <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4 font-mono text-xs leading-5 text-on-surface-variant">
               Upload: /webhook/upload-test-artifacts<br />
               Generate: /webhook/generate-qa-doc<br />
               Polling: /webhook/job-status and /webhook/job-status-retrieve<br />
@@ -14482,7 +14514,7 @@ function SettingsPage({
                 <button
                   key={option.key}
                   onClick={() => setIntegrationScope(option.key)}
-                  className={`rounded-lg border p-4 text-left transition-colors ${integrationScope === option.key ? 'border-primary bg-primary/10 text-primary' : 'border-outline-variant bg-surface-container-low hover:bg-surface-container'}`}
+                  className={`rounded-lg border p-4 text-left shadow-sm transition ${integrationScope === option.key ? 'border-primary bg-primary/10 text-primary' : 'border-outline-variant bg-surface-container-low hover:-translate-y-0.5 hover:border-primary/40 hover:bg-surface-container'}`}
                 >
                   <span className="block text-sm font-bold">{option.label}</span>
                   <span className="mt-1 block text-xs leading-5 text-on-surface-variant">{option.detail}</span>
@@ -15844,17 +15876,17 @@ function NotificationDrawer({
   }
   return (
     <SideDrawer title="Notifications" onClose={onClose}>
-      <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-outline-variant bg-surface-container-low px-3 py-1 text-xs font-semibold text-on-surface-variant">
+      <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-outline-variant bg-surface-container-low px-3 py-1 text-xs font-semibold text-on-surface-variant shadow-sm">
         <Clock className="h-3.5 w-3.5" />
         <span>Recent activity · past 7 days</span>
       </div>
       <div className="mb-4 flex items-center justify-between">
         <p className="text-sm text-on-surface-variant">{unread} unread</p>
-        <button onClick={markAll} className="text-sm font-bold text-primary">Mark all as read</button>
+        <button onClick={markAll} className="rounded-md border border-outline-variant px-3 py-1.5 text-xs font-bold text-primary transition hover:bg-surface-container">Mark all as read</button>
       </div>
       <div className="space-y-3">
         {displayNotifications.length ? displayNotifications.map((item) => (
-          <button key={item.id} onClick={() => openItem(item)} className={`w-full rounded-lg border p-4 text-left ${item.read ? 'border-outline-variant bg-surface-container-lowest' : 'border-primary bg-primary/10'}`}>
+          <button key={item.id} onClick={() => openItem(item)} className={`w-full rounded-lg border p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${item.read ? 'border-outline-variant bg-surface-container-lowest' : 'border-primary bg-primary/10'}`}>
             <div className="flex items-start gap-3">
               <ToneIcon status={item.type} />
               <div className="min-w-0 flex-1">
@@ -16162,10 +16194,13 @@ function HelpDrawer({ activeView, onClose, onDocs }: { activeView: View; onClose
   const featured = activeView === 'settings' ? helpArticles.filter((item) => item.group === 'Settings') : activeView === 'documents' ? helpArticles.filter((item) => item.group === 'Document Generation') : helpArticles
   return (
     <SideDrawer title="Help Center" onClose={onClose}>
-      <p className="mb-4 text-sm leading-6 text-on-surface-variant">Contextual help for {viewLabels[activeView].toLowerCase()}.</p>
+      <div className="mb-5 rounded-lg border border-outline-variant bg-surface-container-low p-4 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Contextual help</p>
+        <p className="mt-2 text-sm leading-6 text-on-surface-variant">Contextual help for {viewLabels[activeView].toLowerCase()}.</p>
+      </div>
       <div className="space-y-3">
         {featured.map((article) => (
-          <article key={article.title} className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4">
+          <article key={article.title} className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4 shadow-sm">
             <p className="text-xs font-bold uppercase tracking-widest text-primary">{article.group}</p>
             <h4 className="mt-2 font-bold text-on-surface">{article.title}</h4>
             <p className="mt-2 text-sm leading-5 text-on-surface-variant">{article.body}</p>
@@ -16192,17 +16227,17 @@ function AuditLogModal({ events, onClose }: { events: AuditEvent[]; onClose: () 
     <ModalFrame title="Audit Log" onClose={onClose} maxWidth="max-w-5xl">
       {events.length ? (
         <div className="space-y-4">
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 rounded-lg border border-outline-variant bg-surface-container-low p-4 shadow-sm">
             <label className="w-full space-y-1 sm:w-auto">
               <span className="block text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">Project</span>
-              <select value={projectFilter} onChange={(event) => setProjectFilter(event.target.value)} className="h-9 w-full rounded-md border border-outline-variant bg-surface-container-lowest px-3 text-xs font-bold sm:w-auto">
+              <select value={projectFilter} onChange={(event) => setProjectFilter(event.target.value)} className="h-9 w-full rounded-md border border-outline-variant bg-surface-container-lowest px-3 text-xs font-bold outline-none focus:border-primary sm:w-auto">
                 <option value="all">All projects</option>
                 {projects.map((project) => <option key={project} value={project}>{project}</option>)}
               </select>
             </label>
             <label className="w-full space-y-1 sm:w-auto">
               <span className="block text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">Action</span>
-              <select value={actionFilter} onChange={(event) => setActionFilter(event.target.value)} className="h-9 w-full rounded-md border border-outline-variant bg-surface-container-lowest px-3 text-xs font-bold sm:w-auto">
+              <select value={actionFilter} onChange={(event) => setActionFilter(event.target.value)} className="h-9 w-full rounded-md border border-outline-variant bg-surface-container-lowest px-3 text-xs font-bold outline-none focus:border-primary sm:w-auto">
                 <option value="all">All actions</option>
                 {actions.map((action) => <option key={action} value={action}>{action}</option>)}
               </select>
@@ -16210,7 +16245,7 @@ function AuditLogModal({ events, onClose }: { events: AuditEvent[]; onClose: () 
           </div>
           <div className="space-y-3 md:hidden">
             {visibleEvents.map((event) => (
-              <article key={event.id} className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
+              <article key={event.id} className="rounded-xl border border-outline-variant bg-surface-container-low p-4 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">{formatTime(event.timestamp)}</p>
@@ -16241,9 +16276,9 @@ function AuditLogModal({ events, onClose }: { events: AuditEvent[]; onClose: () 
             ))}
             {!visibleEvents.length ? <p className="rounded-xl border border-outline-variant bg-surface-container-low p-6 text-center text-sm text-on-surface-variant">No audit events match the selected filters.</p> : null}
           </div>
-          <div className="hidden overflow-x-auto rounded-lg border border-outline-variant md:block">
+          <div className="hidden overflow-x-auto rounded-lg border border-outline-variant shadow-sm md:block">
           <table className="w-full table-auto text-left text-sm">
-            <thead className="border-b border-outline-variant bg-surface-container-low text-xs uppercase text-on-surface-variant">
+            <thead className="border-b border-outline-variant bg-surface-container-high text-xs uppercase text-on-surface-variant">
               <tr>
                 <th className="p-4">Time</th>
                 <th className="p-4">Actor</th>
@@ -16256,7 +16291,7 @@ function AuditLogModal({ events, onClose }: { events: AuditEvent[]; onClose: () 
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {visibleEvents.map((event) => (
-                <tr key={event.id}>
+                <tr key={event.id} className="transition hover:bg-surface-container-low">
                   <td className="p-3 text-on-surface-variant">{formatTime(event.timestamp)}</td>
                   <td className="p-3 font-semibold">{event.actor}</td>
                   <td className="p-3">{event.action}</td>
@@ -16359,9 +16394,9 @@ function NewProjectWizard({ existingNames, onClose, onCreate }: { existingNames:
 
   return (
     <ModalFrame title="Create New Project" onClose={onClose} maxWidth="max-w-3xl">
-      <div className="mb-6 grid grid-cols-3 gap-3">
+      <div className="mb-6 grid grid-cols-3 gap-3 rounded-lg border border-outline-variant bg-surface-container-low p-3">
         {[1, 2, 3].map((item) => (
-          <div key={item} className={`rounded-lg border p-3 text-center text-sm font-bold ${step === item ? 'border-primary bg-primary/10 text-primary' : 'border-outline-variant text-on-surface-variant'}`}>Step {item}</div>
+          <div key={item} className={`rounded-lg border p-3 text-center text-sm font-bold shadow-sm ${step === item ? 'border-primary bg-primary/10 text-primary' : 'border-outline-variant bg-surface-container-lowest text-on-surface-variant'}`}>Step {item}</div>
         ))}
       </div>
       {step === 1 ? (
@@ -16382,7 +16417,7 @@ function NewProjectWizard({ existingNames, onClose, onCreate }: { existingNames:
           <h3 className="font-bold text-on-surface">Available artifact types</h3>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             {['BRD', 'FRD', 'HLD', 'LLD', 'Transcript', 'Supporting Documents', 'UI Designs'].map((item) => (
-              <label key={item} className={`rounded-lg border p-4 ${selected.includes(item) ? 'border-primary bg-primary/10' : 'border-outline-variant'}`}>
+              <label key={item} className={`rounded-lg border p-4 shadow-sm ${selected.includes(item) ? 'border-primary bg-primary/10' : 'border-outline-variant bg-surface-container-lowest'}`}>
                 <input
                   type="checkbox"
                   className="mr-2"
@@ -16494,7 +16529,7 @@ function MetricCard({ label, value, tag, tone }: { label: string; value: string 
         ? 'text-warning'
         : 'text-on-surface-variant'
   return (
-    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5">
+    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm">
       <div className="flex flex-wrap items-center gap-2">
         <p className={`text-xs font-bold uppercase tracking-widest ${labelToneClass}`}>{label}</p>
         {tag ? <span className="rounded-full border border-primary/20 bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-normal text-primary">{tag}</span> : null}
@@ -16522,8 +16557,10 @@ function ChartPanel({ title, bars, labels }: { title: string; bars: number[]; la
 
 function SettingsPanel({ title, children, className = '' }: { title: string; children: ReactNode; className?: string }) {
   return (
-    <section className={`space-y-4 rounded-lg border border-outline-variant bg-surface-container-lowest p-5 ${className}`}>
-      <h3 className="text-base font-bold text-on-surface">{title}</h3>
+    <section className={`space-y-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-5 shadow-lg shadow-inverse-surface/5 ${className}`}>
+      <div className="flex items-center justify-between gap-3 border-b border-outline-variant pb-3">
+        <h3 className="text-base font-bold text-on-surface">{title}</h3>
+      </div>
       {children}
     </section>
   )
@@ -16546,10 +16583,10 @@ function SettingsNavCard({
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-h-24 items-start gap-3 rounded-lg border p-4 text-left transition-colors ${
+      className={`flex min-h-24 items-start gap-3 rounded-lg border p-4 text-left shadow-sm transition ${
         active
-          ? 'border-primary bg-primary/10 text-primary'
-          : 'border-outline-variant bg-surface-container-low hover:border-primary/50 hover:bg-surface-container'
+          ? 'border-primary bg-primary/10 text-primary shadow-md'
+          : 'border-outline-variant bg-surface-container-low hover:-translate-y-0.5 hover:border-primary/50 hover:bg-surface-container'
       }`}
     >
       <span className={`mt-0.5 rounded-md p-2 ${active ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>
@@ -16586,10 +16623,10 @@ function IntegrationEditorCard({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-lg border p-4 text-left transition-colors ${
+      className={`rounded-lg border p-4 text-left shadow-sm transition ${
         active
-          ? 'border-primary bg-primary/10'
-          : 'border-outline-variant bg-surface-container-low hover:border-primary/50 hover:bg-surface-container'
+          ? 'border-primary bg-primary/10 shadow-md'
+          : 'border-outline-variant bg-surface-container-low hover:-translate-y-0.5 hover:border-primary/50 hover:bg-surface-container'
       }`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -16614,7 +16651,7 @@ function SettingsInput({ label, value, onChange, placeholder, disabled = false }
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         disabled={disabled}
-        className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm outline-none focus:border-primary disabled:cursor-not-allowed disabled:bg-surface-container-low disabled:text-on-surface-variant"
+        className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-surface-container-low disabled:text-on-surface-variant"
       />
     </label>
   )
@@ -16622,7 +16659,7 @@ function SettingsInput({ label, value, onChange, placeholder, disabled = false }
 
 function ToggleRow({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
   return (
-    <label className="flex items-center justify-between rounded-lg border border-outline-variant p-4">
+    <label className="flex items-center justify-between rounded-lg border border-outline-variant bg-surface-container-low p-4 shadow-sm">
       <span className="font-semibold">{label}</span>
       <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="h-5 w-5 accent-primary" />
     </label>
@@ -16631,7 +16668,7 @@ function ToggleRow({ label, checked, onChange }: { label: string; checked: boole
 
 function IntegrationChip({ label, status }: { label: string; status: string }) {
   return (
-    <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4">
+    <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4 shadow-sm">
       <p className="font-bold">{label}</p>
       <p className="text-xs text-on-surface-variant">{status}</p>
     </div>
@@ -16679,33 +16716,39 @@ function EmptyState({ icon: Icon, title, text, action, onAction }: { icon: typeo
 }
 
 function ModalFrame({ title, children, onClose, maxWidth = 'max-w-xl' }: { title: string; children: ReactNode; onClose: () => void; maxWidth?: string }) {
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-inverse-surface/45 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className={`max-h-dvh w-full ${maxWidth} overflow-auto rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-2xl`} onClick={(event) => event.stopPropagation()}>
-        <div className="mb-5 flex items-center justify-between">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-inverse-surface/55 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className={`max-h-dvh w-full ${maxWidth} overflow-auto rounded-xl border border-outline-variant bg-surface-container-lowest shadow-2xl shadow-inverse-surface/30`} onClick={(event) => event.stopPropagation()}>
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-outline-variant bg-surface-container-lowest/95 px-6 py-4 backdrop-blur">
           <h2 className="text-xl font-bold text-on-surface">{title}</h2>
-          <button onClick={onClose} className="rounded-full p-2 text-on-surface-variant hover:bg-surface-container" aria-label="Close">
+          <button onClick={onClose} className="rounded-full border border-outline-variant bg-surface-container-lowest p-2 text-on-surface-variant transition hover:bg-surface-container" aria-label="Close">
             <X className="h-5 w-5" />
           </button>
         </div>
-        {children}
+        <div className="p-6">
+          {children}
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
 function SideDrawer({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
-  return (
-    <div className="fixed inset-0 z-[100] bg-inverse-surface/45 backdrop-blur-sm" onClick={onClose}>
-      <aside className="ml-auto h-full w-full max-w-md overflow-auto border-l border-outline-variant bg-surface-container-lowest p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
-        <div className="mb-6 flex items-center justify-between">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] bg-inverse-surface/55 backdrop-blur-sm" onClick={onClose}>
+      <aside className="ml-auto flex h-full w-full max-w-md flex-col border-l border-outline-variant bg-surface-container-lowest shadow-2xl shadow-inverse-surface/30" onClick={(event) => event.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-outline-variant px-6 py-4">
           <h2 className="text-xl font-bold">{title}</h2>
-          <button onClick={onClose} className="rounded-full p-2 text-on-surface-variant hover:bg-surface-container" aria-label="Close">
+          <button onClick={onClose} className="rounded-full border border-outline-variant bg-surface-container-lowest p-2 text-on-surface-variant transition hover:bg-surface-container" aria-label="Close">
             <X className="h-5 w-5" />
           </button>
         </div>
-        {children}
+        <div className="min-h-0 flex-1 overflow-auto p-6">
+          {children}
+        </div>
       </aside>
-    </div>
+    </div>,
+    document.body,
   )
 }

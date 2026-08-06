@@ -1,0 +1,180 @@
+{
+  "updatedAt": "2026-06-10T02:51:03.458Z",
+  "createdAt": "2026-05-07T05:53:59.139Z",
+  "id": "mucEtw68lUvv9T6f",
+  "name": "Q-Ops Agent Generated Documents API",
+  "description": "Returns generated-document jobs with input lineage, retry/update metadata, and output details for UI retry and modal workflows.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "07cd4b8a-2d84-4f2c-9244-9094ce11b5e8",
+      "name": "GET /generated-documents",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "path": "generated-documents",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "3a3fa4a8-910d-4890-9663-87bac9441aef"
+    },
+    {
+      "id": "c33e5fc7-05c0-44fe-9ebc-e3cc671f8203",
+      "name": "Fetch QA Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qa_jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "job_id,status,input,output,error,created_at,updated_at,project_id,requested_by,settings_version,retry_of_job_id,retried_by_job_id,retry_status,retry_attempt"
+            },
+            {
+              "name": "order",
+              "value": "created_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "200"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "9924c2ab-c716-4e5b-9398-6bf1436f6832",
+      "name": "Map Generated Documents Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const documents = $input.all()\n  .map(i => i.json)\n  .filter(j => j && j.job_id)\n  .map(j => {\n    const input = j.input && typeof j.input === 'object' ? j.input : {};\n    const retryContext = input.retryContext && typeof input.retryContext === 'object' ? input.retryContext : {};\n    const updateContext = input.updateContext && typeof input.updateContext === 'object' ? input.updateContext : {};\n    const output = j.output && typeof j.output === 'object' ? j.output : null;\n    const outputUpdateContext = output?.updateContext && typeof output.updateContext === 'object' ? output.updateContext : {};\n    const outputRetryContext = output?.retryContext && typeof output.retryContext === 'object' ? output.retryContext : {};\n    const generationMode = input.generationMode || retryContext.generationMode || output?.generationMode || output?.metadata?.generation_mode || null;\n    const updateOfJobId = input.updateOfJobId || input.update_of_job_id || updateContext.previousJobId || updateContext.previous_job_id || retryContext.updateOfJobId || retryContext.update_of_job_id || output?.updateOfJobId || outputUpdateContext.previousJobId || output?.metadata?.update_of_job_id || null;\n    const retryOfJobId = j.retry_of_job_id || input.retryOfJobId || input.retry_of_job_id || input.retryJobId || retryContext.retryOfJobId || retryContext.retry_of_job_id || output?.retryOfJobId || outputRetryContext.retryOfJobId || output?.metadata?.retry_of_job_id || null;\n    return {\n      id: j.job_id,\n      jobId: j.job_id,\n      projectId: j.project_id || output?.destination?.projectId || null,\n      projectName: input.projectName || output?.projectName || 'Unknown project',\n      documentType: input.documentType || output?.documentType || '',\n      artifactLabel: input.documentType || output?.artifactLabel || '',\n      createdAt: j.created_at,\n      updatedAt: j.updated_at,\n      status: j.status,\n      url: output?.url || output?.confluenceUrl || '',\n      input,\n      output,\n      error: j.error || null,\n      requestedBy: j.requested_by || null,\n      settingsVersion: j.settings_version || null,\n      retryOfJobId,\n      retriedByJobId: j.retried_by_job_id || null,\n      retryStatus: j.retry_status || null,\n      retryAttempt: Number(j.retry_attempt) || 0,\n      generationMode,\n      updateOfJobId\n    };\n  });\nreturn [{ json: { documents } }];"
+      }
+    },
+    {
+      "id": "08fd9d39-e799-404a-aced-5e46a9f7dd66",
+      "name": "Respond Generated Documents",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "GET /generated-documents": {
+      "main": [
+        [
+          {
+            "node": "Fetch QA Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch QA Jobs": {
+      "main": [
+        [
+          {
+            "node": "Map Generated Documents Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Generated Documents Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Generated Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": null,
+  "versionId": "8ac426de-9008-42fc-8d25-b7b3ab5224c0",
+  "activeVersionId": "8ac426de-9008-42fc-8d25-b7b3ab5224c0",
+  "versionCounter": 48,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-07T05:53:59.142Z",
+      "createdAt": "2026-05-07T05:53:59.142Z",
+      "role": "workflow:owner",
+      "workflowId": "mucEtw68lUvv9T6f",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

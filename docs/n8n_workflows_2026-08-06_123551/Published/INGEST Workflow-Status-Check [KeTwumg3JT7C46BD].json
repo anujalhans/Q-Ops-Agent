@@ -1,0 +1,200 @@
+{
+  "updatedAt": "2026-06-01T18:25:20.363Z",
+  "createdAt": "2026-04-16T12:35:36.421Z",
+  "id": "KeTwumg3JT7C46BD",
+  "name": "INGEST Workflow-Status-Check",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "/job-status",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "af164116-dc44-4621-91fb-6591d7d4ff9d",
+      "name": "Webhook",
+      "webhookId": "f40b7289-5d71-4a56-819c-c1acca548c1e"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d492c575-93f6-4483-bf92-dce1038f21b2",
+              "name": "jobId",
+              "value": "={{ $json.query.jobId }}",
+              "type": "string"
+            },
+            {
+              "id": "status-polling-authorization-header",
+              "name": "authorization",
+              "value": "={{ $json.headers.authorization || $json.headers.Authorization || \"\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "652fae32-7fdf-4882-939b-9d9e7bdd61d5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputJobId = $('Edit Fields').first().json.jobId;\n\nif (!$json || !$json.job_id) {\n  return [\n    {\n      json: {\n        jobId: inputJobId,\n        status: \"not_found\"\n      }\n    }\n  ];\n}\n\nreturn [\n  {\n    json: {\n      jobId: $json.job_id,\n      status: $json.status,\n      output: $json.output || null,\n      error: $json.error || null\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "0ba49eb3-85c6-4215-9030-5b013b4f8923",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        832,
+        0
+      ],
+      "id": "0f8e3456-648d-447a-9fbf-17f8296c816a",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/doc_ingestion_jobs",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "job_id",
+              "value": "=eq.{{ $json.jobId }}"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            },
+            {
+              "name": "select",
+              "value": "job_id,status,output,error"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={ \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"{{ $json.authorization }}\", \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "3e1adb45-75ff-45e0-8df1-41e45cefe562",
+      "name": "Check Status"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Check Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Status": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "771393a7-0c65-4892-adff-9e7f5dd70467",
+  "activeVersionId": "771393a7-0c65-4892-adff-9e7f5dd70467",
+  "versionCounter": 146,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-04-16T12:35:36.423Z",
+      "createdAt": "2026-04-16T12:35:36.423Z",
+      "role": "workflow:owner",
+      "workflowId": "KeTwumg3JT7C46BD",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 771393a7",
+    "description": ""
+  }
+}

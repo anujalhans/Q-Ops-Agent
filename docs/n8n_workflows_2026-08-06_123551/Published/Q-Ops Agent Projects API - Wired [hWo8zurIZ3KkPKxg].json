@@ -1,0 +1,410 @@
+{
+  "updatedAt": "2026-05-07T05:51:38.512Z",
+  "createdAt": "2026-05-07T05:51:38.512Z",
+  "id": "hWo8zurIZ3KkPKxg",
+  "name": "Q-Ops Agent Projects API - Wired",
+  "description": "Additive UI API for GET/POST /webhook/projects backed by qops_projects and qops_audit_events using the existing Supabase service-role credential.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "4b24deab-bf07-4c50-881c-1e6bce90d6e2",
+      "name": "GET /projects",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "path": "projects",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "0f82af0e-ebfe-4425-a606-890ec57e1d07"
+    },
+    {
+      "id": "a9ef6c2e-dada-45f2-8c77-b6d2988d0e30",
+      "name": "Fetch Projects",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,name,description,owner,module,release,tags,status,created_at,updated_at"
+            },
+            {
+              "name": "order",
+              "value": "updated_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "200"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "f5f8bf83-1b80-4e3c-84a8-5e0d2c03398a",
+      "name": "Map Projects Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const projects = $input.all().map(i => i.json).filter(p => p && p.id).map(p => ({ id: p.id, name: p.name, description: p.description || '', owner: p.owner || 'Admin User', module: p.module || '', release: p.release || '', tags: Array.isArray(p.tags) ? p.tags : [], status: p.status || 'draft', createdAt: p.created_at, updatedAt: p.updated_at })); return [{ json: { projects } }];"
+      }
+    },
+    {
+      "id": "f383fc85-4412-4c2f-bd35-f7a15fdde628",
+      "name": "Respond Projects",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "21eedaeb-f9bb-41c5-a1a2-4d840b2aff57",
+      "name": "POST /projects",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        224
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "projects",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "3315a33d-6b74-4572-9389-f97c80f4c81f"
+    },
+    {
+      "id": "b4000501-b33d-4c7f-9a97-9ca35e727c50",
+      "name": "Fetch Projects For Upsert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        224
+      ],
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,name"
+            },
+            {
+              "name": "limit",
+              "value": "1000"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "0ee53d88-a281-4eff-8c4e-96b0eebe2bbc",
+      "name": "Prepare Project Upsert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        224
+      ],
+      "parameters": {
+        "jsCode": "const restBase = 'https://ifnznfspkjayhnooncrv.supabase.co/rest/v1'; const body = $('POST /projects').item.json.body || {}; const name = String(body.name || '').trim(); if (!name) throw new Error('Project name is required'); const existing = $input.all().map(i => i.json).find(p => p && p.id && String(p.name || '').toLowerCase() === name.toLowerCase()); const payload = { name, description: body.description || '', owner: body.owner || 'Admin User', module: body.module || '', release: body.release || '', tags: Array.isArray(body.tags) ? body.tags : [], status: body.status || 'draft', updated_at: new Date().toISOString() }; if (!existing) payload.created_at = new Date().toISOString(); return [{ json: { method: existing ? 'PATCH' : 'POST', url: existing ? `${restBase}/qops_projects?id=eq.${encodeURIComponent(existing.id)}` : `${restBase}/qops_projects`, payload, auditAction: existing ? 'PROJECT_UPDATED' : 'PROJECT_CREATED' } }];"
+      }
+    },
+    {
+      "id": "e3866c57-7e8e-47e4-bd28-dd855b546a6d",
+      "name": "Upsert Project",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        224
+      ],
+      "parameters": {
+        "method": "={{ $json.method }}",
+        "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=representation\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.payload }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "id": "4567c84f-678e-40b8-8017-5ecc7a76a427",
+      "name": "Map Project Write Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        224
+      ],
+      "parameters": {
+        "jsCode": "const p = $input.first().json; const action = $('Prepare Project Upsert').item.json.auditAction; return [{ json: { id: p.id, name: p.name, description: p.description || '', owner: p.owner || 'Admin User', module: p.module || '', release: p.release || '', tags: Array.isArray(p.tags) ? p.tags : [], status: p.status || 'draft', createdAt: p.created_at, updatedAt: p.updated_at, audit: { action, entity_type: 'project', entity_id: p.id, project_id: p.id, actor_name: 'n8n', status: 'success', details: `${action}: ${p.name}`, metadata: { source: 'ui', projectName: p.name } } } }];"
+      }
+    },
+    {
+      "id": "e39efa3b-eaa8-4848-85f7-f7e1755294ab",
+      "name": "Insert Project Audit Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        224
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.audit }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "id": "71307415-8703-43a2-87ed-d7cec3f2bd01",
+      "name": "Respond Project Write",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1344,
+        224
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $(\"Map Project Write Response\").item.json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "GET /projects": {
+      "main": [
+        [
+          {
+            "node": "Fetch Projects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Projects": {
+      "main": [
+        [
+          {
+            "node": "Map Projects Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Projects Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Projects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /projects": {
+      "main": [
+        [
+          {
+            "node": "Fetch Projects For Upsert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Projects For Upsert": {
+      "main": [
+        [
+          {
+            "node": "Prepare Project Upsert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Project Upsert": {
+      "main": [
+        [
+          {
+            "node": "Upsert Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Project": {
+      "main": [
+        [
+          {
+            "node": "Map Project Write Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Project Write Response": {
+      "main": [
+        [
+          {
+            "node": "Insert Project Audit Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Project Audit Event": {
+      "main": [
+        [
+          {
+            "node": "Respond Project Write",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": null,
+  "versionId": "2a68144f-cb9f-4c75-a0a3-f28f85f79fb2",
+  "activeVersionId": "2a68144f-cb9f-4c75-a0a3-f28f85f79fb2",
+  "versionCounter": 44,
+  "triggerCount": 2,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-07T05:51:38.516Z",
+      "createdAt": "2026-05-07T05:51:38.516Z",
+      "role": "workflow:owner",
+      "workflowId": "hWo8zurIZ3KkPKxg",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

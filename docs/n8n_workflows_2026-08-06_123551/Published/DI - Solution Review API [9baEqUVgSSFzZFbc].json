@@ -1,0 +1,550 @@
+{
+  "updatedAt": "2026-05-12T10:36:36.137Z",
+  "createdAt": "2026-05-12T10:04:40.839Z",
+  "id": "9baEqUVgSSFzZFbc",
+  "name": "DI - Solution Review API",
+  "description": "Authenticated PATCH /webhook/di/solutions/review endpoint to submit, review, publish, or archive Delivery Intelligence solution candidates with audit logging.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "PATCH",
+        "path": "di/solutions/review",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "64ac900d-9c98-4e12-a606-f10b339061dc",
+      "name": "PATCH /di/solutions/review",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        80
+      ],
+      "webhookId": "90a7dd20-b7b0-425d-91b1-17673e02fc4c"
+    },
+    {
+      "parameters": {
+        "jsCode": "const headers = $json.headers || {};\nconst authHeader = headers.authorization || headers.Authorization || '';\nconst body = $json.body || {};\nconst decisionMap = { submitted: 'submitted', review: 'review', reviewed: 'review', publish: 'published', published: 'published', archive: 'archived', archived: 'archived' };\nconst solutionId = body.solutionId || body.solution_id || body.id;\nconst decision = decisionMap[String(body.decision || body.action || '').toLowerCase()];\nif (!String(authHeader).toLowerCase().startsWith('bearer ')) {\n  return [{ json: { ok: false, statusCode: 401, errorCode: 'UNAUTHORIZED', message: 'Missing bearer token', token: '', solutionId: solutionId || '', decision: decision || '', projectId: body.projectId || body.project_id || null } }];\n}\nif (!solutionId || !decision) {\n  return [{ json: { ok: false, statusCode: 400, errorCode: 'INVALID_REVIEW_REQUEST', message: 'solutionId and decision are required', token: String(authHeader).replace(/^Bearer\\s+/i, ''), solutionId: solutionId || '', decision: decision || '', projectId: body.projectId || body.project_id || null } }];\n}\nreturn [{ json: { ok: true, token: String(authHeader).replace(/^Bearer\\s+/i, ''), solutionId, decision, projectId: body.projectId || body.project_id || null, reviewNotes: body.reviewNotes || body.review_notes || '', governanceTags: Array.isArray(body.governanceTags) ? body.governanceTags : [], visibilityOverride: body.visibilityOverride || body.visibility_override || '', publishedTitle: body.publishedTitle || body.published_title || '', publishedSummary: body.publishedSummary || body.published_summary || '' } }];"
+      },
+      "id": "d2a84f50-c6ec-4bd3-9abb-95cbf1ca2158",
+      "name": "Prepare DI Solution Review Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={ \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"Bearer {{ $json.token }}\" }",
+        "options": {}
+      },
+      "id": "62da8e79-c0bb-46b7-b892-2fdf3c75328a",
+      "name": "Verify Review Supabase Auth User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{ $json.id || \"00000000-0000-0000-0000-000000000000\" }}&status=eq.active&select=id,email,name,role,status&limit=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "a8f8dd15-e29a-4ecd-83fa-7e61e30f9622",
+      "name": "Fetch Review Q-Ops User Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        80
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_reusable_solutions?id=eq.{{ encodeURIComponent($(\"Prepare DI Solution Review Request\").item.json.solutionId || \"00000000-0000-0000-0000-000000000000\") }}&select=id,title,status,summary,visibility_level,source_project_id&limit=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "12e2c7e0-1bab-4373-a016-876019789d0b",
+      "name": "Fetch DI Solution For Review",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        80
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{ Array.isArray($(\"Fetch Review Q-Ops User Profile\").item.json) ? ($(\"Fetch Review Q-Ops User Profile\").item.json[0]?.id || \"00000000-0000-0000-0000-000000000000\") : ($(\"Fetch Review Q-Ops User Profile\").item.json.id || \"00000000-0000-0000-0000-000000000000\") }}&select=project_id,project_role",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "8175bfb5-c602-4d8e-92e2-fbd0d68546b3",
+      "name": "Fetch Review Project Memberships",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        80
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const req = $('Prepare DI Solution Review Request').first().json;\nif (!req.ok) return [{ json: req }];\nconst auth = $('Verify Review Supabase Auth User').first().json || {};\nconst rawProfile = $('Fetch Review Q-Ops User Profile').first().json;\nconst profile = Array.isArray(rawProfile) ? rawProfile[0] : rawProfile;\nconst rawSolution = $('Fetch DI Solution For Review').first().json;\nconst solution = Array.isArray(rawSolution) ? rawSolution[0] : rawSolution;\nif (!auth.id) return [{ json: { ok: false, statusCode: 401, errorCode: 'UNAUTHORIZED', message: 'Invalid Supabase Auth token' } }];\nif (!profile?.id || profile.status !== 'active') return [{ json: { ok: false, statusCode: 403, errorCode: 'PROFILE_NOT_ACTIVE', message: 'Active Q-Ops user profile not found' } }];\nif (!solution?.id) return [{ json: { ok: false, statusCode: 404, errorCode: 'SOLUTION_NOT_FOUND', message: 'Reusable solution not found' } }];\nconst memberships = $items('Fetch Review Project Memberships').map((item) => item.json);\nconst memberRole = memberships.find((row) => row.project_id === solution.source_project_id)?.project_role || null;\nconst canReview = profile.role === 'admin' || memberRole === 'owner' || memberRole === 'editor';\nif (!canReview) return [{ json: { ok: false, statusCode: 403, errorCode: 'SOLUTION_REVIEW_ACCESS_DENIED', message: 'User cannot review or publish this solution' } }];\nconst reviewPayload = {\n  solution_id: solution.id,\n  project_id: solution.source_project_id,\n  reviewer_user_id: profile.id,\n  decision: req.decision,\n  review_notes: req.reviewNotes || null,\n  governance_tags: req.governanceTags || [],\n  visibility_override: req.visibilityOverride || null,\n  published_title: req.publishedTitle || null,\n  published_summary: req.publishedSummary || null,\n};\nconst solutionPatch = {\n  status: req.decision === 'submitted' ? 'review' : req.decision,\n  updated_at: new Date().toISOString(),\n};\nif (req.visibilityOverride) solutionPatch.visibility_level = req.visibilityOverride;\nif (req.publishedTitle) solutionPatch.title = req.publishedTitle;\nif (req.publishedSummary) solutionPatch.summary = req.publishedSummary;\nconst audit = {\n  action: 'DI_SOLUTION_REVIEW_' + req.decision.toUpperCase(),\n  entity_type: 'di_solution',\n  entity_id: solution.id,\n  project_id: solution.source_project_id,\n  actor_user_id: profile.id,\n  actor_name: profile.email,\n  status: 'success',\n  details: req.decision + ': ' + solution.title,\n  metadata: {\n    solution_id: solution.id,\n    previous_status: solution.status,\n    new_status: solutionPatch.status,\n    visibility_override: req.visibilityOverride || null,\n  },\n};\nreturn [{ json: { ok: true, solutionId: solution.id, reviewPayload, solutionPatch, audit, decision: req.decision } }];"
+      },
+      "id": "446574ed-bf87-4978-9a89-782b9335893a",
+      "name": "Authorize DI Solution Review",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1c3b9e5d-169d-4426-926e-ae99b8d50803",
+      "name": "DI Solution Review Authorized?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1568,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_solution_reviews",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=representation\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.reviewPayload) }}",
+        "options": {}
+      },
+      "id": "6c7b4d16-ff2b-4d14-b758-116177d2f14c",
+      "name": "Insert DI Solution Review",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1792,
+        0
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_reusable_solutions?id=eq.{{ encodeURIComponent($(\"Authorize DI Solution Review\").item.json.solutionId || \"00000000-0000-0000-0000-000000000000\") }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=representation\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($(\"Authorize DI Solution Review\").item.json.solutionPatch || {}) }}",
+        "options": {}
+      },
+      "id": "cbeea9e4-0cd6-4e56-bb7a-eef4ca15d34f",
+      "name": "Update DI Solution Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2016,
+        0
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($(\"Authorize DI Solution Review\").item.json.audit || {}) }}",
+        "options": {}
+      },
+      "id": "54b2bafe-b462-4200-a048-099572ed9bcf",
+      "name": "Insert DI Solution Review Audit",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2240,
+        0
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const review = $('Insert DI Solution Review').first().json || {};\nconst updated = $('Update DI Solution Status').first().json || {};\nconst auth = $('Authorize DI Solution Review').first().json || {};\nreturn [{ json: { ok: true, solutionId: auth.solutionId, reviewId: review.id || null, status: updated.status || auth.decision, decision: auth.decision } }];"
+      },
+      "id": "36ae9d71-b34d-4919-8507-eadd57fb56ed",
+      "name": "Map DI Solution Review Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2464,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.ok ? $json : { ok: false, error: { code: $json.errorCode || \"DI_SOLUTION_REVIEW_ERROR\", message: $json.message || \"Unable to review Delivery Intelligence solution\" } }) }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode || 200 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "f5e09166-9e63-4e93-90a8-87c37bc5c1f0",
+      "name": "Respond DI Solution Review",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2688,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "={{ \"OPTIONS\" }}",
+        "path": "di/solutions/review",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "9c2d23a9-43e0-4768-a472-9d8ac1b33db5",
+      "name": "OPTIONS /di/solutions/review",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        304
+      ],
+      "webhookId": "78b96f9f-cb36-4ffe-a785-58961ba4f5d6"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true }) }}",
+        "options": {
+          "responseCode": 204,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "PATCH, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "authorization, content-type"
+              },
+              {
+                "name": "Access-Control-Max-Age",
+                "value": "86400"
+              }
+            ]
+          }
+        }
+      },
+      "id": "17a4d35a-571e-45df-801f-08b23fa69c1f",
+      "name": "Respond DI Solution Review CORS",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        224,
+        304
+      ]
+    }
+  ],
+  "connections": {
+    "PATCH /di/solutions/review": {
+      "main": [
+        [
+          {
+            "node": "Prepare DI Solution Review Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare DI Solution Review Request": {
+      "main": [
+        [
+          {
+            "node": "Verify Review Supabase Auth User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Review Supabase Auth User": {
+      "main": [
+        [
+          {
+            "node": "Fetch Review Q-Ops User Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Review Q-Ops User Profile": {
+      "main": [
+        [
+          {
+            "node": "Fetch DI Solution For Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch DI Solution For Review": {
+      "main": [
+        [
+          {
+            "node": "Fetch Review Project Memberships",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Review Project Memberships": {
+      "main": [
+        [
+          {
+            "node": "Authorize DI Solution Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authorize DI Solution Review": {
+      "main": [
+        [
+          {
+            "node": "DI Solution Review Authorized?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DI Solution Review Authorized?": {
+      "main": [
+        [
+          {
+            "node": "Insert DI Solution Review",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond DI Solution Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert DI Solution Review": {
+      "main": [
+        [
+          {
+            "node": "Update DI Solution Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update DI Solution Status": {
+      "main": [
+        [
+          {
+            "node": "Insert DI Solution Review Audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert DI Solution Review Audit": {
+      "main": [
+        [
+          {
+            "node": "Map DI Solution Review Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map DI Solution Review Success": {
+      "main": [
+        [
+          {
+            "node": "Respond DI Solution Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPTIONS /di/solutions/review": {
+      "main": [
+        [
+          {
+            "node": "Respond DI Solution Review CORS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": {},
+  "versionId": "e0eb6af3-0c47-48ac-89ea-95465ce62c50",
+  "activeVersionId": "e0eb6af3-0c47-48ac-89ea-95465ce62c50",
+  "versionCounter": 47,
+  "triggerCount": 2,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-12T10:04:40.853Z",
+      "createdAt": "2026-05-12T10:04:40.853Z",
+      "role": "workflow:owner",
+      "workflowId": "9baEqUVgSSFzZFbc",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version e0eb6af3",
+    "description": ""
+  }
+}
