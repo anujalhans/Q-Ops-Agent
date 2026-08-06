@@ -1,0 +1,686 @@
+[
+    {
+        "id":  "nzc2q8WqmTd6RGCw",
+        "name":  "DI - Catalog Read API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-11T11:58:58.395Z",
+        "updatedAt":  "2026-05-11T12:01:45.128Z",
+        "nodeCount":  18,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\DI - Catalog Read API [nzc2q8WqmTd6RGCw].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\DI - Catalog Read API [nzc2q8WqmTd6RGCw].md",
+        "webhooks":  [
+                         "GET/POST /webhook/di/catalog"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "18yW35k0ANmU3ZY4",
+        "name":  "DI - Cross Project Search API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-11T10:41:34.141Z",
+        "updatedAt":  "2026-05-11T10:45:31.768Z",
+        "nodeCount":  13,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\DI - Cross Project Search API [18yW35k0ANmU3ZY4].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\DI - Cross Project Search API [18yW35k0ANmU3ZY4].md",
+        "webhooks":  [
+                         "GET/POST /webhook/di/search"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "eFtemLZ4s5NRjF1d",
+        "name":  "DI - Insights API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-12T10:01:46.301Z",
+        "updatedAt":  "2026-05-12T10:37:28.273Z",
+        "nodeCount":  17,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\DI - Insights API [eFtemLZ4s5NRjF1d].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\DI - Insights API [eFtemLZ4s5NRjF1d].md",
+        "webhooks":  [
+                         "={{ \"OPTIONS\" }} /webhook/di/insights",
+                         "GET/POST /webhook/di/insights"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "8v0RLFdhdelnBeu9",
+        "name":  "DI - Intelligence Queue Creator and Status API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-11T10:36:52.263Z",
+        "updatedAt":  "2026-05-11T10:46:34.433Z",
+        "nodeCount":  26,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\DI - Intelligence Queue Creator and Status API [8v0RLFdhdelnBeu9].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\DI - Intelligence Queue Creator and Status API [8v0RLFdhdelnBeu9].md",
+        "webhooks":  [
+                         "GET/POST /webhook/di/jobs",
+                         "OPTIONS /webhook/di/jobs",
+                         "POST /webhook/di/jobs"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "xmuy0M3IEbkISttj",
+        "name":  "DI - Intelligence Worker",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-11T10:40:20.869Z",
+        "updatedAt":  "2026-05-11T10:46:04.094Z",
+        "nodeCount":  14,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\DI - Intelligence Worker [xmuy0M3IEbkISttj].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\DI - Intelligence Worker [xmuy0M3IEbkISttj].md",
+        "webhooks":  [
+
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "pbxli3DNK16tIhOe",
+        "name":  "DI - Recommendation Feedback API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-11T10:42:41.059Z",
+        "updatedAt":  "2026-05-11T10:45:07.729Z",
+        "nodeCount":  16,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\DI - Recommendation Feedback API [pbxli3DNK16tIhOe].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\DI - Recommendation Feedback API [pbxli3DNK16tIhOe].md",
+        "webhooks":  [
+                         "OPTIONS /webhook/di/recommendations/feedback",
+                         "PATCH /webhook/di/recommendations/feedback"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "9baEqUVgSSFzZFbc",
+        "name":  "DI - Solution Review API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-12T10:04:40.839Z",
+        "updatedAt":  "2026-05-12T10:36:36.137Z",
+        "nodeCount":  15,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\DI - Solution Review API [9baEqUVgSSFzZFbc].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\DI - Solution Review API [9baEqUVgSSFzZFbc].md",
+        "webhooks":  [
+                         "={{ \"OPTIONS\" }} /webhook/di/solutions/review",
+                         "PATCH /webhook/di/solutions/review"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "iiR8d9v5oI8WzBPX",
+        "name":  "INGEST API Queue Creator - SaaS - Attributed Draft",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T15:58:56.088Z",
+        "updatedAt":  "2026-06-01T17:51:34.000Z",
+        "nodeCount":  16,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\INGEST API Queue Creator - SaaS - Attributed Draft [iiR8d9v5oI8WzBPX].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\INGEST API Queue Creator - SaaS - Attributed Draft [iiR8d9v5oI8WzBPX].md",
+        "webhooks":  [
+                         "POST /webhook/upload-test-artifacts"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-anon-key",
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "mlelxUdlNcoBIyru",
+        "name":  "INGEST Worker Engine (Queue Processor) - Attributed Draft",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-04-14T09:41:25.246Z",
+        "updatedAt":  "2026-06-01T17:51:34.000Z",
+        "nodeCount":  16,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\INGEST Worker Engine (Queue Processor) - Attributed Draft [mlelxUdlNcoBIyru].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\INGEST Worker Engine (Queue Processor) - Attributed Draft [mlelxUdlNcoBIyru].md",
+        "webhooks":  [
+
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "KeTwumg3JT7C46BD",
+        "name":  "INGEST Workflow-Status-Check",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-04-16T12:35:36.421Z",
+        "updatedAt":  "2026-06-01T18:25:20.363Z",
+        "nodeCount":  5,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\INGEST Workflow-Status-Check [KeTwumg3JT7C46BD].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\INGEST Workflow-Status-Check [KeTwumg3JT7C46BD].md",
+        "webhooks":  [
+                         "GET/POST /webhook/job-status"
+                     ],
+        "credentialReferences":  [
+
+                                 ]
+    },
+    {
+        "id":  "C9oZfZxpGFakzlB3",
+        "name":  "Multimodal Knowledge Ingestion \u0026 Vectorization Engine - In Progress",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-13T09:17:05.310Z",
+        "updatedAt":  "2026-06-01T17:51:34.000Z",
+        "nodeCount":  36,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Multimodal Knowledge Ingestion \u0026 Vectorization Engine - In Progress [C9oZfZxpGFakzlB3].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Multimodal Knowledge Ingestion \u0026 Vectorization Engine - In Progress [C9oZfZxpGFakzlB3].md",
+        "webhooks":  [
+
+                     ],
+        "credentialReferences":  [
+                                     "chromaCloudApi: ChromaDB Self-Hosted account",
+                                     "httpCustomAuth: supabase-service-role-key",
+                                     "openAiApi: OpenAi Paid Account (Aonu)"
+                                 ]
+    },
+    {
+        "id":  "Vwc6c8ehsRTF8svG",
+        "name":  "PRO QA Backlog, Jira \u0026 Confluence Generator - Team Managed Ready",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-11T03:59:47.905Z",
+        "updatedAt":  "2026-06-09T19:06:22.087Z",
+        "nodeCount":  47,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\PRO QA Backlog, Jira \u0026 Confluence Generator - Team Managed Ready [Vwc6c8ehsRTF8svG].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\PRO QA Backlog, Jira \u0026 Confluence Generator - Team Managed Ready [Vwc6c8ehsRTF8svG].md",
+        "webhooks":  [
+
+                     ],
+        "credentialReferences":  [
+                                     "chromaCloudApi: ChromaDB Self-Hosted account",
+                                     "httpBasicAuth: JIRA",
+                                     "openAiApi: OpenAi Paid Account (Aonu)"
+                                 ]
+    },
+    {
+        "id":  "yPgr7mtUnL3E8QQP",
+        "name":  "PRO QA Generation Queue Creator - Ready Draft",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-11T04:17:16.626Z",
+        "updatedAt":  "2026-06-06T09:56:02.759Z",
+        "nodeCount":  32,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\PRO QA Generation Queue Creator - Ready Draft [yPgr7mtUnL3E8QQP].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\PRO QA Generation Queue Creator - Ready Draft [yPgr7mtUnL3E8QQP].md",
+        "webhooks":  [
+                         "OPTIONS /webhook/generate-qa-doc",
+                         "POST /webhook/generate-qa-doc"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "QApRBFSaJgINsdHN",
+        "name":  "PRO QA Generation Queue Worker - Ready Draft",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-11T04:00:34.834Z",
+        "updatedAt":  "2026-06-09T19:18:35.480Z",
+        "nodeCount":  22,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\PRO QA Generation Queue Worker - Ready Draft [QApRBFSaJgINsdHN].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\PRO QA Generation Queue Worker - Ready Draft [QApRBFSaJgINsdHN].md",
+        "webhooks":  [
+
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "SG7khcKlhHst48WH",
+        "name":  "PRO QA Jira Story Test Case Generator",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-12T14:13:40.565Z",
+        "updatedAt":  "2026-06-29T09:43:45.567Z",
+        "nodeCount":  73,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\PRO QA Jira Story Test Case Generator [SG7khcKlhHst48WH].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\PRO QA Jira Story Test Case Generator [SG7khcKlhHst48WH].md",
+        "webhooks":  [
+
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key",
+                                     "jiraSoftwareCloudApi: Jira SW Cloud account",
+                                     "openAiApi: OpenAi Paid Account (Aonu)"
+                                 ]
+    },
+    {
+        "id":  "8nuhDEewnnunXSbF",
+        "name":  "PRO QA Story Test Cases Queue Creator",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-12T14:20:15.325Z",
+        "updatedAt":  "2026-06-05T05:34:54.501Z",
+        "nodeCount":  18,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\PRO QA Story Test Cases Queue Creator [8nuhDEewnnunXSbF].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\PRO QA Story Test Cases Queue Creator [8nuhDEewnnunXSbF].md",
+        "webhooks":  [
+                         "OPTIONS /webhook/generate-story-test-cases",
+                         "POST /webhook/generate-story-test-cases"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "ivz13uFyjfCT8149",
+        "name":  "PRO QA Story Test Cases Worker",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-12T14:17:35.958Z",
+        "updatedAt":  "2026-06-11T07:10:21.672Z",
+        "nodeCount":  27,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\PRO QA Story Test Cases Worker [ivz13uFyjfCT8149].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\PRO QA Story Test Cases Worker [ivz13uFyjfCT8149].md",
+        "webhooks":  [
+
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "zHsg1Zr7oGOvhPFg",
+        "name":  "Q-Ops Agent Artifact Reprocess API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T05:54:43.132Z",
+        "updatedAt":  "2026-05-29T05:30:55.767Z",
+        "nodeCount":  12,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent Artifact Reprocess API [zHsg1Zr7oGOvhPFg].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent Artifact Reprocess API [zHsg1Zr7oGOvhPFg].md",
+        "webhooks":  [
+                         "POST /webhook/artifacts/reprocess"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "YFsr2hRD7BZlPCEK",
+        "name":  "Q-Ops Agent Artifacts API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T05:53:42.864Z",
+        "updatedAt":  "2026-05-29T06:47:28.581Z",
+        "nodeCount":  4,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent Artifacts API [YFsr2hRD7BZlPCEK].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent Artifacts API [YFsr2hRD7BZlPCEK].md",
+        "webhooks":  [
+                         "GET/POST /webhook/artifacts"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "lyyrP14iTYacuEFv",
+        "name":  "Q-Ops Agent Audit Events API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T05:54:19.525Z",
+        "updatedAt":  "2026-05-20T08:07:19.549Z",
+        "nodeCount":  9,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent Audit Events API [lyyrP14iTYacuEFv].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent Audit Events API [lyyrP14iTYacuEFv].md",
+        "webhooks":  [
+                         "GET/POST /webhook/audit-events"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "55zxBkmwk8ezvWOP",
+        "name":  "Q-Ops Agent Auth Me API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T07:16:43.522Z",
+        "updatedAt":  "2026-05-08T05:41:43.010Z",
+        "nodeCount":  6,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent Auth Me API [55zxBkmwk8ezvWOP].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent Auth Me API [55zxBkmwk8ezvWOP].md",
+        "webhooks":  [
+                         "GET /webhook/me"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "mucEtw68lUvv9T6f",
+        "name":  "Q-Ops Agent Generated Documents API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T05:53:59.139Z",
+        "updatedAt":  "2026-06-10T02:51:03.458Z",
+        "nodeCount":  4,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent Generated Documents API [mucEtw68lUvv9T6f].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent Generated Documents API [mucEtw68lUvv9T6f].md",
+        "webhooks":  [
+                         "GET/POST /webhook/generated-documents"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "NgKN1jdavJfmJG9h",
+        "name":  "Q-Ops Agent Infrastructure Load API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-08T07:06:29.801Z",
+        "updatedAt":  "2026-05-08T07:10:04.605Z",
+        "nodeCount":  11,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent Infrastructure Load API [NgKN1jdavJfmJG9h].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent Infrastructure Load API [NgKN1jdavJfmJG9h].md",
+        "webhooks":  [
+                         "GET/POST /webhook/infrastructure-load"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "3zXdQS9hABDTXuea",
+        "name":  "Q-Ops Agent Integration Test API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T06:15:44.415Z",
+        "updatedAt":  "2026-05-07T06:49:56.886Z",
+        "nodeCount":  7,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent Integration Test API [3zXdQS9hABDTXuea].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent Integration Test API [3zXdQS9hABDTXuea].md",
+        "webhooks":  [
+                         "POST /webhook/integrations/test"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "CGkgxVrH5D6syesK",
+        "name":  "Q-Ops Agent Integrations Status API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T06:14:59.660Z",
+        "updatedAt":  "2026-05-07T06:20:57.471Z",
+        "nodeCount":  5,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent Integrations Status API [CGkgxVrH5D6syesK].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent Integrations Status API [CGkgxVrH5D6syesK].md",
+        "webhooks":  [
+                         "GET/POST /webhook/integrations/status"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "0cyKIIbCq17bD0yK",
+        "name":  "Q-Ops Agent Integrations Test All API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T06:16:13.941Z",
+        "updatedAt":  "2026-05-07T06:49:23.956Z",
+        "nodeCount":  7,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent Integrations Test All API [0cyKIIbCq17bD0yK].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent Integrations Test All API [0cyKIIbCq17bD0yK].md",
+        "webhooks":  [
+                         "POST /webhook/integrations/test-all"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "hWo8zurIZ3KkPKxg",
+        "name":  "Q-Ops Agent Projects API - Wired",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T05:51:38.512Z",
+        "updatedAt":  "2026-05-07T05:51:38.512Z",
+        "nodeCount":  11,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent Projects API - Wired [hWo8zurIZ3KkPKxg].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent Projects API - Wired [hWo8zurIZ3KkPKxg].md",
+        "webhooks":  [
+                         "GET/POST /webhook/projects",
+                         "POST /webhook/projects"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "ZuXZfzhWr8Fcep5a",
+        "name":  "Q-Ops Agent Settings API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T06:13:43.882Z",
+        "updatedAt":  "2026-05-20T11:20:45.258Z",
+        "nodeCount":  14,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent Settings API [ZuXZfzhWr8Fcep5a].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent Settings API [ZuXZfzhWr8Fcep5a].md",
+        "webhooks":  [
+                         "GET/POST /webhook/settings"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "u3klCtPvbFd01ds4",
+        "name":  "Q-Ops Agent Settings Write API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T06:14:39.634Z",
+        "updatedAt":  "2026-05-20T11:19:15.500Z",
+        "nodeCount":  12,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent Settings Write API [u3klCtPvbFd01ds4].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent Settings Write API [u3klCtPvbFd01ds4].md",
+        "webhooks":  [
+                         "PATCH /webhook/settings"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "Nkkxc1p3wnzPyj21",
+        "name":  "Q-Ops Agent User Accept Invite API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T08:31:47.502Z",
+        "updatedAt":  "2026-05-07T09:34:39.623Z",
+        "nodeCount":  9,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent User Accept Invite API [Nkkxc1p3wnzPyj21].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent User Accept Invite API [Nkkxc1p3wnzPyj21].md",
+        "webhooks":  [
+                         "POST /webhook/users/accept-invite"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "W8b32kGweBlEXN6r",
+        "name":  "Q-Ops Agent User Invite API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T07:47:41.380Z",
+        "updatedAt":  "2026-05-07T09:45:13.228Z",
+        "nodeCount":  11,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent User Invite API [W8b32kGweBlEXN6r].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent User Invite API [W8b32kGweBlEXN6r].md",
+        "webhooks":  [
+                         "POST /webhook/users/invite"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "NpD8cnqPE7qAWEpL",
+        "name":  "Q-Ops Agent User Password Reset Audit API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T11:31:37.186Z",
+        "updatedAt":  "2026-05-07T11:34:33.536Z",
+        "nodeCount":  7,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent User Password Reset Audit API [NpD8cnqPE7qAWEpL].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent User Password Reset Audit API [NpD8cnqPE7qAWEpL].md",
+        "webhooks":  [
+                         "POST /webhook/users/password-reset-audit"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "SqF2eOhsuBrtyCtD",
+        "name":  "Q-Ops Agent User Project Assignments API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-08T05:22:04.205Z",
+        "updatedAt":  "2026-05-08T05:26:38.511Z",
+        "nodeCount":  13,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent User Project Assignments API [SqF2eOhsuBrtyCtD].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent User Project Assignments API [SqF2eOhsuBrtyCtD].md",
+        "webhooks":  [
+                         "PATCH /webhook/users/project-assignments"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "AL5fIgJ9skALon98",
+        "name":  "Q-Ops Agent User Update API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T07:48:13.305Z",
+        "updatedAt":  "2026-05-07T07:51:50.627Z",
+        "nodeCount":  9,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent User Update API [AL5fIgJ9skALon98].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent User Update API [AL5fIgJ9skALon98].md",
+        "webhooks":  [
+                         "PATCH /webhook/users/update"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "vhxA44slh746G1ja",
+        "name":  "Q-Ops Agent Users API",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T07:17:10.780Z",
+        "updatedAt":  "2026-05-07T07:34:43.820Z",
+        "nodeCount":  7,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops Agent Users API [vhxA44slh746G1ja].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops Agent Users API [vhxA44slh746G1ja].md",
+        "webhooks":  [
+                         "GET /webhook/users"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "tcKSeScJRiWtRx77",
+        "name":  "Q-Ops-Agent-Analytics-Summary",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-02T08:28:12.629Z",
+        "updatedAt":  "2026-06-05T03:58:10.544Z",
+        "nodeCount":  11,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops-Agent-Analytics-Summary [tcKSeScJRiWtRx77].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops-Agent-Analytics-Summary [tcKSeScJRiWtRx77].md",
+        "webhooks":  [
+                         "GET/POST /webhook/analytics-summary"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key"
+                                 ]
+    },
+    {
+        "id":  "zdx8YtZJOMWtbv1L",
+        "name":  "Q-Ops-Agent-Health-Status",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-04T10:19:08.462Z",
+        "updatedAt":  "2026-06-02T08:56:19.955Z",
+        "nodeCount":  11,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\Q-Ops-Agent-Health-Status [zdx8YtZJOMWtbv1L].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\Q-Ops-Agent-Health-Status [zdx8YtZJOMWtbv1L].md",
+        "webhooks":  [
+                         "GET/POST /webhook/health"
+                     ],
+        "credentialReferences":  [
+                                     "httpCustomAuth: supabase-service-role-key",
+                                     "httpHeaderAuth: chromadb-cloud-key"
+                                 ]
+    },
+    {
+        "id":  "fullRetrievalD01",
+        "name":  "RETRIEVAL Document Generator AI Agent - SaaS - Full Clone Draft",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-05-07T16:29:29.537Z",
+        "updatedAt":  "2026-06-11T08:03:39.016Z",
+        "nodeCount":  67,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\RETRIEVAL Document Generator AI Agent - SaaS - Full Clone Draft [fullRetrievalD01].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\RETRIEVAL Document Generator AI Agent - SaaS - Full Clone Draft [fullRetrievalD01].md",
+        "webhooks":  [
+
+                     ],
+        "credentialReferences":  [
+                                     "chromaCloudApi: ChromaDB Self-Hosted account",
+                                     "httpBasicAuth: Confluence",
+                                     "httpBasicAuth: JIRA",
+                                     "httpCustomAuth: supabase-service-role-key",
+                                     "jiraSoftwareCloudApi: Jira SW Cloud account",
+                                     "openAiApi: OpenAi Paid Account (Aonu)"
+                                 ]
+    },
+    {
+        "id":  "b63H3FLO9nFujtQp",
+        "name":  "RETRIEVE Workflow-status-check",
+        "active":  true,
+        "folder":  "Published",
+        "createdAt":  "2026-04-17T10:32:08.107Z",
+        "updatedAt":  "2026-06-01T18:25:20.363Z",
+        "nodeCount":  5,
+        "sourceJson":  "C:\\Users\\anujalhans01\\Q-Ops_Agent\\docs\\n8n_workflows_2026-08-06_123551\\Published\\RETRIEVE Workflow-status-check [b63H3FLO9nFujtQp].json",
+        "documentation":  "docs\\n8n_documentation_2026-08-06_123551\\workflows\\Published\\RETRIEVE Workflow-status-check [b63H3FLO9nFujtQp].md",
+        "webhooks":  [
+                         "GET/POST /webhook/job-status-retrieve"
+                     ],
+        "credentialReferences":  [
+
+                                 ]
+    }
+]

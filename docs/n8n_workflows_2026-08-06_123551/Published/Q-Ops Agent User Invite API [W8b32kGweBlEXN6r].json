@@ -1,0 +1,434 @@
+{
+  "updatedAt": "2026-05-07T09:45:13.228Z",
+  "createdAt": "2026-05-07T07:47:41.380Z",
+  "id": "W8b32kGweBlEXN6r",
+  "name": "Q-Ops Agent User Invite API",
+  "description": "POST /webhook/users/invite endpoint. Requires active admin JWT, invites a Supabase Auth user with UI callback redirect query, upserts qops_users, and writes qops_audit_events.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "c07379c7-d090-462b-8243-a9148cde428c",
+      "name": "POST /users/invite",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        96
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "users/invite",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "cc1047ca-1c69-4bfc-8736-c29a810bc1af"
+    },
+    {
+      "id": "d87fd99c-7f2c-4b8c-9339-c836b368b383",
+      "name": "Verify Supabase Auth User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        96
+      ],
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={ \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"{{ $json.headers.authorization || $json.headers.Authorization || \"\" }}\" }",
+        "options": {}
+      },
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ebe4f857-7f24-404c-a194-c470dc9d68c2",
+      "name": "Fetch Current Q-Ops User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        96
+      ],
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,auth_user_id,email,name,role,status"
+            },
+            {
+              "name": "or",
+              "value": "=({{ $json.id ? \"auth_user_id.eq.\" + $json.id + \",email.eq.\" + $json.email : \"email.eq.__missing__\" }})"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "690f8a06-bec6-42cf-91f8-aa56b27afeeb",
+      "name": "Prepare Invite Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        96
+      ],
+      "parameters": {
+        "jsCode": "const auth = $('Verify Supabase Auth User').first().json || {};\nconst admin = $items('Fetch Current Q-Ops User').map(i => i.json).find(r => r && r.id);\nconst body = $('POST /users/invite').first().json.body || {};\nconst email = String(body.email || '').trim().toLowerCase();\nconst role = body.role === 'admin' ? 'admin' : 'registered_user';\nconst status = 'pending_invite';\nconst name = String(body.name || email.split('@')[0] || 'Invited User').trim();\nconst title = String(body.title || '').trim() || null;\nconst redirectTo = String(body.redirectTo || body.redirect_to || 'http://127.0.0.1:5175/auth/callback').trim();\nconst authorized = Boolean(auth.id && admin && admin.role === 'admin' && admin.status === 'active' && email);\nconst message = !auth.id ? 'Missing or invalid Supabase Auth token.' : !admin ? 'Authenticated user is not registered in qops_users.' : admin.role !== 'admin' ? 'Admin role is required.' : admin.status !== 'active' ? 'Admin profile is not active.' : !email ? 'Email is required.' : 'Authorized.';\nreturn [{ json: { authorized, message, auth, admin, invite: { email, redirect_to: redirectTo, data: { full_name: name, qops_role: role } }, qopsUser: { email, name, title, role, status, updated_at: new Date().toISOString() }, audit: { actor_user_id: admin?.id || null, actor_name: admin?.name || admin?.email || auth.email || 'unknown', action: 'USER_INVITED', entity_type: 'qops_user', entity_id: email, status: authorized ? 'success' : 'error', details: authorized ? `Invited ${email} as ${role}` : message, metadata: { source: 'ui', email, role, redirectTo } } } }];"
+      }
+    },
+    {
+      "id": "a3d97d8b-a45a-4866-bf89-c43986d32659",
+      "name": "Is Authorized Admin Invite",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        96
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "authorized",
+              "leftValue": "={{ $json.authorized }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "8dfd7eee-4f29-45d7-a586-57ac4286dd7d",
+      "name": "Invite Supabase Auth User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ \"https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/invite?redirect_to=\" + encodeURIComponent($json.invite.redirect_to) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { email: $json.invite.email, data: $json.invite.data } }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "id": "e83740db-cadb-4f49-811f-64d588b09163",
+      "name": "Build Q-Ops User Upsert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const prepared = $('Prepare Invite Request').first().json;\nconst invited = $('Invite Supabase Auth User').first().json || {};\nconst payload = { ...prepared.qopsUser, auth_user_id: invited.id || null };\nreturn [{ json: { payload, audit: { ...prepared.audit, entity_id: invited.id || prepared.qopsUser.email, metadata: { ...prepared.audit.metadata, authUserId: invited.id || null } }, response: { ok: true, invited: { ...payload, id: invited.id || null } } } }];"
+      }
+    },
+    {
+      "id": "25aa6de8-ba57-46b9-b154-569a8dfe715f",
+      "name": "Upsert Q-Ops User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1568,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?on_conflict=email",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"resolution=merge-duplicates,return=representation\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.payload }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "id": "734d5e18-db3f-4b9d-a08d-b4b71237dc12",
+      "name": "Insert User Invite Audit Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1792,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $(\"Build Q-Ops User Upsert\").first().json.audit }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "id": "e7dd96a8-49ed-42ae-9c8e-aaa8da8beb74",
+      "name": "Respond Invite Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2016,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, user: $(\"Upsert Q-Ops User\").first().json, message: \"User invitation created.\" } }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "c29eafca-b467-4415-bb6d-c353ef841fc6",
+      "name": "Reject Invite Request",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1120,
+        192
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, error: \"forbidden\", message: $json.message } }}",
+        "options": {
+          "responseCode": 403,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "POST /users/invite": {
+      "main": [
+        [
+          {
+            "node": "Verify Supabase Auth User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Supabase Auth User": {
+      "main": [
+        [
+          {
+            "node": "Fetch Current Q-Ops User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Current Q-Ops User": {
+      "main": [
+        [
+          {
+            "node": "Prepare Invite Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Invite Request": {
+      "main": [
+        [
+          {
+            "node": "Is Authorized Admin Invite",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Authorized Admin Invite": {
+      "main": [
+        [
+          {
+            "node": "Invite Supabase Auth User",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Invite Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invite Supabase Auth User": {
+      "main": [
+        [
+          {
+            "node": "Build Q-Ops User Upsert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Q-Ops User Upsert": {
+      "main": [
+        [
+          {
+            "node": "Upsert Q-Ops User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Q-Ops User": {
+      "main": [
+        [
+          {
+            "node": "Insert User Invite Audit Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert User Invite Audit Event": {
+      "main": [
+        [
+          {
+            "node": "Respond Invite Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": {},
+  "versionId": "59569a2f-73a7-4543-bf14-9b7bf414d31d",
+  "activeVersionId": "59569a2f-73a7-4543-bf14-9b7bf414d31d",
+  "versionCounter": 54,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-07T07:47:41.384Z",
+      "createdAt": "2026-05-07T07:47:41.384Z",
+      "role": "workflow:owner",
+      "workflowId": "W8b32kGweBlEXN6r",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 59569a2f",
+    "description": ""
+  }
+}

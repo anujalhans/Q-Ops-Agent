@@ -1,0 +1,652 @@
+{
+  "updatedAt": "2026-05-11T12:01:45.128Z",
+  "createdAt": "2026-05-11T11:58:58.395Z",
+  "id": "nzc2q8WqmTd6RGCw",
+  "name": "DI - Catalog Read API",
+  "description": "Authenticated GET /webhook/di/catalog endpoint that reads all DI tables, joins solution assets/technologies/project usage/relationships, and returns UI-ready governed catalog data.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Delivery Intelligence Catalog Read API\nGET /webhook/di/catalog?entity=overview|solutions|technologies|learnings|recommendations|relationships|jobs reads the full DI table set and returns UI-ready, governed records. It is additive and does not modify QA workflows.",
+        "height": 200,
+        "width": 3900,
+        "color": 3
+      },
+      "id": "9d36c722-60d2-491b-900e-ce8d5160cc9a",
+      "name": "Sticky Note be5abd38",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "path": "di/catalog",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "483bb6af-cd2e-438c-a009-b3271aa145b1",
+      "name": "GET /di/catalog",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "7ed01da7-aec5-476b-ae00-66bc95036d63"
+    },
+    {
+      "parameters": {
+        "jsCode": "const headers = $json.headers || {};\nconst authHeader = headers.authorization || headers.Authorization || '';\nconst query = $json.query || {};\nconst entity = String(query.entity || 'overview').trim().toLowerCase();\nconst allowed = new Set(['overview','all','jobs','solutions','technologies','learnings','recommendations','relationships']);\nif (!String(authHeader).toLowerCase().startsWith('bearer ')) return [{ json: { ok: false, statusCode: 401, errorCode: 'UNAUTHORIZED', message: 'Missing bearer token' } }];\nif (!allowed.has(entity)) return [{ json: { ok: false, statusCode: 400, errorCode: 'INVALID_ENTITY', message: 'Unsupported Delivery Intelligence entity' } }];\nreturn [{ json: { ok: true, token: String(authHeader).replace(/^Bearer\\s+/i, ''), entity, projectId: query.projectId || query.project_id || null, limit: Math.min(Number(query.limit || 100), 300) } }];"
+      },
+      "id": "819e7319-34a7-4d94-bb36-d052986e75a1",
+      "name": "Prepare DI Catalog Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={ \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"Bearer {{ $json.token }}\" }",
+        "options": {}
+      },
+      "id": "601bb80a-d6ef-4bfb-b80e-2df60f015716",
+      "name": "Verify Catalog Supabase Auth User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?auth_user_id=eq.{{ $json.id || \"00000000-0000-0000-0000-000000000000\" }}&status=eq.active&select=id,email,name,role,status&limit=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "6910b687-bbf5-4531-a654-ccafccd2fabc",
+      "name": "Fetch Catalog Q-Ops User Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        0
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_project_members?user_id=eq.{{ Array.isArray($json) ? ($json[0]?.id || \"00000000-0000-0000-0000-000000000000\") : ($json.id || \"00000000-0000-0000-0000-000000000000\") }}&select=project_id,project_role",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "2d6a283c-113c-4682-9405-7dd99232b221",
+      "name": "Fetch Catalog Project Memberships",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_projects?select=id,name,owner,status,updated_at&limit=500",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "d13d415d-5949-4096-a3e4-49afa2d08e26",
+      "name": "Fetch DI Catalog Projects",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_intelligence_jobs?select=job_id,status,job_type,project_id,input,output,error,created_at,updated_at&order=updated_at.desc&limit=200",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "fe4a19c8-8bb9-4fe7-bc93-b51b5ca8c947",
+      "name": "Fetch DI Catalog Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1344,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_reusable_solutions?select=id,title,slug,summary,problem_statement,implementation_approach,qa_approach,risk_factors,production_learnings,implementation_complexity,applicability_tags,visibility_level,owner_team,source_project_id,ai_summary,status,created_at,updated_at&order=updated_at.desc&limit=300",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "befc22a4-91c1-4ced-8f3c-fc1031e28a1e",
+      "name": "Fetch DI Catalog Solutions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1568,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_technologies?select=id,name,normalized_name,category,description,vendor,tags,created_at,updated_at&order=updated_at.desc&limit=500",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "6001394d-3e1f-4259-9c6d-2be7c7edd560",
+      "name": "Fetch DI Catalog Technologies",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1792,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_project_technologies?select=id,project_id,technology_id,version,confidence_score,source_type,source_ref,created_at&order=created_at.desc&limit=500",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "878bcc81-0a96-4a4f-917a-37de471b6a33",
+      "name": "Fetch DI Catalog Project Technologies",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2016,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_solution_technologies?select=id,solution_id,technology_id,created_at&order=created_at.desc&limit=500",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "66e2a640-c7a7-4560-b1d1-4631d52569e1",
+      "name": "Fetch DI Catalog Solution Technologies",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2240,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_solution_assets?select=id,solution_id,asset_type,title,url,storage_path,description,visibility_level,created_at&order=created_at.desc&limit=500",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "5e638188-8b41-469f-b44f-2aabbef244fc",
+      "name": "Fetch DI Catalog Solution Assets",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2464,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_organizational_learnings?select=id,title,category,source_project_id,learning_summary,impact_level,reusable_recommendation,visibility_level,source_ref,created_by_ai,created_at,updated_at&order=updated_at.desc&limit=300",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "8f883b06-94d4-44d4-8405-cea154dbdcb1",
+      "name": "Fetch DI Catalog Learnings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2688,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_knowledge_relationships?select=id,source_entity_type,source_entity_id,target_entity_type,target_entity_id,relationship_type,confidence_score,evidence,created_by_ai,visibility_level,created_at&order=created_at.desc&limit=500",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "e924a26f-86c4-40fd-9076-ffee4fb1307e",
+      "name": "Fetch DI Catalog Relationships",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2912,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/di_recommendations?select=id,project_id,recommendation_type,title,summary,rationale,related_entity_type,related_entity_id,confidence_score,status,assigned_to,feedback,created_at,updated_at&order=updated_at.desc&limit=300",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "6a958046-fb6e-47c6-9599-5d8a291eaa4a",
+      "name": "Fetch DI Catalog Recommendations",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3136,
+        0
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const req = $('Prepare DI Catalog Request').first().json;\nconst auth = $('Verify Catalog Supabase Auth User').first().json || {};\nconst rawProfile = $('Fetch Catalog Q-Ops User Profile').first().json;\nconst profile = Array.isArray(rawProfile) ? rawProfile[0] : rawProfile;\nif (!auth.id) return [{ json: { ok: false, statusCode: 401, errorCode: 'UNAUTHORIZED', message: 'Invalid Supabase Auth token' } }];\nif (!profile?.id || profile.status !== 'active') return [{ json: { ok: false, statusCode: 403, errorCode: 'PROFILE_NOT_ACTIVE', message: 'Active Q-Ops user profile not found' } }];\nconst rows = name => $items(name).map(i => i.json).filter(r => r && Object.keys(r).length);\nconst memberships = rows('Fetch Catalog Project Memberships');\nconst memberIds = memberships.map(r => r.project_id).filter(Boolean);\nconst isAdmin = profile.role === 'admin';\nconst projectId = req.projectId || null;\nconst canProject = id => isAdmin || !id || memberIds.includes(id);\nconst visibilityOk = r => isAdmin || ['organization','ai_sanitized_only'].includes(r.visibility_level) || canProject(r.project_id || r.source_project_id);\nconst matchesProject = r => !projectId || [r.project_id, r.source_project_id, r.source_entity_id, r.target_entity_id].includes(projectId);\nconst projects = rows('Fetch DI Catalog Projects').filter(p => canProject(p.id));\nconst projectMap = Object.fromEntries(projects.map(p => [p.id, p]));\nconst rawJobs = rows('Fetch DI Catalog Jobs').filter(r => canProject(r.project_id) && matchesProject(r)).slice(0, req.limit);\nconst rawSolutions = rows('Fetch DI Catalog Solutions').filter(r => visibilityOk(r) && matchesProject(r)).slice(0, req.limit);\nconst rawTechnologies = rows('Fetch DI Catalog Technologies');\nconst rawProjectTech = rows('Fetch DI Catalog Project Technologies').filter(r => canProject(r.project_id) && (!projectId || r.project_id === projectId));\nconst rawSolutionTech = rows('Fetch DI Catalog Solution Technologies');\nconst rawAssets = rows('Fetch DI Catalog Solution Assets').filter(r => visibilityOk(r));\nconst rawLearnings = rows('Fetch DI Catalog Learnings').filter(r => visibilityOk(r) && matchesProject(r)).slice(0, req.limit);\nconst rawRelationships = rows('Fetch DI Catalog Relationships').filter(r => visibilityOk(r) && matchesProject(r)).slice(0, req.limit);\nconst rawRecommendations = rows('Fetch DI Catalog Recommendations').filter(r => canProject(r.project_id) && matchesProject(r)).slice(0, req.limit);\nconst techById = Object.fromEntries(rawTechnologies.map(t => [t.id, t]));\nconst solutionById = Object.fromEntries(rawSolutions.map(s => [s.id, s]));\nconst learningById = Object.fromEntries(rawLearnings.map(l => [l.id, l]));\nconst recommendationById = Object.fromEntries(rawRecommendations.map(r => [r.id, r]));\nconst solutionIds = new Set(rawSolutions.map(s => s.id));\nconst visibleTechIds = new Set(rawProjectTech.map(pt => pt.technology_id));\nrawSolutionTech.filter(st => solutionIds.has(st.solution_id)).forEach(st => visibleTechIds.add(st.technology_id));\nconst technologies = rawTechnologies.filter(t => !projectId || visibleTechIds.has(t.id)).map(t => { const usage = rawProjectTech.filter(pt => pt.technology_id === t.id); const solutionLinks = rawSolutionTech.filter(st => st.technology_id === t.id && solutionById[st.solution_id]); return { type: 'technology', id: t.id, title: t.name, name: t.name, normalizedName: t.normalized_name, summary: t.description || t.category || 'Technology detected by Delivery Intelligence.', category: t.category, vendor: t.vendor, tags: t.tags || [], usageCount: usage.length, projects: usage.map(pt => ({ projectId: pt.project_id, projectName: projectMap[pt.project_id]?.name || pt.project_id, confidenceScore: pt.confidence_score, sourceType: pt.source_type, sourceRef: pt.source_ref })), relatedSolutions: solutionLinks.map(st => ({ solutionId: st.solution_id, title: solutionById[st.solution_id]?.title })), updatedAt: t.updated_at, raw: t }; }).slice(0, req.limit);\nconst assetsBySolution = rawAssets.reduce((acc, asset) => { (acc[asset.solution_id] ||= []).push(asset); return acc; }, {});\nconst techBySolution = rawSolutionTech.reduce((acc, link) => { if (techById[link.technology_id]) (acc[link.solution_id] ||= []).push({ id: link.technology_id, name: techById[link.technology_id].name, category: techById[link.technology_id].category }); return acc; }, {});\nconst solutions = rawSolutions.map(s => ({ type: 'solution', id: s.id, title: s.title, slug: s.slug, summary: s.summary || s.ai_summary || s.problem_statement, problemStatement: s.problem_statement, implementationApproach: s.implementation_approach, qaApproach: s.qa_approach, riskFactors: s.risk_factors || [], productionLearnings: s.production_learnings || [], implementationComplexity: s.implementation_complexity, applicabilityTags: s.applicability_tags || [], visibility: s.visibility_level, status: s.status, sourceProjectId: s.source_project_id, projectId: s.source_project_id, projectName: projectMap[s.source_project_id]?.name || s.source_project_id, technologies: techBySolution[s.id] || [], assets: assetsBySolution[s.id] || [], updatedAt: s.updated_at, raw: s }));\nconst learnings = rawLearnings.map(l => ({ type: 'learning', id: l.id, title: l.title, summary: l.learning_summary, category: l.category, impactLevel: l.impact_level, reusableRecommendation: l.reusable_recommendation, visibility: l.visibility_level, projectId: l.source_project_id, sourceProjectId: l.source_project_id, projectName: projectMap[l.source_project_id]?.name || l.source_project_id, sourceRef: l.source_ref, createdByAi: l.created_by_ai, createdAt: l.created_at, updatedAt: l.updated_at, raw: l }));\nfunction resolveTitle(type, id) { if (!id) return null; if (type === 'project') return projectMap[id]?.name || id; if (type === 'technology') return techById[id]?.name || id; if (type === 'reusable_solution' || type === 'solution') return solutionById[id]?.title || id; if (type === 'learning') return learningById[id]?.title || id; if (type === 'recommendation') return recommendationById[id]?.title || id; return projectMap[id]?.name || techById[id]?.name || solutionById[id]?.title || learningById[id]?.title || recommendationById[id]?.title || id; }\nconst recommendations = rawRecommendations.map(r => ({ type: 'recommendation', id: r.id, title: r.title, summary: r.summary, rationale: r.rationale, recommendationType: r.recommendation_type, status: r.status, confidenceScore: r.confidence_score, projectId: r.project_id, projectName: projectMap[r.project_id]?.name || r.project_id, relatedEntityType: r.related_entity_type, relatedEntityId: r.related_entity_id, relatedTitle: resolveTitle(r.related_entity_type, r.related_entity_id), feedback: r.feedback || {}, createdAt: r.created_at, updatedAt: r.updated_at, raw: r }));\nconst relationships = rawRelationships.map(r => ({ type: 'relationship', id: r.id, title: `${r.source_entity_type} ${r.relationship_type} ${r.target_entity_type}`, summary: `${resolveTitle(r.source_entity_type, r.source_entity_id)} -> ${resolveTitle(r.target_entity_type, r.target_entity_id)}`, sourceEntityType: r.source_entity_type, sourceEntityId: r.source_entity_id, sourceTitle: resolveTitle(r.source_entity_type, r.source_entity_id), targetEntityType: r.target_entity_type, targetEntityId: r.target_entity_id, targetTitle: resolveTitle(r.target_entity_type, r.target_entity_id), relationshipType: r.relationship_type, confidenceScore: r.confidence_score, evidence: r.evidence || [], visibility: r.visibility_level, createdAt: r.created_at, raw: r }));\nconst jobs = rawJobs.map(j => ({ type: 'job', id: j.job_id, jobId: j.job_id, title: j.job_id, status: j.status, jobType: j.job_type, projectId: j.project_id, projectName: projectMap[j.project_id]?.name || j.project_id, input: j.input || {}, output: j.output || {}, error: j.error, createdAt: j.created_at, updatedAt: j.updated_at, counts: j.output?.persistResult?.counts || j.output?.extractionSummary || {} }));\nconst overview = { projects: projects.length, jobs: jobs.length, solutions: solutions.length, technologies: technologies.length, projectTechnologies: rawProjectTech.length, solutionTechnologies: rawSolutionTech.filter(st => solutionIds.has(st.solution_id)).length, solutionAssets: rawAssets.filter(a => solutionIds.has(a.solution_id)).length, learnings: learnings.length, relationships: relationships.length, recommendations: recommendations.length, latestJob: jobs[0] || null };\nconst payload = { overview, jobs, solutions, technologies, learnings, relationships, recommendations };\nconst entity = req.entity;\nconst items = entity === 'all' ? [...solutions, ...technologies, ...learnings, ...recommendations, ...relationships, ...jobs] : entity === 'overview' ? [] : payload[entity] || [];\nreturn [{ json: { ok: true, entity, projectId, generatedAt: new Date().toISOString(), counts: overview, items, data: payload } }];"
+      },
+      "id": "616f12e8-16b9-4f30-8759-1bc3df04189f",
+      "name": "Map DI Catalog Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3360,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.ok ? $json : { ok: false, error: { code: $json.errorCode || \"DI_CATALOG_ERROR\", message: $json.message || \"Unable to load Delivery Intelligence catalog\" } }) }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode || 200 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "52cecc35-d9d6-4808-9daa-aecdea0d1376",
+      "name": "Respond DI Catalog",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3584,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "GET /di/catalog": {
+      "main": [
+        [
+          {
+            "node": "Prepare DI Catalog Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare DI Catalog Request": {
+      "main": [
+        [
+          {
+            "node": "Verify Catalog Supabase Auth User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Catalog Supabase Auth User": {
+      "main": [
+        [
+          {
+            "node": "Fetch Catalog Q-Ops User Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Catalog Q-Ops User Profile": {
+      "main": [
+        [
+          {
+            "node": "Fetch Catalog Project Memberships",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Catalog Project Memberships": {
+      "main": [
+        [
+          {
+            "node": "Fetch DI Catalog Projects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch DI Catalog Projects": {
+      "main": [
+        [
+          {
+            "node": "Fetch DI Catalog Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch DI Catalog Jobs": {
+      "main": [
+        [
+          {
+            "node": "Fetch DI Catalog Solutions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch DI Catalog Solutions": {
+      "main": [
+        [
+          {
+            "node": "Fetch DI Catalog Technologies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch DI Catalog Technologies": {
+      "main": [
+        [
+          {
+            "node": "Fetch DI Catalog Project Technologies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch DI Catalog Project Technologies": {
+      "main": [
+        [
+          {
+            "node": "Fetch DI Catalog Solution Technologies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch DI Catalog Solution Technologies": {
+      "main": [
+        [
+          {
+            "node": "Fetch DI Catalog Solution Assets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch DI Catalog Solution Assets": {
+      "main": [
+        [
+          {
+            "node": "Fetch DI Catalog Learnings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch DI Catalog Learnings": {
+      "main": [
+        [
+          {
+            "node": "Fetch DI Catalog Relationships",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch DI Catalog Relationships": {
+      "main": [
+        [
+          {
+            "node": "Fetch DI Catalog Recommendations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch DI Catalog Recommendations": {
+      "main": [
+        [
+          {
+            "node": "Map DI Catalog Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map DI Catalog Response": {
+      "main": [
+        [
+          {
+            "node": "Respond DI Catalog",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": {},
+  "versionId": "63cec20e-344c-4a79-8a04-836f5483b694",
+  "activeVersionId": "63cec20e-344c-4a79-8a04-836f5483b694",
+  "versionCounter": 53,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-11T11:58:58.399Z",
+      "createdAt": "2026-05-11T11:58:58.399Z",
+      "role": "workflow:owner",
+      "workflowId": "nzc2q8WqmTd6RGCw",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 63cec20e",
+    "description": ""
+  }
+}

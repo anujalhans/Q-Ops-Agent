@@ -1,9 +1,25 @@
 param(
   [string]$SourceDir = "docs\n8n_workflows_2026-05-08\Published",
-  [string]$OutputDir = "docs\n8n_documentation_2026-05-08"
+  [string]$OutputDir = "docs\n8n_documentation_2026-05-08",
+  [string]$GeneratedAt = "",
+  [string]$GeneratedTitle = "",
+  [string]$SourceWorkflowBackup = "",
+  [string]$WorkflowStatus = "Published"
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not $GeneratedAt) {
+  $GeneratedAt = (Get-Date -Format "yyyy-MM-dd HH:mm:ss K")
+}
+
+if (-not $GeneratedTitle) {
+  $GeneratedTitle = "n8n Workflow Documentation - $GeneratedAt"
+}
+
+if (-not $SourceWorkflowBackup) {
+  $SourceWorkflowBackup = $SourceDir
+}
 
 function ConvertTo-SafeFileName {
   param([string]$Name)
@@ -17,7 +33,11 @@ function ConvertTo-MarkdownJson {
   if ($null -eq $Value) {
     return "null"
   }
-  return ($Value | ConvertTo-Json -Depth $Depth)
+  $json = ($Value | ConvertTo-Json -Depth $Depth)
+  $json = $json -replace '(?i)("?(?:password|token|secret|api[_-]?key|authorization|bearer)"?\s*:\s*")([^"]+)(")', '$1[REDACTED]$3'
+  $json = $json -replace '(?i)(Bearer\s+)[A-Za-z0-9._~+/\-=]+', '$1[REDACTED]'
+  $json = $json -replace '(?i)(Basic\s+)[A-Za-z0-9._~+/\-=]+', '$1[REDACTED]'
+  return $json
 }
 
 function Get-NodePosition {
@@ -52,6 +72,33 @@ function Format-MarkdownCell {
   param([string]$Value)
   if ($null -eq $Value) { return "" }
   return (($Value -replace "\r?\n", " ") -replace "\|", "\|").Trim()
+}
+
+function Write-Utf8File {
+  param([string]$Path, [string]$Value)
+  $encoding = New-Object System.Text.UTF8Encoding($false)
+  [System.IO.File]::WriteAllText((Resolve-Path -LiteralPath (Split-Path -Parent $Path)).Path + [System.IO.Path]::DirectorySeparatorChar + (Split-Path -Leaf $Path), $Value, $encoding)
+}
+
+function Read-TextFile {
+  param([string]$Path)
+  return [System.IO.File]::ReadAllText((Resolve-Path -LiteralPath $Path).Path)
+}
+
+function Get-SupabaseTableHints {
+  param([string]$Text)
+  $tables = New-Object System.Collections.Generic.List[string]
+  foreach ($match in [Regex]::Matches($Text, '/rest/v1/([A-Za-z_][A-Za-z0-9_]*)')) {
+    $name = $match.Groups[1].Value
+    if ($name -and $name -ne "rpc") { $tables.Add($name) }
+  }
+  foreach ($match in [Regex]::Matches($Text, '/rest/v1/rpc/([A-Za-z_][A-Za-z0-9_]*)')) {
+    $tables.Add("rpc/$($match.Groups[1].Value)")
+  }
+  foreach ($name in [Regex]::Matches($Text, '\b(?:qa|qops|doc_ingestion|di)_[A-Za-z0-9_]+\b') | ForEach-Object { $_.Value }) {
+    $tables.Add($name)
+  }
+  return @($tables | Sort-Object -Unique)
 }
 
 function Get-TriggerSummary {
@@ -141,6 +188,8 @@ if (-not (Test-Path $SourceDir)) {
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 $workflowDocDir = Join-Path $OutputDir "workflows"
 New-Item -ItemType Directory -Force -Path $workflowDocDir | Out-Null
+$statusDocDir = Join-Path $workflowDocDir $WorkflowStatus
+New-Item -ItemType Directory -Force -Path $statusDocDir | Out-Null
 
 $workflowFiles = Get-ChildItem -Path $SourceDir -Filter "*.json" | Sort-Object Name
 $manifest = New-Object System.Collections.Generic.List[object]
@@ -148,10 +197,10 @@ $dependencyRows = New-Object System.Collections.Generic.List[string]
 $indexRows = New-Object System.Collections.Generic.List[string]
 
 foreach ($file in $workflowFiles) {
-  $workflow = Get-Content -Path $file.FullName -Raw | ConvertFrom-Json
+  $workflow = Read-TextFile -Path $file.FullName | ConvertFrom-Json
   $safe = ConvertTo-SafeFileName $workflow.name
-  $docName = "$safe.md"
-  $docPath = Join-Path $workflowDocDir $docName
+  $docName = "$safe [$($workflow.id)].md"
+  $docPath = Join-Path $statusDocDir $docName
   $nodes = @($workflow.nodes)
   $connections = $workflow.connections
   $triggerSummary = Get-TriggerSummary $workflow
@@ -176,7 +225,7 @@ foreach ($file in $workflowFiles) {
   $doc = New-Object System.Collections.Generic.List[string]
   $doc.Add("# $($workflow.name)")
   $doc.Add("")
-  $doc.Add("Generated from the active/published workflow JSON backup on 2026-05-08.")
+  $doc.Add("Generated from the $($WorkflowStatus.ToLowerInvariant()) workflow JSON backup on $GeneratedAt.")
   $doc.Add("")
   $doc.Add("## Workflow Metadata")
   $doc.Add("")
@@ -242,12 +291,13 @@ foreach ($file in $workflowFiles) {
     $doc.Add((Get-NodeMarkdown $node $workflow))
   }
 
-  Set-Content -Path $docPath -Value ($doc -join "`n") -Encoding UTF8
+  Write-Utf8File -Path $docPath -Value ($doc -join "`n")
 
   $manifest.Add([pscustomobject]@{
     id = $workflow.id
     name = $workflow.name
     active = $workflow.active
+    folder = $WorkflowStatus
     createdAt = $workflow.createdAt
     updatedAt = $workflow.updatedAt
     nodeCount = $nodes.Count
@@ -258,36 +308,44 @@ foreach ($file in $workflowFiles) {
   })
 
   $webhookCell = $webhooks -join "<br>"
-  $indexRows.Add("| [$($workflow.name)](workflows/$docName) | $($workflow.id) | $($nodes.Count) | $webhookCell |")
+  $indexRows.Add("| $WorkflowStatus | [$($workflow.name)](workflows/$WorkflowStatus/$docName) | $($workflow.id) | $($nodes.Count) | $webhookCell |")
 
   foreach ($node in $nodes) {
     $paramText = ConvertTo-MarkdownJson $node.parameters 30
     foreach ($match in [Regex]::Matches($paramText, 'https?://[^"''\s]+|/webhook/[A-Za-z0-9_./:-]+')) {
       $dependencyRows.Add("| $(Format-MarkdownCell $workflow.name) | $(Format-MarkdownCell $node.name) | URL/Webhook | $(Format-MarkdownCell $match.Value) |")
     }
-    foreach ($table in @("qa_jobs","doc_ingestion_jobs","doc_ingestion_queuecreator_logs","qa_job_metrics","qops_projects","qops_users","qops_project_members","qops_environment_settings","qops_integration_settings","qops_project_integration_overrides","qops_connection_test_results","qops_user_preferences","qops_audit_events")) {
-      if ($paramText -match [Regex]::Escape($table)) {
-        $dependencyRows.Add("| $(Format-MarkdownCell $workflow.name) | $(Format-MarkdownCell $node.name) | Supabase Table | $table |")
+    foreach ($table in (Get-SupabaseTableHints $paramText)) {
+      $dependencyRows.Add("| $(Format-MarkdownCell $workflow.name) | $(Format-MarkdownCell $node.name) | Supabase/Data Table | $table |")
+    }
+    if ($node.credentials) {
+      foreach ($prop in $node.credentials.PSObject.Properties) {
+        $dependencyRows.Add("| $(Format-MarkdownCell $workflow.name) | $(Format-MarkdownCell $node.name) | Credential Reference | $(Format-MarkdownCell "$($prop.Name): $($prop.Value.name)") |")
       }
     }
   }
 }
 
 $readme = New-Object System.Collections.Generic.List[string]
-$readme.Add("# n8n Active Workflow Documentation - 2026-05-08")
+$readme.Add("# $GeneratedTitle")
 $readme.Add("")
-$readme.Add("This folder documents all workflows that were active/published and available through the n8n MCP inventory on 2026-05-08. The markdown files were generated from the exported workflow JSON files in `docs/n8n_workflows_2026-05-08/Published`.")
+$readme.Add("This folder documents the $($WorkflowStatus.ToLowerInvariant()) n8n workflows exported from ``$SourceWorkflowBackup``. It intentionally excludes unpublished/inactive workflows so this snapshot remains focused on the currently production-active surface.")
 $readme.Add("")
 $readme.Add("## Contents")
 $readme.Add("")
-$readme.Add("- `workflows/`: one detailed markdown document per active workflow.")
-$readme.Add("- `manifest.json`: machine-readable workflow inventory and documentation paths.")
-$readme.Add("- `dependency-map.md`: inferred external URLs/webhooks and Supabase table references.")
+$readme.Add("- ``workflows/$WorkflowStatus/``: one detailed markdown document per $($WorkflowStatus.ToLowerInvariant()) workflow.")
+$readme.Add("- ``manifest.json``: machine-readable workflow inventory and documentation paths.")
+$readme.Add("- ``dependency-map.md``: inferred external URLs/webhooks, credential references, and Supabase/data table references.")
+$readme.Add("")
+$readme.Add("## Summary")
+$readme.Add("")
+$readme.Add("- Total workflows documented: $($manifest.Count)")
+$readme.Add("- $WorkflowStatus workflows: $($manifest.Count)")
 $readme.Add("")
 $readme.Add("## Workflow Index")
 $readme.Add("")
-$readme.Add("| Workflow | ID | Nodes | Webhook Hints |")
-$readme.Add("| --- | --- | ---: | --- |")
+$readme.Add("| Status | Workflow | ID | Nodes | Webhook Hints |")
+$readme.Add("| --- | --- | --- | ---: | --- |")
 foreach ($row in $indexRows) { $readme.Add($row) }
 $readme.Add("")
 $readme.Add("## Notes")
@@ -296,16 +354,16 @@ $readme.Add("- Credential values and secrets are not exported by n8n; only crede
 $readme.Add("- Full node parameter snapshots are included in each workflow document for future context setting.")
 $readme.Add("- Raw JSON backups remain the source of truth for exact workflow re-import.")
 
-Set-Content -Path (Join-Path $OutputDir "README.md") -Value ($readme -join "`n") -Encoding UTF8
+Write-Utf8File -Path (Join-Path $OutputDir "README.md") -Value ($readme -join "`n")
 
 $dep = New-Object System.Collections.Generic.List[string]
-$dep.Add("# n8n Dependency Map - 2026-05-08")
+$dep.Add("# n8n Dependency Map - $GeneratedAt")
 $dep.Add("")
-$dep.Add("Inferred from node parameter JSON across active/published workflow backups.")
+$dep.Add("Inferred from node parameter JSON across $($WorkflowStatus.ToLowerInvariant()) workflow backups. Review manually before using this as a security or architecture source of truth.")
 $dep.Add("")
 $dep.Add("| Workflow | Node | Dependency Type | Value |")
 $dep.Add("| --- | --- | --- | --- |")
 foreach ($row in ($dependencyRows | Sort-Object -Unique)) { $dep.Add($row) }
-Set-Content -Path (Join-Path $OutputDir "dependency-map.md") -Value ($dep -join "`n") -Encoding UTF8
+Write-Utf8File -Path (Join-Path $OutputDir "dependency-map.md") -Value ($dep -join "`n")
 
-$manifest | ConvertTo-Json -Depth 20 | Set-Content -Path (Join-Path $OutputDir "manifest.json") -Encoding UTF8
+Write-Utf8File -Path (Join-Path $OutputDir "manifest.json") -Value ($manifest | ConvertTo-Json -Depth 20)

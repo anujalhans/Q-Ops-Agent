@@ -1,0 +1,370 @@
+{
+  "updatedAt": "2026-05-07T07:51:50.627Z",
+  "createdAt": "2026-05-07T07:48:13.305Z",
+  "id": "AL5fIgJ9skALon98",
+  "name": "Q-Ops Agent User Update API",
+  "description": "Draft PATCH /webhook/users/update endpoint. Requires active admin JWT, updates qops_users role/status/profile fields, and writes qops_audit_events.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "PATCH",
+        "path": "users/update",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f7e4262a-3765-41c7-9758-b4c3fb1df403",
+      "name": "PATCH /users/update",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        96
+      ],
+      "webhookId": "308159fb-bb46-480b-a9ef-b94a78637f68"
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/auth/v1/user",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={ \"apikey\": \"sb_publishable_SzDNzUTrzUb7lIBT3AuSvg_UD_jP9Gt\", \"Authorization\": \"{{ $json.headers.authorization || $json.headers.Authorization || \"\" }}\" }",
+        "options": {}
+      },
+      "id": "fd2b0bfd-5812-46b8-bb02-d11ffa4055c4",
+      "name": "Verify Supabase Auth User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        96
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,auth_user_id,email,name,role,status"
+            },
+            {
+              "name": "or",
+              "value": "=({{ $json.id ? \"auth_user_id.eq.\" + $json.id + \",email.eq.\" + $json.email : \"email.eq.__missing__\" }})"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "id": "0cb84f87-33a2-4660-bc28-9c59e6477667",
+      "name": "Fetch Current Q-Ops User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        96
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const auth = $('Verify Supabase Auth User').first().json || {};\nconst admin = $items('Fetch Current Q-Ops User').map(i => i.json).find(r => r && r.id);\nconst body = $('PATCH /users/update').first().json.body || {};\nconst userId = String(body.userId || body.id || '').trim();\nconst payload = { updated_at: new Date().toISOString() };\nif (body.name !== undefined) payload.name = String(body.name || '').trim();\nif (body.title !== undefined) payload.title = String(body.title || '').trim() || null;\nif (body.role !== undefined) payload.role = body.role === 'admin' ? 'admin' : 'registered_user';\nif (body.status !== undefined) payload.status = ['active', 'pending_invite', 'disabled'].includes(body.status) ? body.status : 'active';\nconst changedKeys = Object.keys(payload).filter(k => k !== 'updated_at');\nconst authorized = Boolean(auth.id && admin && admin.role === 'admin' && admin.status === 'active' && userId && changedKeys.length);\nconst message = !auth.id ? 'Missing or invalid Supabase Auth token.' : !admin ? 'Authenticated user is not registered in qops_users.' : admin.role !== 'admin' ? 'Admin role is required.' : admin.status !== 'active' ? 'Admin profile is not active.' : !userId ? 'userId is required.' : !changedKeys.length ? 'No supported user fields were provided.' : 'Authorized.';\nreturn [{ json: { authorized, message, userId, payload, audit: { actor_user_id: admin?.id || null, actor_name: admin?.name || admin?.email || auth.email || 'unknown', action: 'USER_UPDATED', entity_type: 'qops_user', entity_id: userId, status: authorized ? 'success' : 'error', details: authorized ? `Updated user ${userId}` : message, metadata: { source: 'ui', userId, changedKeys } } } }];"
+      },
+      "id": "5bc06c0a-03ac-4bdb-a84e-37fc0f06d996",
+      "name": "Prepare User Update Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "authorized",
+              "leftValue": "={{ $json.authorized }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "50d85aad-2d02-4f68-9fb2-8deaf91a9a11",
+      "name": "Is Authorized User Update",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_users?id=eq.{{ encodeURIComponent($json.userId) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=representation\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.payload }}",
+        "options": {}
+      },
+      "id": "2c035e11-3b2a-4a4c-852e-db50adc0d110",
+      "name": "Patch Q-Ops User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        0
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_audit_events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $(\"Prepare User Update Request\").first().json.audit }}",
+        "options": {}
+      },
+      "id": "83263ae8-ea23-48cc-a13a-cb07883c54c5",
+      "name": "Insert User Update Audit Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1344,
+        0
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, user: $(\"Patch Q-Ops User\").first().json, message: \"User updated.\" } }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "ab7dd038-af15-4045-80ee-4e1f6fcd5c79",
+      "name": "Respond User Update Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1568,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, error: \"forbidden\", message: $json.message } }}",
+        "options": {
+          "responseCode": 403,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "74e4e216-71f4-4447-a835-12e36c20322c",
+      "name": "Reject User Update Request",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1120,
+        192
+      ]
+    }
+  ],
+  "connections": {
+    "PATCH /users/update": {
+      "main": [
+        [
+          {
+            "node": "Verify Supabase Auth User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Supabase Auth User": {
+      "main": [
+        [
+          {
+            "node": "Fetch Current Q-Ops User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Current Q-Ops User": {
+      "main": [
+        [
+          {
+            "node": "Prepare User Update Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare User Update Request": {
+      "main": [
+        [
+          {
+            "node": "Is Authorized User Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Authorized User Update": {
+      "main": [
+        [
+          {
+            "node": "Patch Q-Ops User",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject User Update Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Patch Q-Ops User": {
+      "main": [
+        [
+          {
+            "node": "Insert User Update Audit Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert User Update Audit Event": {
+      "main": [
+        [
+          {
+            "node": "Respond User Update Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": {},
+  "versionId": "ba2ae8d4-0926-40c0-ae50-7613d5a13d3a",
+  "activeVersionId": "ba2ae8d4-0926-40c0-ae50-7613d5a13d3a",
+  "versionCounter": 47,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-07T07:48:13.307Z",
+      "createdAt": "2026-05-07T07:48:13.307Z",
+      "role": "workflow:owner",
+      "workflowId": "AL5fIgJ9skALon98",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version ba2ae8d4",
+    "description": ""
+  }
+}

@@ -1,0 +1,297 @@
+{
+  "updatedAt": "2026-05-07T06:49:56.886Z",
+  "createdAt": "2026-05-07T06:15:44.415Z",
+  "id": "3zXdQS9hABDTXuea",
+  "name": "Q-Ops Agent Integration Test API",
+  "description": "POST /webhook/integrations/test endpoint with live probe support for one integration. Use body.integrationKey while local n8n route params remain unreliable.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "ef60b3e5-b4a3-487d-953a-7e2480e8f6d6",
+      "name": "POST /integrations/test",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "integrations/test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "cce32b81-d556-4643-a8ec-c24afacade4e"
+    },
+    {
+      "id": "990c313a-d39b-42fd-9785-7ebfc9194057",
+      "name": "Fetch Integration For Test",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_integration_settings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "environment_key,integration_key,display_name,enabled,status,config,last_tested_at,last_tested_by,settings_version"
+            },
+            {
+              "name": "environment_key",
+              "value": "={{ \"eq.\" + ($(\"POST /integrations/test\").item.json.body?.environmentKey || \"local\") }}"
+            },
+            {
+              "name": "integration_key",
+              "value": "={{ \"eq.\" + ($(\"POST /integrations/test\").item.json.body?.integrationKey || \"\") }}"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "78b2ddd7-ed1a-4138-ae2a-dfe2e5098353",
+      "name": "Fetch Live Health Snapshot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "url": "http://localhost:5678/webhook/health",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "4eb80396-3949-4357-877c-b8ba990ff0da",
+      "name": "Prepare Live Integration Test Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const request = $('POST /integrations/test').item.json || {};\nconst body = request.body || {};\nconst integrationKey = String(body.integrationKey || '').trim();\nconst envKey = String(body.environmentKey || 'local');\nconst uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;\nconst checkedByRaw = body.checkedBy || body.checkedByUserId || null;\nconst checkedBy = checkedByRaw && uuidPattern.test(String(checkedByRaw)) ? String(checkedByRaw) : null;\nconst checkedByName = body.checkedByName || body.actorName || checkedByRaw || 'n8n';\nconst row = $items('Fetch Integration For Test').map(i => i.json).find(i => i && i.integration_key) || null;\nconst health = $('Fetch Live Health Snapshot').item.json || {};\nconst services = Array.isArray(health.services) ? health.services : [];\nconst now = new Date().toISOString();\nfunction service(name) { return services.find(s => String(s.name || '').toLowerCase() === name.toLowerCase()) || null; }\nfunction probeFor(key, displayName) {\n  if (!row) return { status: 'not_configured', message: `No ${key} settings found for ${envKey}`, detail: { probe: 'missing-settings' } };\n  if (!row.enabled) return { status: 'not_configured', message: `${displayName || key} is disabled`, detail: { probe: 'disabled' } };\n  if (key === 'supabase') { const db = service('Supabase DB'); const storage = service('Supabase Storage'); const bad = [db, storage].find(s => s && !['ok', 'operational'].includes(s.status)); return { status: bad ? 'degraded' : 'operational', message: [db?.detail, storage?.detail].filter(Boolean).join(' | ') || 'Supabase DB and Storage reachable', detail: { db, storage, probe: 'health-workflow' } }; }\n  if (key === 'chroma') { const s = service('ChromaDB'); return { status: s?.status === 'ok' ? 'operational' : (s?.status || 'unreachable'), message: s?.detail || 'Chroma health result unavailable', detail: { service: s, probe: 'health-workflow' } }; }\n  if (key === 'microservices') { const extractor = service('FastAPI Extractor'); const converter = service('Converter Service'); const bad = [extractor, converter].find(s => s && !['ok', 'operational'].includes(s.status)); return { status: bad ? 'degraded' : 'operational', message: [extractor?.detail, converter?.detail].filter(Boolean).join(' | ') || 'Microservice health endpoints reachable', detail: { extractor, converter, probe: 'health-workflow' } }; }\n  if (key === 'n8n') return { status: health.status === 'ok' ? 'operational' : (health.status || 'unreachable'), message: `n8n health workflow returned ${health.status || 'unknown'}`, detail: { healthStatus: health.status, generatedAt: health.generatedAt, probe: 'health-workflow' } };\n  if (key === 'jira') return { status: 'not_configured', message: 'Jira has no read-only live probe in this workflow yet; credential-backed project GET is the next step', detail: { probe: 'pending-credential-backed-node' } };\n  if (key === 'confluence') return { status: 'not_configured', message: 'Confluence has no read-only live probe in this workflow yet; credential-backed space GET is the next step', detail: { probe: 'pending-credential-backed-node' } };\n  if (key === 'openai') return { status: 'not_configured', message: 'OpenAI live validation is intentionally skipped to avoid cost; add a low-cost credential validation if required', detail: { probe: 'cost-guarded' } };\n  return { status: 'not_configured', message: `${displayName || key} has no live probe configured`, detail: { probe: 'not-configured' } };\n}\nconst p = probeFor(integrationKey, row?.display_name);\nconst integrationStatus = ['operational', 'degraded', 'unreachable', 'unauthorized', 'error', 'not_configured'].includes(p.status) ? p.status : 'error';\nconst result = { environment_key: envKey, integration_key: integrationKey, service_name: row?.display_name || integrationKey, status: integrationStatus, latency_ms: null, message: p.message, technical_detail: { ...p.detail, source: 'live-probe-api', checkedByName }, checked_by: checkedBy, checked_at: now };\nconst integrationPatch = { status: integrationStatus, last_tested_at: now, last_tested_by: checkedBy, updated_at: now };\nreturn [{ json: { ok: true, environmentKey: envKey, integrationKey, status: integrationStatus, message: p.message, checkedAt: now, checkedBy, checkedByName, result, integrationPatch } }];"
+      }
+    },
+    {
+      "id": "a53abfe1-7416-44b5-b10e-3252fb77451c",
+      "name": "Insert Connection Test Result",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_connection_test_results",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.result }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "4516f0b9-3d52-4d8c-93da-75514e186e47",
+      "name": "Patch Integration Test Metadata",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ \"https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_integration_settings?environment_key=eq.\" + encodeURIComponent($(\"Prepare Live Integration Test Result\").item.json.environmentKey) + \"&integration_key=eq.\" + encodeURIComponent($(\"Prepare Live Integration Test Result\").item.json.integrationKey) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $(\"Prepare Live Integration Test Result\").item.json.integrationPatch }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "70a368a2-b4c6-44a1-9e70-c7587068df61",
+      "name": "Respond Integration Test",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $(\"Prepare Live Integration Test Result\").item.json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "POST /integrations/test": {
+      "main": [
+        [
+          {
+            "node": "Fetch Integration For Test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Integration For Test": {
+      "main": [
+        [
+          {
+            "node": "Fetch Live Health Snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Live Health Snapshot": {
+      "main": [
+        [
+          {
+            "node": "Prepare Live Integration Test Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Live Integration Test Result": {
+      "main": [
+        [
+          {
+            "node": "Insert Connection Test Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Connection Test Result": {
+      "main": [
+        [
+          {
+            "node": "Patch Integration Test Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Patch Integration Test Metadata": {
+      "main": [
+        [
+          {
+            "node": "Respond Integration Test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": {},
+  "versionId": "af8b2a42-d155-4a54-99b1-788488cc563e",
+  "activeVersionId": "af8b2a42-d155-4a54-99b1-788488cc563e",
+  "versionCounter": 56,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-07T06:15:44.420Z",
+      "createdAt": "2026-05-07T06:15:44.420Z",
+      "role": "workflow:owner",
+      "workflowId": "3zXdQS9hABDTXuea",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version af8b2a42",
+    "description": ""
+  }
+}

@@ -1,0 +1,277 @@
+{
+  "updatedAt": "2026-05-07T06:49:23.956Z",
+  "createdAt": "2026-05-07T06:16:13.941Z",
+  "id": "0cyKIIbCq17bD0yK",
+  "name": "Q-Ops Agent Integrations Test All API",
+  "description": "POST /webhook/integrations/test-all endpoint with live probes via health workflow for Supabase, Chroma, n8n, and microservices, plus persisted connection-test snapshots.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "dca03576-3f5c-4a21-9a7e-ef3439357461",
+      "name": "POST /integrations/test-all",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "integrations/test-all",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "6aea3a0f-4eec-4727-9f0e-d96a99ae7857"
+    },
+    {
+      "id": "d1b11ea4-5309-4d3a-92a3-c8476d48f706",
+      "name": "Fetch Integrations For Test All",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_integration_settings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "environment_key,integration_key,display_name,enabled,status,config,last_tested_at,last_tested_by"
+            },
+            {
+              "name": "environment_key",
+              "value": "={{ \"eq.\" + ($(\"POST /integrations/test-all\").item.json.body?.environmentKey || \"local\") }}"
+            },
+            {
+              "name": "order",
+              "value": "integration_key.asc"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\" }",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "c607da6b-e4d9-451e-a792-f66a0b82abf9",
+      "name": "Fetch Live Health Snapshot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "url": "http://localhost:5678/webhook/health",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "57adea9e-681c-4aaf-836b-c06123ebf999",
+      "name": "Prepare Live Integration Test Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const request = $('POST /integrations/test-all').item.json || {};\nconst body = request.body || {};\nconst envKey = String(body.environmentKey || 'local');\nconst uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;\nconst checkedByRaw = body.checkedBy || body.checkedByUserId || null;\nconst checkedBy = checkedByRaw && uuidPattern.test(String(checkedByRaw)) ? String(checkedByRaw) : null;\nconst checkedByName = body.checkedByName || body.actorName || checkedByRaw || 'n8n';\nconst now = new Date().toISOString();\nconst rows = $items('Fetch Integrations For Test All').map(i => i.json).filter(i => i && i.integration_key);\nconst health = $('Fetch Live Health Snapshot').item.json || {};\nconst services = Array.isArray(health.services) ? health.services : [];\nfunction service(name) { return services.find(s => String(s.name || '').toLowerCase() === name.toLowerCase()) || null; }\nfunction fromHealth(integrationKey, displayName) {\n  if (integrationKey === 'supabase') { const db = service('Supabase DB'); const storage = service('Supabase Storage'); const bad = [db, storage].find(s => s && !['ok', 'operational'].includes(s.status)); return { status: bad ? 'degraded' : 'operational', message: [db?.detail, storage?.detail].filter(Boolean).join(' | ') || 'Supabase DB and Storage reachable', detail: { db, storage, probe: 'health-workflow' } }; }\n  if (integrationKey === 'chroma') { const s = service('ChromaDB'); return { status: s?.status === 'ok' ? 'operational' : (s?.status || 'unreachable'), message: s?.detail || 'Chroma health result unavailable', detail: { service: s, probe: 'health-workflow' } }; }\n  if (integrationKey === 'microservices') { const extractor = service('FastAPI Extractor'); const converter = service('Converter Service'); const bad = [extractor, converter].find(s => s && !['ok', 'operational'].includes(s.status)); return { status: bad ? 'degraded' : 'operational', message: [extractor?.detail, converter?.detail].filter(Boolean).join(' | ') || 'Microservice health endpoints reachable', detail: { extractor, converter, probe: 'health-workflow' } }; }\n  if (integrationKey === 'n8n') return { status: health.status === 'ok' ? 'operational' : (health.status || 'unreachable'), message: `n8n health workflow returned ${health.status || 'unknown'}`, detail: { healthStatus: health.status, generatedAt: health.generatedAt, probe: 'health-workflow' } };\n  if (integrationKey === 'jira') return { status: 'not_configured', message: 'Jira has no read-only live probe in this workflow yet; credential-backed project GET is the next step', detail: { probe: 'pending-credential-backed-node' } };\n  if (integrationKey === 'confluence') return { status: 'not_configured', message: 'Confluence has no read-only live probe in this workflow yet; credential-backed space GET is the next step', detail: { probe: 'pending-credential-backed-node' } };\n  if (integrationKey === 'openai') return { status: 'not_configured', message: 'OpenAI live validation is intentionally skipped to avoid cost; add a low-cost credential validation if required', detail: { probe: 'cost-guarded' } };\n  return { status: 'not_configured', message: `${displayName || integrationKey} has no live probe configured`, detail: { probe: 'not-configured' } };\n}\nreturn rows.map(row => {\n  let probe = row.enabled ? fromHealth(row.integration_key, row.display_name) : { status: 'not_configured', message: `${row.display_name || row.integration_key} is disabled`, detail: { probe: 'disabled' } };\n  const result = { environment_key: row.environment_key || envKey, integration_key: row.integration_key, service_name: row.display_name || row.integration_key, status: probe.status, latency_ms: null, message: probe.message, technical_detail: { ...probe.detail, source: 'live-probe-api', checkedByName }, checked_by: checkedBy, checked_at: now };\n  return { json: { environmentKey: row.environment_key || envKey, integrationKey: row.integration_key, status: probe.status, message: probe.message, checkedAt: now, checkedBy, checkedByName, result } };\n});"
+      }
+    },
+    {
+      "id": "52c5ece5-000d-4bf0-9ae4-53afaf6ef481",
+      "name": "Insert All Connection Test Results",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ifnznfspkjayhnooncrv.supabase.co/rest/v1/qops_connection_test_results",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{ \"Content-Type\": \"application/json\", \"Prefer\": \"return=minimal\" }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.result }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "DpZbhUxkEbKeXIiJ",
+          "name": "supabase-service-role-key"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "63b8972a-898d-46d1-a0fb-3e3555231733",
+      "name": "Summarize Test All Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const results = $items('Prepare Live Integration Test Results').map(i => ({ environmentKey: i.json.environmentKey, integrationKey: i.json.integrationKey, status: i.json.status, message: i.json.message, checkedAt: i.json.checkedAt }));\nconst counts = results.reduce((acc, item) => { acc[item.status] = (acc[item.status] || 0) + 1; return acc; }, {});\nreturn [{ json: { ok: true, generatedAt: new Date().toISOString(), counts, integrations: results } }];"
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "9c5f505a-a410-40a4-a5f5-02b311f93f06",
+      "name": "Respond Integrations Test All",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "POST /integrations/test-all": {
+      "main": [
+        [
+          {
+            "node": "Fetch Integrations For Test All",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Integrations For Test All": {
+      "main": [
+        [
+          {
+            "node": "Fetch Live Health Snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Live Health Snapshot": {
+      "main": [
+        [
+          {
+            "node": "Prepare Live Integration Test Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Live Integration Test Results": {
+      "main": [
+        [
+          {
+            "node": "Insert All Connection Test Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert All Connection Test Results": {
+      "main": [
+        [
+          {
+            "node": "Summarize Test All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Test All Results": {
+      "main": [
+        [
+          {
+            "node": "Respond Integrations Test All",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": {},
+  "versionId": "2288b9a5-0537-4d60-ad21-99386875b804",
+  "activeVersionId": "2288b9a5-0537-4d60-ad21-99386875b804",
+  "versionCounter": 55,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-07T06:16:13.945Z",
+      "createdAt": "2026-05-07T06:16:13.945Z",
+      "role": "workflow:owner",
+      "workflowId": "0cyKIIbCq17bD0yK",
+      "projectId": "yL9RuH1JDK0PNYdi",
+      "project": {
+        "updatedAt": "2025-09-23T18:14:55.316Z",
+        "createdAt": "2025-09-23T18:14:01.272Z",
+        "id": "yL9RuH1JDK0PNYdi",
+        "name": "Anuj Alhans <aonu123@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ec5128a2-56d3-4494-ac63-39f740375059"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 2288b9a5",
+    "description": ""
+  }
+}
